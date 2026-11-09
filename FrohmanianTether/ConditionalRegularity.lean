@@ -65,68 +65,40 @@ open NavierStokes3D MeasureTheory
 
 /-! ## Main Theorem — Frohmanian Symplectic Tether Theorem -/
 
-/-- High-level statement of the full theorem — **conditional**.
-The regularity conjunct holds *given* `hDI : ∀ u₀ ν, FrohmanianTetherRate u₀ ν`
-(the rate `M' ≤ C M² - κ'' M³` along every solution) and the classical local-theory
-binders `hKato`, `hTlb`, `hInt`, `huniq_shift`, `huniq`. `FrohmanianTetherRate` is open
-and is not derived from the unmodified equation in this repository
-(see `HWEIGHT_OBSTRUCTION.md`). This is not an unconditional Clay solution.
-The work is split across SymplecticTether.lean (existence + uniqueness of the Tether)
-and TetheredLyapunov.lean (global regularity conditional on the rate, via the majorant).
-Editor green ticks only mean this declaration elaborated. The certificate is
-`#print axioms frohmanian_tether_theorem`: it must list `propext`,
-`Classical.choice`, `Quot.sound` and must **not** list `sorryAx`.
-The former first clause ("the tethered bracket reproduces the classical one on `H`", under the
-hypothesis `δH/δω = u`) was removed: that hypothesis is false with these definitions
+/-- High-level statement of the full theorem — **conditional**. NOT a proof of regularity.
+
+Hypotheses (each explicit; none is proved here):
+* `hKato` — for every smooth, divergence-free, finite-energy datum a `KatoLocalWitness`.
+  CAUTION: as encoded, a `KatoLocalWitness` carries a path solving the equations pointwise for
+  ALL `t ≥ 0` (smooth only on `[0, T]`), so `hKato` is stronger than Kato's local theorem; it
+  assumes existence of a (possibly non-smooth after `T`) physical solution for all time.
+* `hDI : ∀ u₀ ν, FrohmanianTetherRate u₀ ν` — the cubic rate `M' ≤ C M² − κ'' M³` for
+  `M(t) = ‖ω(t)‖_∞` along every physical solution. OPEN; at least as strong as a time-uniform
+  vorticity bound, hence (by BKM) as hard as the regularity problem itself.
+* `hcrit` — the Beale–Kato–Majda continuation criterion (classical, not formalized).
+* `huniq` — uniqueness of smooth physical solutions on existence intervals (classical, not
+  formalized).
+
+Conclusion: (1) the density-form characterization of `TetherKernel` (substitution); (2) global
+smoothness of the witness path.
+
+**Changes (Nov 2026).** The former clause "every ANTISYMMETRIC `B` satisfying C1–C3,
+saturation and polarization equals `TetherKernel`" was removed: its hypotheses force
+`B = TetherKernel = 0` (`FrohmanianTether.antisymmetric_clause_forces_zero`). The former
+binders `τ`, `hTlb` (one Kato existence time `τ` for ALL data), `hInt`, `huniq_shift` (the
+quantitative-restart route) were removed; continuation now goes through `hcrit` (BKM) as in
+`conditional_regularity_of_open_hyps`. The former first clause ("the tethered bracket
+reproduces the classical one on `H`") was removed earlier: its hypothesis `δH/δω = u` is false
 (`KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity`). -/
 public theorem frohmanian_tether_theorem
     (hKato : ∀ u₀ ν, ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) → 0 < ν →
       KatoLocalWitness u₀ ν)
     (hDI : ∀ u₀ ν, FrohmanianTetherRate u₀ ν)
-    (τ : ℝ) (hτ : 0 < τ)
-    (hTlb : ∀ u₁ ν (hsm : ContDiff ℝ (⊤ : ℕ∞) u₁)
-      (hdiv : ∀ x, div u₁ x = 0)
-      (hE : Integrable (fun x : T3 => ‖u₁ x‖ ^ 2))
-      (hν : 0 < ν),
-      τ ≤ (hKato u₁ ν hsm hdiv hE hν).T)
-    (hInt : ∀ u₀ ν (_hν : 0 < ν) (T : ℝ) (v : TimeDependentVelocity)
-      (q : TimeDependentPressure),
-      T ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T,
-        Integrable (fun x : T3 => ‖v t x‖ ^ 2))
-    (huniq_shift : ∀ u₀ ν (_hν : 0 < ν) (T : ℝ) (v : TimeDependentVelocity)
-      (q : TimeDependentPressure),
-      T ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T,
-        ∀ (w' : KatoLocalWitness (v t) ν),
-          ∀ s ∈ Set.Icc (0 : ℝ) w'.T, v (t + s) = w'.u s)
+    (hcrit : ∀ u₀ ν, TetheredLyapunov.PhysicalBKMContinuationCriterionFor u₀ ν)
     (huniq : ∀ u₀ ν (w : KatoLocalWitness u₀ ν),
-      ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
-        T' ∈ existenceTimes u₀ ν →
-        v 0 = u₀ →
-        NS_PDE v q ν →
-        (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-        IsPhysicalNSSolution v →
-        ∀ t ∈ Set.Icc (0 : ℝ) T', w.u t = v t) :
+      TetheredLyapunov.KatoUniquenessOnExistenceTimes u₀ ν w) :
   ∃ (𝔗_F : CoadjointOrbit → Functional → Functional → ℝ),
-    (∀ (SDiff : Type) [Group SDiff] [MulAction SDiff CoadjointOrbit] (B : CoadjointOrbit → Functional → Functional → ℝ),
-      (∀ ω F G, B ω F G = -B ω G F) →
-      InvariantUnderCoadjointAction SDiff B →
-      DegenerateWRTKineticEnergy B →
-      ProducesControllableNegativeFeedback B →
-      SaturatesTetherQuadratic B →
-      Polarizes B →
-      Polarizes TetherKernel →
-      ∀ ω F G, B ω F G = 𝔗_F ω F G) ∧
     (∀ (B : CoadjointOrbit → Functional → Functional → ℝ)
       (α : CoadjointOrbit → T3 → ℝ),
       HasTetherKernelDensity B α →
@@ -143,25 +115,17 @@ public theorem frohmanian_tether_theorem
         (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
         (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (u t)) ≥ 0) ∧
         (∀ t ≥ (0 : ℝ), ∀ x, div (u t) x = 0)) := by
-  refine ⟨TetherKernel, ?_, ?_, ?_⟩
-  · intro SDiff _ _ B hanti hC1 hC2 hC3 hsat hpolB hpolT ω F G
-    exact uniqueness_of_minimal_tether_antisymmetric SDiff B hanti hC1 hC2 hC3 hsat hpolB hpolT ω F G
+  refine ⟨TetherKernel, ?_, ?_⟩
   · intro B α hrepr hα ω F G
     exact uniqueness_of_kernel_density B α hrepr hα ω F G
   · intro u₀ ν hνpos hdiv hsm hE
     let w := hKato u₀ ν hsm hdiv hE hνpos
-    have hreg :=
-      conditional_regularity_of_constructions u₀ ν hdiv hsm hE hνpos
-        (fun u₁ hsm₁ hdiv₁ hE₁ => hKato u₁ ν hsm₁ hdiv₁ hE₁ hνpos)
-        (fun u p hNS hu0 hphys =>
-          let ⟨C, κ'', hC, hκ, hd, hdd, hc, _⟩ := hDI u₀ ν u p hνpos hNS hu0 hphys
-          ⟨C, κ'', hC, hκ, hd, hdd, hc⟩)
-        τ hτ
-        (fun u₁ hsm₁ hdiv₁ hE₁ => hTlb u₁ ν hsm₁ hdiv₁ hE₁ hνpos)
-        (hInt u₀ ν hνpos)
-        (huniq_shift u₀ ν hνpos)
-        (huniq u₀ ν w)
-    exact ⟨w.u, w.p, hreg⟩
+    have hceil : PhysicalUniformVorticityCeiling u₀ ν := by
+      intro u p hNS hu0 hphys
+      obtain ⟨C, κ'', hC, hκ, hd, hdd, hc, _⟩ := hDI u₀ ν u p hνpos hNS hu0 hphys
+      exact riccati_ceiling_of_vorticity_di u C κ'' hC hκ hd hdd hc
+    exact ⟨w.u, w.p, conditional_regularity_of_bkm_uniqueness u₀ ν hνpos w
+      (physicalFiniteTimeVorticityBound_of_uniform hceil) (hcrit u₀ ν) (huniq u₀ ν w)⟩
 
 /-! ## Abstract (exact formulation supplied by the author) -/
 
@@ -325,8 +289,7 @@ On this version:
   including native evaluation, during development. These are documented with citations and
   will eventually be replaced by citations to mathlib or small ForMathlib lemmas.
 - The *novel geometric core* (everything in SymplecticTether.lean: TetherKernel definition,
-  the five atomic `step1_locality` … `step5_higher_order` lemmas, `tethered_jacobi_identity`
-  with its explicit cyclic-sum calculation on test functionals F_p, degeneracy proofs,
+  the atomic canonicity lemmas, degeneracy proofs,
   invariance, etc.) **must eventually be free of native evaluation** if we ever wish to subject
   the final artifact to comparator + external checkers for the strongest possible assurance.
 - The analytic layer in TetheredLyapunov (majorant ODE, differential inequality, Lemma 3.1

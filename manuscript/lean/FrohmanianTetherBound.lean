@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 723
+-- FrohmanianTether/SymplecticTether.lean, line 544
 @[expose] public abbrev FrohmanianTetherBound (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
     NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u →

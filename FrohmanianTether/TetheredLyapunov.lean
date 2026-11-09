@@ -182,7 +182,7 @@ can be added later without disturbing the geometric or analytic content.
 ## Relationship to Prior Reference Integrations
 
 - §14 (Tactic Proofs): the sequenced `have` / `·` bullets already present in the 6-step
-  chains and in `h_total` inside `tethered_jacobi_identity` are the precursor to actual
+  chains (and, formerly, in the now-deleted Jacobi theorem) are the precursor to actual
   `do` blocks. The reference's "running tactics" guidance + the explicit do-desugaring of
   <*> give the precise justification for the conversion.
 - 4.2 (Propositions): proof irrelevance still applies inside any `do` block that lives in
@@ -388,10 +388,9 @@ finished.
 2. **Novel-geometry `sorry`s** (the ones we are actively "cracking")
    - These are the parts that belong to the original contribution (the Frohmanian Tether itself).
    - Current main example: the explicit cyclic-sum cancellation for the quadratic correction term
-     on test functionals F_p inside `tethered_jacobi_identity` (the "FINAL SUMMED FORMULATION"
-     block is already written; the last classical integral identity that makes the integrand
-     vanish under ∇·δu = 0 is still inside a `sorry` because the three source documents assert
-     it but do not expand the algebra).
+     on test functionals F_p. (Historical: the former `tethered_jacobi_identity` was deleted in
+     Nov 2026 because it assumed its own conclusion; the Jacobi identity for the tethered
+     bracket is NOT proved in this development.)
    - These are the warnings that represent real remaining work on the novel part of the proof.
 
 When you see a warning attached to a lemma that was recently expanded (e.g. the detailed 6-step
@@ -1687,11 +1686,12 @@ private theorem lemma_3_1_comments
   -- version and the chat history requirements exactly.
   -- `Tstar` is `NavierStokes3D.Tstar` (extended-real supremum of existence times).
 
-/-! ## Global Regularity as Unconditional Corollary -/
+/-! ## Conditional assembly (every open input is an explicit hypothesis) -/
 
 /-- Paper §3 identification: after transport IBP, viscosity `≤ 0`, and CZ
 stretching, `dS/dt ≤ 4 C_CZ M I₄ − κ I₆`. The three pairings are named hyps
-from vorticity transport + `stretching_inner_le` + the quartic density. -/
+supplied as the explicit hypothesis `hIdent` (the former CZ route through `stretching_inner_le`
+assumed a false strain bound and was deleted). -/
 public theorem lyapunov_ident_of_transport_cz
     (ωε : ℝ → VorticityField) (phi : T3 → ℝ) (t : ℝ)
     (hIdent : deriv (fun s => LyapunovS (ωε s) phi) t ≤
@@ -1703,79 +1703,6 @@ public theorem lyapunov_ident_of_transport_cz
         (∫ x, ‖ωε t x‖ ^ 4 * |phi x| ∂volume) -
       kappa * ∫ x, ‖ωε t x‖ ^ 6 ∂volume :=
   hIdent
-
-/-- Enstrophy half of paper §3: after transport IBP at a spatial max,
-CZ stretching, and non-positive viscosity,
-`d/dt |ω(x)|² ≤ 2 κ M |ω(x)|²` with `κ = C_CZ(3)`. -/
-public theorem enstrophy_di_of_spatial_max
-    (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν : ℝ)
-    (t : ℝ) (ht : 0 ≤ t) (x : T3)
-    (hNS : NS_PDE u p ν)
-    (hreg : VorticityTransportRegularity u p t x)
-    (hu : DifferentiableAt ℝ (u t) x)
-    (hCZ : ‖fderiv ℝ (u t) x‖ ≤ kappa *
-      vorticity_sup_norm (vorticity (u t)))
-    (htransp : inner ℝ (vorticity (u t) x)
-      (convective (u t) (vorticity (u t)) x) = 0)
-    (hvisc : inner ℝ (vorticity (u t) x)
-      (laplacian (vorticity (u t)) x) ≤ 0)
-    (hν : 0 ≤ ν)
-    (hdt : HasDerivAt (fun s => vorticity (u s) x)
-      (time_deriv (fun s => vorticity (u s)) t x) t) :
-    deriv (fun s => ‖vorticity (u s) x‖ ^ 2) t ≤
-      2 * kappa * vorticity_sup_norm (vorticity (u t)) *
-        ‖vorticity (u t) x‖ ^ 2 := by
-  have hκ : kappa = CalderonZygmundConstant3D := rfl
-  simpa [hκ] using
-    stretching_enstrophy_di_at_spatial_max u p ν t ht x hNS hreg hu
-      kappa hCZ htransp hvisc hν hdt
-
-/-- May 21 §10 unweighted density at an interior spatial max of `|ω|²`:
-`d/dt (½|ω|² + (κ/4)|ω|⁴) = ⟨ω,∂tω⟩(1+κ|ω|²)
-≤ κ M |ω|² (1+κ|ω|²)` with `κ = C_CZ(3)`.
-Transport vanish, CZ stretching, and viscosity `≤ 0` are the same
-hyps as `enstrophy_di_of_spatial_max`; the quartic factor is the
-closed product rule, not `hIdent`. Integrated `dS/dt` remains named. -/
-public theorem lyapunov_density_unweighted_di_at_spatial_max
-    (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν : ℝ)
-    (t : ℝ) (ht : 0 ≤ t) (x : T3)
-    (hNS : NS_PDE u p ν)
-    (hreg : VorticityTransportRegularity u p t x)
-    (hu : DifferentiableAt ℝ (u t) x)
-    (hCZ : ‖fderiv ℝ (u t) x‖ ≤ kappa *
-      vorticity_sup_norm (vorticity (u t)))
-    (htransp : inner ℝ (vorticity (u t) x)
-      (convective (u t) (vorticity (u t)) x) = 0)
-    (hvisc : inner ℝ (vorticity (u t) x)
-      (laplacian (vorticity (u t)) x) ≤ 0)
-    (hν : 0 ≤ ν)
-    (hdt : HasDerivAt (fun s => vorticity (u s) x)
-      (time_deriv (fun s => vorticity (u s)) t x) t) :
-    deriv
-        (fun s =>
-          (1 / 2 : ℝ) * ‖vorticity (u s) x‖ ^ 2 +
-            (kappa / 4) * ‖vorticity (u s) x‖ ^ 4)
-        t ≤
-      kappa * vorticity_sup_norm (vorticity (u t)) *
-        ‖vorticity (u t) x‖ ^ 2 *
-        (1 + kappa * ‖vorticity (u t) x‖ ^ 2) := by
-  have hden :=
-    hasDerivAt_lyapunov_density_unweighted
-      (v := fun s => vorticity (u s) x) hdt
-  rw [hden.deriv]
-  have hpair :=
-    stretching_pairing_le_at_spatial_max u p ν t ht x hNS hreg hu kappa
-      hCZ htransp hvisc hν
-  set ω := vorticity (u t) x
-  set M := vorticity_sup_norm (vorticity (u t))
-  have hfac : 0 ≤ 1 + kappa * ‖ω‖ ^ 2 :=
-    add_nonneg zero_le_one (mul_nonneg kappa_pos.le (sq_nonneg _))
-  have hmul :
-      inner ℝ ω (time_deriv (fun s => vorticity (u s)) t x) *
-          (1 + kappa * ‖ω‖ ^ 2) ≤
-        (kappa * M * ‖ω‖ ^ 2) * (1 + kappa * ‖ω‖ ^ 2) :=
-    mul_le_mul_of_nonneg_right hpair hfac
-  simpa [ω, M, mul_assoc] using hmul
 
 /-! ## Named open hypotheses (dischargeable `Prop`s)
 
@@ -2235,72 +2162,6 @@ public theorem riccati_ceiling_of_vorticity_di
       Continuous (fun τ : ℝ => vorticity_sup_norm (vorticity (u τ))) :=
   AnalyticPipeline.vorticity_sup_norm_riccati_bound u C κ'' hC hκ hdiff hDI hcont
 
-/-- Assembly from the four paper constructions: Kato local existence,
-Riccati ceiling from the vorticity DI, quantitative restart, and Cauchy
-identification of restart paths. -/
-public theorem conditional_regularity_of_constructions
-    (u₀ : VelocityField) (ν : ℝ)
-    (h_divfree : ∀ x, div u₀ x = 0)
-    (h_smooth : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (h_finite_energy : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
-    (h_pos_ν : ν > 0)
-    (hKato : ∀ u₁, ContDiff ℝ (⊤ : ℕ∞) u₁ → (∀ x, div u₁ x = 0) →
-      Integrable (fun x : T3 => ‖u₁ x‖ ^ 2) →
-      KatoLocalWitness u₁ ν)
-    (hDI : PhysicalVorticityCubicRate u₀ ν)
-    (τ : ℝ) (hτ : 0 < τ)
-    (hTlb : ∀ u₁ (hsm : ContDiff ℝ (⊤ : ℕ∞) u₁)
-      (hdiv : ∀ x, div u₁ x = 0)
-      (hE : Integrable (fun x : T3 => ‖u₁ x‖ ^ 2)),
-      τ ≤ (hKato u₁ hsm hdiv hE).T)
-    (hInt : ∀ (T : ℝ) (v : TimeDependentVelocity)
-      (q : TimeDependentPressure),
-      T ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T,
-        Integrable (fun x : T3 => ‖v t x‖ ^ 2))
-    (huniq_shift : ∀ (T : ℝ) (v : TimeDependentVelocity)
-      (q : TimeDependentPressure),
-      T ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T,
-        ∀ (w' : KatoLocalWitness (v t) ν),
-          ∀ s ∈ Set.Icc (0 : ℝ) w'.T, v (t + s) = w'.u s)
-    (huniq : ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
-      T' ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T', (hKato u₀ h_smooth h_divfree
-        h_finite_energy).u t = v t) :
-    NS_PDE (hKato u₀ h_smooth h_divfree h_finite_energy).u
-      (hKato u₀ h_smooth h_divfree h_finite_energy).p ν ∧
-      (hKato u₀ h_smooth h_divfree h_finite_energy).u 0 = u₀ ∧
-      (∀ t ≥ (0 : ℝ),
-        ContDiff ℝ (⊤ : ℕ∞) ((hKato u₀ h_smooth h_divfree h_finite_energy).u t)) ∧
-      (∀ t ≥ (0 : ℝ), vorticity_sup_norm
-        (vorticity ((hKato u₀ h_smooth h_divfree h_finite_energy).u t)) ≥ 0) ∧
-      (∀ t ≥ (0 : ℝ), ∀ x,
-        div ((hKato u₀ h_smooth h_divfree h_finite_energy).u t) x = 0) := by
-  let w := hKato u₀ h_smooth h_divfree h_finite_energy
-  have hRiccati : PhysicalUniformVorticityCeiling u₀ ν := by
-    intro u p hNS hu0 hphys
-    obtain ⟨C, κ'', hC, hκ, hdiff, hDIu, hcont⟩ := hDI u p hNS hu0 hphys
-    exact riccati_ceiling_of_vorticity_di u C κ'' hC hκ hdiff hDIu hcont
-  have hFin : PhysicalFiniteTimeVorticityBound u₀ ν :=
-    physicalFiniteTimeVorticityBound_of_uniform hRiccati
-  have hrestart :=
-    restart_of_kato_quantitative u₀ ν τ h_pos_ν hτ hKato hTlb hInt huniq_shift
-  exact conditional_regularity_of_restart u₀ ν h_divfree h_smooth h_finite_energy
-    h_pos_ν w hFin τ hτ hrestart huniq
-
 #print axioms hasDerivAt_norm_sq_of_hasDerivAt
 #print axioms hasDerivAt_norm_pow_four
 #print axioms hasDerivAt_quartic_tether_weight
@@ -2328,9 +2189,6 @@ public theorem conditional_regularity_of_constructions
 #print axioms Tstar_top_of_restart_without_vorticity_bound
 #print axioms conditional_regularity
 #print axioms riccati_ceiling_of_vorticity_di
-#print axioms conditional_regularity_of_constructions
-#print axioms enstrophy_di_of_spatial_max
-#print axioms lyapunov_density_unweighted_di_at_spatial_max
 
 end   -- close noncomputable section
 end TetheredLyapunov

@@ -24,7 +24,7 @@ Riccati phase-plane upper bound, and integrability of a continuous time
 majorant on compact intervals.
 
 **Gates transcribed from the paper:** Kato local existence, BKM smoothness,
-Calderón–Zygmund stretching, uniqueness classification, Jacobi identity,
+uniqueness classification,
 Picard existence of the majorant ODE.
 
 `kappa` is `C_CZ(3) = (3/(8 π)) · 4 π = 3/2` from the strain kernel, not an axiom and not the stand-in `1`.
@@ -38,15 +38,6 @@ open MeasureTheory
 namespace ClosureBlueprint
 
 /-! ## Admissible phase-space corrections (real C1–C3) -/
-
-/-- A bilinear correction is admissible when it is antisymmetric and satisfies
-the three necessary conditions extracted from vorticity transport. -/
-public structure IsAdmissibleCorrection (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
-    (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop where
-  antisym : ∀ ω F G, B ω F G = -B ω G F
-  invariance : InvariantUnderCoadjointAction SDiff B
-  degeneracy : DegenerateWRTKineticEnergy B
-  feedback : ProducesControllableNegativeFeedback B
 
 /-- Pointwise integrand of the tether kernel (after `Π_u`):
 `-κ ⟨δF, δG⟩ |ω|²`. The assembled object is `TetherKernel`. -/
@@ -117,31 +108,6 @@ public theorem beale_kato_majda_criterion
     ∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t) :=
   NavierStokes3D.beale_kato_majda u p ν hν hNS hloc hcrit h_bkm hbelow
 
-/-- Calderón–Zygmund stretching: `|ω · ∇u| ≲ C_CZ(3) ‖ω‖_∞ |ω|` once the
-strain operator-norm bound `‖Du‖ ≤ C_CZ(3) ‖ω‖_∞` is supplied (Riesz / Biot–Savart).
-Linear algebra is `convective_norm_le_of_CZ`. Conditional on
-`PointwiseStrainSupBound`, which is false in general at `L∞` (CZ fails at `p = ∞`). -/
-public theorem calderon_zygmund_stretching_bound
-    (ω : VorticityField) (u : VelocityField)
-    (hu : ∀ x, DifferentiableAt ℝ u x)
-    (hCZ : ∀ x, PointwiseStrainSupBound u ω CalderonZygmundConstant3D x) :
-    ∀ x : T3,
-      ‖convective ω u x‖ ≤
-        CalderonZygmundConstant3D * vorticity_sup_norm ω * ‖ω x‖ :=
-  fun x => convective_norm_le_of_CZ ω u x CalderonZygmundConstant3D (hu x) (hCZ x)
-
-/-- Unique minimal admissible correction is `TetherKernel`. -/
-public theorem tether_kernel_uniqueness
-    (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (hB : IsAdmissibleCorrection SDiff B)
-    (h_sat : SaturatesTetherQuadratic B)
-    (h_polarB : Polarizes B)
-    (h_polarT : Polarizes TetherKernel) :
-    ∀ ω F G, B ω F G = TetherKernel ω F G :=
-  uniqueness_of_minimal_tether_antisymmetric SDiff B hB.antisym hB.invariance hB.degeneracy hB.feedback
-    h_sat h_polarB h_polarT
-
 /-- Density-form uniqueness: substitution of `α = -κ |ω|²` into the
 projected pairing recovers `TetherKernel`. -/
 public theorem uniqueness_of_kernel_density
@@ -151,19 +117,6 @@ public theorem uniqueness_of_kernel_density
     (hα : ∀ ω x, α ω x = canonicalTetherDensity ω x) :
     ∀ ω F G, B ω F G = TetherKernel ω F G :=
   FrohmanianTether.uniqueness_of_kernel_density B α h_repr hα
-
-/-- Jacobi identity of the tethered bracket on the reduced orbit. -/
-public theorem tether_kernel_jacobi
-    (F G H : Functional) (ω : CoadjointOrbit)
-    (X Y Z : VelocityField)
-    (hF : FunctionalDerivative F ω = X)
-    (hG : FunctionalDerivative G ω = Y)
-    (hH : FunctionalDerivative H ω = Z)
-    (hident : jacobiator F G H ω =
-      ∫ x, cyclicLiePairing X Y Z x ∂volume)
-    (hvanish : (∫ x, cyclicLiePairing X Y Z x ∂volume) = 0) :
-    jacobiator F G H ω = 0 :=
-  tethered_jacobi_identity F G H ω X Y Z hF hG hH hident hvanish
 
 /-- Picard existence for `y' = C y² − κ'' y³`. Classical ODE. -/
 public theorem comparison_ode_solution_existence
@@ -281,19 +234,6 @@ public theorem conditional_regularity_of_open_hyps
     hcrit huniq⟩
 
 /-! ## Section 4 — named geometric / Lyapunov skeletons (real types) -/
-
-/-- Cyclic Jacobiator of `TetheredBracket` vanishes (9-term IBP still classical). -/
-public theorem jacobi_cyclic_sum_skeleton
-    (F G H : Functional) (ω : CoadjointOrbit)
-    (X Y Z : VelocityField)
-    (hF : FunctionalDerivative F ω = X)
-    (hG : FunctionalDerivative G ω = Y)
-    (hH : FunctionalDerivative H ω = Z)
-    (hident : jacobiator F G H ω =
-      ∫ x, cyclicLiePairing X Y Z x ∂volume)
-    (hvanish : (∫ x, cyclicLiePairing X Y Z x ∂volume) = 0) :
-    jacobiator F G H ω = 0 :=
-  tethered_jacobi_identity F G H ω X Y Z hF hG hH hident hvanish
 
 /-- Quartic Lyapunov product-rule cancellation is the Young identity of §1. -/
 public theorem lyapunov_quartic_cancellation_skeleton

@@ -1,4 +1,4 @@
--- FrohmanianTether/ConditionalRegularity.lean, line 201
+-- FrohmanianTether/ConditionalRegularity.lean, line 165
 public theorem conditional_regularity_of_open_hyps
     (u0 : TimeDependentVelocity)
     (h_div_free : ∀ t x, div (u0 t) x = 0)

@@ -17,8 +17,8 @@ This file does not discharge `hRiccati`, `conditional_regularity_of_open_hyps`,
 or `frohmanian_tether_theorem`.
 
 `hRiccati` is a label for the package `∃ C κ'' y` with
-`y' ≤ C y² - κ'' y³` and `M ≤ y`. The checked input from the unmodified
-equation is the cubic source `⟨ω, (ω·∇)u⟩ ≤ C_CZ M³`, hence
+`y' ≤ C y² - κ'' y³` and `M ≤ y`. The (removed) input from the unmodified
+equation was the cubic source `⟨ω, (ω·∇)u⟩ ≤ C_CZ M³`, hence
 `pairing / M ≤ C_CZ M²` when `M > 0`. The continuation code does not
 consume that inequality. It unpacks the package and sends it to
 `conditional_regularity`.
@@ -28,8 +28,10 @@ is the phase line of that hypothesized field. Neither constructs `y`,
 neither sets `y(t) = ‖ω(t)‖_∞`, and neither derives
 `ω · ((ω · ∇) u) ≤ (C_CZ M - κ M²) M²` from the unmodified vorticity equation.
 
-`unmodified_max_pairing_is_classical_source` is that proved cubic source.
-`classical_source_not_reduced_strain` shows it does not imply `ReducedStrain`.
+The former `unmodified_max_pairing_is_classical_source` and `unmodified_max_rate_of_cubic_source`
+assumed the false pointwise strain bound (`StrainBoundRefutation.not_forall_strain_le_sup_vorticity`)
+and were deleted. `classical_source_not_reduced_strain` (scalar algebra) shows that a cubic source
+does not imply `ReducedStrain`.
 Statement (B) — deriving `ReducedStrain` from the vorticity equation — stays open.
 Dropping the `hRiccati` binder is not a proof of it.
 -/
@@ -40,19 +42,6 @@ open NavierStokes3D CubicSourceAudit
 
 /-- Name of the open package. Not a proof that the package holds. -/
 public def hRiccatiName : String := "hRiccati"
-
-/-- The unmodified spatial-maximum pairing is the classical cubic source
-`⟨ω, (ω·∇)u⟩ ≤ C_CZ M³`. This is `stretching_inner_le_at_max`. -/
-public theorem unmodified_max_pairing_is_classical_source
-    (ω u : VelocityField) (x : T3) (C_CZ : ℝ)
-    (hu : DifferentiableAt ℝ u x)
-    (hCZ : PointwiseStrainSupBound u ω C_CZ x)
-    (hmax : ‖ω x‖ = vorticity_sup_norm ω) :
-    ClassicalStretchingSource
-      (inner ℝ (ω x) (convective ω u x))
-      (vorticity_sup_norm ω) C_CZ := by
-  simpa [ClassicalStretchingSource] using
-    stretching_inner_le_at_max ω u x C_CZ hu hCZ hmax
 
 /-- Divide the cubic source by `M > 0`: `pairing / M ≤ C M²`.
 This is the checked input. It is not the reduced strain. -/
@@ -82,18 +71,5 @@ public theorem classical_source_not_reduced_strain :
     have h0 : (1 * 1 - 1 * 1 ^ 2) * 1 ^ 2 = (0 : ℝ) := by ring
     rw [h0] at h
     exact not_le_of_gt zero_lt_one h
-
-/-- At a positive spatial maximum the unmodified pairing yields the cubic
-rate `⟨ω,(ω·∇)u⟩ / M ≤ C_CZ M²`, and nothing stronger. -/
-public theorem unmodified_max_rate_of_cubic_source
-    (ω u : VelocityField) (x : T3) (C_CZ : ℝ)
-    (hu : DifferentiableAt ℝ u x)
-    (hCZ : PointwiseStrainSupBound u ω C_CZ x)
-    (hmax : ‖ω x‖ = vorticity_sup_norm ω)
-    (hM : 0 < vorticity_sup_norm ω) :
-    inner ℝ (ω x) (convective ω u x) / vorticity_sup_norm ω ≤
-      C_CZ * vorticity_sup_norm ω ^ 2 :=
-  classical_max_rate_of_cubic_source _ _ _ hM
-    (unmodified_max_pairing_is_classical_source ω u x C_CZ hu hCZ hmax)
 
 end Frohmanian.AssemblyGap

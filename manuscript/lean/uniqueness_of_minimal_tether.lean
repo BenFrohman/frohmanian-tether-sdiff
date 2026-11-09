@@ -1,4 +1,4 @@
--- FrohmanianTether/Uniqueness.lean, line 605
+-- FrohmanianTether/Uniqueness.lean, line 602
 public theorem uniqueness_of_minimal_tether
     (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
     (_hyp : SDiffActionHyp SDiff)

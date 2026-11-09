@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 350
+-- FrohmanianTether/SymplecticTether.lean, line 351
 @[expose] public noncomputable def TetherKernel (ω : CoadjointOrbit) (F G : Functional) : ℝ :=
   -kappa * Enstrophy ω * ∫ x,
       inner ℝ

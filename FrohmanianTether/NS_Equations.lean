@@ -2682,80 +2682,6 @@ public theorem mem_existenceTimes_add_of_kato_restart
   ⟨add_pos w.Tpos w'.Tpos, w.u, w.p, w.init, w.pde,
     smoothness_on_restart_interval u₀ ν w w' huniq, w.phys⟩
 
-/-- Quantitative Kato restart: a uniform lower bound `τ` on the Kato
-time of every smooth finite-energy slice, plus Cauchy identification
-of each restart path with the time-shifted solution, produces existence
-times `t + τ` below `T*`. Paper continuation construction. -/
-public theorem restart_of_kato_quantitative
-    (u₀ : VelocityField) (ν τ : ℝ)
-    (_hν : 0 < ν) (_hτ : 0 < τ)
-    (hKato : ∀ u₁, ContDiff ℝ (⊤ : ℕ∞) u₁ → (∀ x, div u₁ x = 0) →
-      Integrable (fun x : T3 => ‖u₁ x‖ ^ 2) →
-      KatoLocalWitness u₁ ν)
-    (hTlb : ∀ u₁ (hsm : ContDiff ℝ (⊤ : ℕ∞) u₁)
-      (hdiv : ∀ x, div u₁ x = 0)
-      (hE : Integrable (fun x : T3 => ‖u₁ x‖ ^ 2)),
-      τ ≤ (hKato u₁ hsm hdiv hE).T)
-    (hInt : ∀ (T : ℝ) (v : TimeDependentVelocity)
-      (q : TimeDependentPressure),
-      T ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T,
-        Integrable (fun x : T3 => ‖v t x‖ ^ 2))
-    (huniq_shift : ∀ (T : ℝ) (v : TimeDependentVelocity)
-      (q : TimeDependentPressure),
-      T ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T,
-        ∀ (w' : KatoLocalWitness (v t) ν),
-          ∀ s ∈ Set.Icc (0 : ℝ) w'.T, v (t + s) = w'.u s) :
-    ∀ t : ℝ, 0 ≤ t → (t : EReal) < Tstar u₀ ν →
-      ∃ T' ∈ existenceTimes u₀ ν, t + τ ≤ T' := by
-  intro t ht0 htlt
-  obtain ⟨T', hmem, hlt⟩ :=
-    exists_mem_existenceTimes_gt_of_lt_Tstar u₀ ν htlt ht0
-  obtain ⟨v, q, hv0, hpde, hsm, hphys⟩ := hmem.2
-  have htI : t ∈ Set.Icc (0 : ℝ) T' := ⟨ht0, hlt.le⟩
-  have hvsm : ContDiff ℝ (⊤ : ℕ∞) (v t) := hsm t htI
-  have hvdiv : ∀ x, div (v t) x = 0 := fun x => (hpde t ht0 x).2
-  have hvE : Integrable (fun x : T3 => ‖v t x‖ ^ 2) :=
-    hInt T' v q hmem hv0 hpde hsm hphys t htI
-  let w' := hKato (v t) hvsm hvdiv hvE
-  have hτle : τ ≤ w'.T := hTlb (v t) hvsm hvdiv hvE
-  by_cases htpos : 0 < t
-  · have hsm' : ∀ s ∈ Set.Icc (0 : ℝ) (t + w'.T),
-        ContDiff ℝ (⊤ : ℕ∞) (v s) := by
-      intro s hs
-      by_cases hle : s ≤ t
-      · exact hsm s ⟨hs.1, hle.trans htI.2⟩
-      · have hs0 : 0 ≤ s - t := sub_nonneg.mpr (le_of_not_ge hle)
-        have hsT : s - t ≤ w'.T := by linarith [hs.2]
-        have heq := huniq_shift T' v q hmem hv0 hpde hsm hphys t htI w' (s - t) ⟨hs0, hsT⟩
-        have hst : t + (s - t) = s := by ring
-        rw [hst] at heq
-        rw [heq]
-        exact w'.smooth (s - t) ⟨hs0, hsT⟩
-    have hmemAdd : t + w'.T ∈ existenceTimes u₀ ν :=
-      ⟨add_pos htpos w'.Tpos, v, q, hv0, hpde, hsm', hphys⟩
-    refine ⟨t + w'.T, hmemAdd, ?_⟩
-    linarith [hτle]
-  · have ht00 : t = 0 := le_antisymm (not_lt.mp htpos) ht0
-    have hEq : v t = u₀ := by
-      rw [ht00, hv0]
-    have hmem' : w'.T ∈ existenceTimes u₀ ν := by
-      simpa [hEq] using mem_existenceTimes_of_kato_witness (v t) ν w'
-    refine ⟨w'.T, hmem', ?_⟩
-    calc
-      t + τ = 0 + τ := by rw [ht00]
-      _ = τ := zero_add τ
-      _ ≤ w'.T := hτle
-
 /-- Constructor for `existenceTimes`, exposed across modules (the set
 predicate is otherwise opaque). -/
 public theorem mem_existenceTimes
@@ -2827,107 +2753,6 @@ public theorem le_vorticity_sup_norm (ω : VorticityField) (x : T3)
 @[expose] public noncomputable def strain_sup_norm (u : VelocityField) : ℝ :=
   ⨆ x, ‖fderiv ℝ u x‖
 
-/-- **Pointwise strain-by-sup-vorticity bound** `‖Du(x)‖ ≤ C · ‖ω‖_∞`.
-
-This is **false in general**: the Biot–Savart / Riesz operators recovering `∇u` from `ω`
-are Calderón–Zygmund operators, bounded on `Lᵖ` for `1 < p < ∞` but **not** on `L∞`
-(CZ fails at `p = ∞`; the true bound carries a logarithmic loss). Every theorem that takes
-this `Prop` as a hypothesis is therefore conditional on a bound that is false in general;
-such theorems are linear-algebra consequences, not estimates for Navier–Stokes solutions. -/
-@[expose] public def PointwiseStrainSupBound (u : VelocityField) (ω : VorticityField)
-    (C : ℝ) (x : T3) : Prop :=
-  ‖fderiv ℝ u x‖ ≤ C * vorticity_sup_norm ω
-
-/-- Pointwise CZ/Biot–Savart bound `‖Du(x)‖ ≤ C_CZ ‖ω‖_∞` upgrades to
-`‖Du‖_∞ ≤ C_CZ ‖ω‖_∞`. Linear algebra on the supremum, not the Riesz
-theorem itself. Conditional on `PointwiseStrainSupBound`, which is false in
-general at `L∞`. -/
-public theorem strain_sup_le_of_CZ
-    (u : VelocityField) (C_CZ : ℝ)
-    (hCZ : ∀ x, PointwiseStrainSupBound u (curl u) C_CZ x)
-    (_hbdd : BddAbove (Set.range fun x => ‖fderiv ℝ u x‖)) :
-    strain_sup_norm u ≤ C_CZ * vorticity_sup_norm (curl u) :=
-  ciSup_le fun x => hCZ x
-
-/-- Operator-norm stretching: `|(ω·∇)u| ≤ C_CZ ‖ω‖_∞ |ω|` once
-`‖Du‖ ≤ C_CZ ‖ω‖_∞`. Linear algebra, not the Riesz bound itself. -/
-public theorem convective_norm_le_of_CZ
-    (ω u : VelocityField) (x : T3) (C_CZ : ℝ)
-    (hu : DifferentiableAt ℝ u x)
-    (hCZ : PointwiseStrainSupBound u ω C_CZ x) :
-    ‖convective ω u x‖ ≤ C_CZ * vorticity_sup_norm ω * ‖ω x‖ := by
-  have hnorm := convective_norm_le ω u x hu
-  have hω : 0 ≤ ‖ω x‖ := norm_nonneg _
-  have hmul : ‖fderiv ℝ u x‖ * ‖ω x‖ ≤
-      C_CZ * vorticity_sup_norm ω * ‖ω x‖ :=
-    mul_le_mul_of_nonneg_right hCZ hω
-  exact hnorm.trans hmul
-
-/-- CZ stretching at a point: `⟨ω, (ω·∇)u⟩ ≤ C_CZ ‖ω‖_∞ |ω|²` once
-`‖Du‖ ≤ C_CZ ‖ω‖_∞` (Biot–Savart / Riesz bound on the strain). -/
-public theorem stretching_inner_le
-    (ω u : VelocityField) (x : T3) (C_CZ : ℝ)
-    (hu : DifferentiableAt ℝ u x)
-    (hCZ : PointwiseStrainSupBound u ω C_CZ x) :
-    inner ℝ (ω x) (convective ω u x) ≤
-      C_CZ * vorticity_sup_norm ω * ‖ω x‖ ^ 2 := by
-  have hnorm := convective_norm_le ω u x hu
-  have hω : 0 ≤ ‖ω x‖ := norm_nonneg _
-  calc
-    inner ℝ (ω x) (convective ω u x)
-        ≤ ‖ω x‖ * ‖convective ω u x‖ := real_inner_le_norm _ _
-    _ ≤ ‖ω x‖ * (‖fderiv ℝ u x‖ * ‖ω x‖) :=
-        mul_le_mul_of_nonneg_left hnorm hω
-    _ = ‖fderiv ℝ u x‖ * ‖ω x‖ ^ 2 := by ring
-    _ ≤ C_CZ * vorticity_sup_norm ω * ‖ω x‖ ^ 2 :=
-        mul_le_mul_of_nonneg_right hCZ (sq_nonneg _)
-
-/-- At a spatial maximum of `|ω|`, the stretching density is cubic in
-`M = ‖ω‖_∞`: `⟨ω,(ω·∇)u⟩ ≤ C_CZ M³`. May 21 (9) printed `C_CZ M²`;
-that is one power of `M` short for the density (it is the BKM ODE for
-`Ṁ` after dividing by `M`). -/
-public theorem stretching_inner_le_at_max
-    (ω u : VelocityField) (x : T3) (C_CZ : ℝ)
-    (hu : DifferentiableAt ℝ u x)
-    (hCZ : PointwiseStrainSupBound u ω C_CZ x)
-    (hmax : ‖ω x‖ = vorticity_sup_norm ω) :
-    inner ℝ (ω x) (convective ω u x) ≤
-      C_CZ * vorticity_sup_norm ω ^ 3 := by
-  have h := stretching_inner_le ω u x C_CZ hu hCZ
-  rw [hmax] at h
-  have hpow :
-      C_CZ * vorticity_sup_norm ω * vorticity_sup_norm ω ^ 2 =
-        C_CZ * vorticity_sup_norm ω ^ 3 := by ring
-  rw [hpow] at h
-  exact h
-
-/-- `___method.pdf` / living document stretching in `dQ/dt`:
-`4 |ω|² φ ⟨ω,(ω·∇)u⟩ ≤ 4 C_CZ M |ω|⁴ φ` when `φ ≥ 0`.
-The factor `4` is the product rule on `|ω|⁴`; CZ is `stretching_inner_le`. -/
-public theorem stretching_quartic_le
-    (ω u : VelocityField) (phi : T3 → ℝ) (x : T3) (C_CZ : ℝ)
-    (hu : DifferentiableAt ℝ u x)
-    (hCZ : PointwiseStrainSupBound u ω C_CZ x)
-    (hφ : 0 ≤ phi x) :
-    4 * ‖ω x‖ ^ 2 * inner ℝ (ω x) (convective ω u x) * phi x ≤
-      4 * C_CZ * vorticity_sup_norm ω * ‖ω x‖ ^ 4 * phi x := by
-  have hstr := stretching_inner_le ω u x C_CZ hu hCZ
-  have hnn : 0 ≤ 4 * ‖ω x‖ ^ 2 * phi x :=
-    mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) (sq_nonneg _)) hφ
-  have hmul :=
-    mul_le_mul_of_nonneg_right hstr hnn
-  -- `inner * (4 |ω|² φ) ≤ (C_CZ M |ω|²) * (4 |ω|² φ)`.
-  have hcomm :
-      inner ℝ (ω x) (convective ω u x) * (4 * ‖ω x‖ ^ 2 * phi x) =
-        4 * ‖ω x‖ ^ 2 * inner ℝ (ω x) (convective ω u x) * phi x := by
-    ring
-  have hcomm' :
-      C_CZ * vorticity_sup_norm ω * ‖ω x‖ ^ 2 * (4 * ‖ω x‖ ^ 2 * phi x) =
-        4 * C_CZ * vorticity_sup_norm ω * ‖ω x‖ ^ 4 * phi x := by
-    ring
-  rw [← hcomm, ← hcomm']
-  exact hmul
-
 /-- At a spatial critical point of `½|ω|²`, the transport pairing
 `⟨ω, (u·∇)ω⟩` vanishes. Paper §3 interior-maximum cancellation. -/
 public theorem transport_inner_vanishes_of_grad_zero
@@ -2954,75 +2779,6 @@ public theorem vorticity_transport_inner
   have hcong :=
     congrArg (inner ℝ (vorticity (u t) x)) hvt
   simpa [inner_add_right] using hcong
-
-/-- After transport vanish and non-positive viscosity, the vorticity
-pairing of paper §2.1 is CZ stretching:
-`⟨ω, ∂t ω⟩ ≤ C_CZ M |ω|²`. This is the inner identity used by the
-enstrophy DI; it does not need a time-derivative of `|ω|²`. -/
-public theorem stretching_pairing_le_at_spatial_max
-    (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν : ℝ)
-    (t : ℝ) (ht : 0 ≤ t) (x : T3)
-    (hNS : NS_PDE u p ν)
-    (hreg : VorticityTransportRegularity u p t x)
-    (hu : DifferentiableAt ℝ (u t) x) (C_CZ : ℝ)
-    (hCZ : ‖fderiv ℝ (u t) x‖ ≤ C_CZ *
-      vorticity_sup_norm (vorticity (u t)))
-    (htransp : inner ℝ (vorticity (u t) x)
-      (convective (u t) (vorticity (u t)) x) = 0)
-    (hvisc : inner ℝ (vorticity (u t) x)
-      (laplacian (vorticity (u t)) x) ≤ 0)
-    (hν : 0 ≤ ν) :
-    inner ℝ (vorticity (u t) x)
-        (time_deriv (fun s => vorticity (u s)) t x) ≤
-      C_CZ * vorticity_sup_norm (vorticity (u t)) *
-        ‖vorticity (u t) x‖ ^ 2 := by
-  have hinter := vorticity_transport_inner u p ν t ht x hNS hreg
-  have hleft :
-      inner ℝ (vorticity (u t) x)
-          (time_deriv (fun s => vorticity (u s)) t x) =
-        inner ℝ (vorticity (u t) x)
-            (convective (vorticity (u t)) (u t) x) +
-          inner ℝ (vorticity (u t) x)
-            (ν • laplacian (vorticity (u t)) x) := by
-    linarith [hinter, htransp]
-  rw [hleft]
-  have hstr :=
-    stretching_inner_le (vorticity (u t)) (u t) x C_CZ hu hCZ
-  have hviscν :
-      inner ℝ (vorticity (u t) x)
-          (ν • laplacian (vorticity (u t)) x) ≤ 0 := by
-    rw [inner_smul_right]
-    exact mul_nonpos_of_nonneg_of_nonpos hν hvisc
-  exact (add_le_add hstr hviscν).trans_eq (add_zero _)
-
-/-- Paper §3 at an interior spatial maximum of `|ω|²`: transport
-vanishes, viscosity is non-positive, stretching is CZ, hence
-`d/dt |ω|² ≤ 2 C_CZ M |ω|²`. -/
-public theorem stretching_enstrophy_di_at_spatial_max
-    (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν : ℝ)
-    (t : ℝ) (ht : 0 ≤ t) (x : T3)
-    (hNS : NS_PDE u p ν)
-    (hreg : VorticityTransportRegularity u p t x)
-    (hu : DifferentiableAt ℝ (u t) x) (C_CZ : ℝ)
-    (hCZ : ‖fderiv ℝ (u t) x‖ ≤ C_CZ *
-      vorticity_sup_norm (vorticity (u t)))
-    (htransp : inner ℝ (vorticity (u t) x)
-      (convective (u t) (vorticity (u t)) x) = 0)
-    (hvisc : inner ℝ (vorticity (u t) x)
-      (laplacian (vorticity (u t)) x) ≤ 0)
-    (hν : 0 ≤ ν)
-    (hdt : HasDerivAt (fun s => vorticity (u s) x)
-      (time_deriv (fun s => vorticity (u s)) t x) t) :
-    deriv (fun s => ‖vorticity (u s) x‖ ^ 2) t ≤
-      2 * C_CZ *
-        vorticity_sup_norm (vorticity (u t)) *
-        ‖vorticity (u t) x‖ ^ 2 := by
-  have hder := hdt.norm_sq.deriv
-  rw [hder]
-  have hsum :=
-    stretching_pairing_le_at_spatial_max u p ν t ht x hNS hreg hu C_CZ
-      hCZ htransp hvisc hν
-  exact (mul_le_mul_of_nonneg_left hsum two_pos.le).trans_eq (by ring)
 
 /-- Strain pairing: `⟨w, (w·∇)v⟩ ≤ ‖Dv‖_∞ |w|²` once the strain
 operator-norm is bounded. Linear algebra, not Riesz. -/
@@ -3712,7 +3468,6 @@ public theorem parabolic_regularity_from_vorticity_bound
 #print axioms Tstar_eq_top_of_katoRestartTime
 #print axioms katoRestartTime_pos
 #print axioms katoSobolevIndex_lt
-#print axioms strain_sup_le_of_CZ
 #print axioms one_add_log_le_self
 #print axioms kato_ponce_implies_quadratic
 #print axioms kato_ponce_of_uniform_vorticity
@@ -3732,7 +3487,6 @@ public theorem parabolic_regularity_from_vorticity_bound
 #print axioms ns_pde_shift
 #print axioms smoothness_on_restart_interval
 #print axioms mem_existenceTimes_add_of_kato_restart
-#print axioms restart_of_kato_quantitative
 #print axioms smoothness_below_Tstar_of_uniqueness
 #print axioms curl_zero
 #print axioms mem_existenceTimes_zero
@@ -3744,14 +3498,8 @@ public theorem parabolic_regularity_from_vorticity_bound
 #print axioms convective_norm_le
 #print axioms inner_convective_product_rule
 #print axioms cyclicLiePairing_expand
-#print axioms convective_norm_le_of_CZ
-#print axioms stretching_inner_le
-#print axioms stretching_inner_le_at_max
-#print axioms stretching_quartic_le
 #print axioms transport_inner_vanishes_of_grad_zero
 #print axioms vorticity_transport_inner
-#print axioms stretching_pairing_le_at_spatial_max
-#print axioms stretching_enstrophy_di_at_spatial_max
 #print axioms pressureGradient_sub
 #print axioms ns_momentum_difference
 #print axioms inner_convective_eq_inner_grad_half_norm_sq

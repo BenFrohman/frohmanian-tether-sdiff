@@ -54,12 +54,12 @@ inductionWithNoAlts               | Induction pattern with nontactic in natural-
 inductiveParamMismatch            | Invalid parameter in an occurrence of an inductive type in one of its constructors. | Error | 4.22.0 | Avoided. All inductive-like definitions (Subtype for CoadjointOrbit, structure OrbitState in the widget) stay within the well-formedness rules documented in the 4.4 block below.
 inductiveParamMissing             | Parameter not present in an occurrence of an inductive type in one of its constructors. | Error | 4.22.0 | Same mitigation as above.
 inferBinderTypeFailed             | The type of a binder could not be inferred. | Error | 4.23.0 | **Encountered during expansion.** During the 5-step canonicity lemmas and the Jacobi header work, several binders for F,G,H,ω were not yet supplied. **Fixed** by the §6 variable block (`variable {ω : CoadjointOrbit} {F G H : Functional}` right after `noncomputable section`) + explicit signatures on all top-level lemmas. The schematic `True` blocks inside `h_cyclic_integrand_zero` now carry fully explicit binders.
-inferDefTypeFailed                | The type of a definition could not be inferred. | Error | 4.23.0 | Same root cause and fix as above. All `def`/`theorem` headers in the novel geometry (TetherKernel, the 5-step lemmas, tethered_jacobi_identity) are now fully elaborated before their bodies.
+inferDefTypeFailed                | The type of a definition could not be inferred. | Error | 4.23.0 | Same root cause and fix as above. All `def`/`theorem` headers in the novel geometry (TetherKernel, the canonicity lemmas) are now fully elaborated before their bodies.
 invalidDottedIdent                | Dotted identifier notation used with invalid or non-inferrable expected type. | Error | 4.22.0 | Avoided during schematic phases. We never rely on ambiguous generalized field notation on CoadjointOrbit/Functional during the Jacobi or majorant expansions. All projections are explicit (`.val`, field access on structures).
 invalidField                      | Generalized field notation used in a potentially ambiguous way. | Error | 4.22.0 | Same avoidance as above. The projector_orthogonality rewrite in ForMathlib/Projection.lean (plain VelocityField inner product) eliminated the last sources of this class of error.
 projNonPropFromProp               | Tried to project data from a proof. | Error | 4.23.0 | **Directly relevant and deliberately mitigated.** The geometric core (Jacobi identity, (C1)–(C3), degeneracy) lives in `Prop`. The widget's `OrbitState` stores a `PLift (divergence = 0)` certificate (see 4.3.2.3 + 4.5.7 notes already integrated). This is the canonical way to cross the Prop/Type boundary without triggering projNonPropFromProp. All analytic black boxes that return data (integrals, sup-norms) are kept in `Type` and never eliminate a Prop proof into data.
 propRecLargeElim                  | Attempted to eliminate a proof into a higher type universe. | Error | 4.23.0 | Same mitigation as above. The strict Prop-vs-Type discipline documented in the 4.4 block (and the PLift usage in TetheredNullifier.lean) ensures we never perform large elimination from a Prop proof.
-redundantMatchAlt                 | Match alternative will never be reached. | Error | 4.22.0 | Currently avoided. The `do`/`for`/`let mut` + early-return shape sketched in `h_total` (inside tethered_jacobi_identity) and the explicit `·` bullets in the six sub-haves of `h_cyclic_integrand_zero` are written so that, once the classical algebra is supplied and they become executable, there will be no unreachable arms. We will audit for this when the Jacobi crack is completed.
+redundantMatchAlt                 | Match alternative will never be reached. | Error | 4.22.0 | Currently avoided. The `do`/`for`/`let mut` + early-return shape is not used in any current proof (the former Jacobi theorem was deleted).
 synthInstanceFailed               | Failed to synthesize instance of type class. | Error | 4.26.0 | **Encountered and fixed multiple times.** Primary sources: (1) early custom notation (`‖...‖_L∞`, `vorticity_L`) in ConditionalRegularity.lean; (2) `.ofLp` / `HDiv` synthesis failures on Fin-3→ℝ functions in the projector work. **Fixed** by the ConditionalRegularity cleanup (clean ASCII identifiers + open hygiene) and the complete rewrite of Projection.lean to use plain `VelocityField` / EuclideanSpace inner product. The current schematic blocks use only explicitly imported type classes.
 unknownIdentifier                 | Failed to resolve identifier to variable or constant. | Error | 4.23.0 | **Encountered during early import/notation hygiene and bracket renaming.** Fixed by: consistent module headers (§5), `open` hygiene in ConditionalRegularity (hiding ambiguous CoadjointOrbit), and the `variable` block (§6) that supplies F,G,H,ω everywhere in the 5-step + Jacobi. All remaining schematic `sorry` bodies use only identifiers that are already in scope at the `have` site.
 
@@ -102,8 +102,9 @@ The material below the first doc comment was consolidated here during reference-
 Navier–Stokes cleanup passes. Long prose blocks explaining Lean Reference sections, chat history excerpts,
 and development scaffolding were moved or trimmed to keep the .lean file parseable while
 preserving the novel geometric claims. The complex calculations (9-term Jacobi IBP + cancellations,
-CE cocycle, etc.) belong as formal `have`/`calc` steps inside the theorems (see `h_corr` and
-`tethered_jacobi_identity`), not as loose text.
+CE cocycle, etc.) belong as formal `have`/`calc` steps inside theorems, not as loose text.
+(Nov 2026: the former `tethered_jacobi_identity` was deleted as circular; the Jacobi identity
+is NOT proved here.)
 -/
 
 
@@ -240,12 +241,12 @@ This module follows the guidance in §7 Definitions, with the following delibera
 
 - `theorem` / `lemma` is reserved for actual assertions that require proof:
   - `uniqueness_of_minimal_tether` (the 5-step canonicity Theorem 2.3)
-  - `tether_coadjoint_invariance`
-  - `tethered_jacobi_identity` (the explicit verification on test functionals F_p)
+  - (formerly `tether_coadjoint_invariance` and `tethered_jacobi_identity`; both deleted in
+    Nov 2026, see the C1 and Jacobi sections below)
 
 - `noncomputable section` + `noncomputable def` (7.1 Modifiers) is used because large parts of the development rely on classical reasoning (choice for existence of solutions to ODEs, excluded middle in case distinctions, etc.). This is the recommended pattern when a section contains noncomputable definitions.
 
-- The 5-step atomic lemmas and the detailed expansion inside `tethered_jacobi_identity` use `lemma` / `theorem` + many named `have` blocks. This follows the Tao-style atomic structure while staying inside the `theorem` command (7.4).
+- The atomic canonicity lemmas use `lemma` / `theorem` + many named `have` blocks. This follows the Tao-style atomic structure while staying inside the `theorem` command (7.4).
 
 -- Author dev reference: standalone Mermaid for the exact 5-step canonicity the user supplied
 -- lives at mermaid/5step_canonicity.mmd (pairs with the full two-layer at mermaid/two_layer_may20_architecture.mmd).
@@ -418,6 +419,17 @@ public theorem tetherKernel_comm (ω : CoadjointOrbit) (F G : Functional) :
   funext x
   rw [real_inner_comm]
 
+/-- At a vorticity with a non-differentiable component, `TetherKernel ω F G` does not depend on
+`F` or `G` (`functionalDerivative_indep_of_not_differentiable`): the tether sees no test
+functional there. -/
+public theorem tetherKernel_indep_of_not_differentiable
+    {ω : CoadjointOrbit} (hω : ¬ ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x)
+    (F G F' G' : Functional) :
+    TetherKernel ω F G = TetherKernel ω F' G' := by
+  unfold TetherKernel
+  rw [functionalDerivative_indep_of_not_differentiable hω F F',
+    functionalDerivative_indep_of_not_differentiable hω G G']
+
 /-- Antisymmetry of a bilinear correction forces the diagonal to vanish.
 C3 negative-semidefiniteness `B(F,F) ≤ -κ ‖ω‖² ∫ ‖Π_u δF‖²` is therefore
 incompatible with a Poisson (antisymmetric) correction, except on the
@@ -452,101 +464,6 @@ public theorem reduced_pairing_iff_cancels_kappa_M4
     have hsplit :
         C * M ^ 3 - k * M ^ 4 = (C * M - k * M ^ 2) * M ^ 2 := by ring
     linarith
-
-/-- At a spatial maximum, `⟨ω, ∂ₜω⟩` from the unmodified vorticity equation
-is at most the cubic source `C M³`, hence at most the reduced pairing
-plus the remainder `κ M⁴`. C3 is the separate bound
-`TetherKernel(F,F) ≤ -κ ‖ω‖² ∫ ‖Π_u δF‖² ≤ 0`.
-The reduced inequality is the left-hand side of the equivalence below.
-It is not discharged: cancelling `κ M⁴` is strictly stronger than the
-cubic source, and the C3 diagonal is not a summand of `⟨ω, ∂ₜω⟩`.
-Does not assume `CorrectedMaxRate` or `ReducedStrain`. -/
-public theorem unmodified_pairing_and_c3_diagonal
-    (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν : ℝ)
-    (t : ℝ) (ht : 0 ≤ t) (x : T3)
-    (hNS : NS_PDE u p ν)
-    (hreg : VorticityTransportRegularity u p t x)
-    (hu : DifferentiableAt ℝ (u t) x) (C : ℝ)
-    (hCZ : ‖fderiv ℝ (u t) x‖ ≤ C * vorticity_sup_norm (vorticity (u t)))
-    (htransp : inner ℝ (vorticity (u t) x)
-      (convective (u t) (vorticity (u t)) x) = 0)
-    (hvisc : inner ℝ (vorticity (u t) x)
-      (laplacian (vorticity (u t)) x) ≤ 0)
-    (hν : 0 ≤ ν)
-    (hmax : ‖vorticity (u t) x‖ = vorticity_sup_norm (vorticity (u t)))
-    (orbit : CoadjointOrbit) (testF : Functional)
-    (hC3 : ProducesControllableNegativeFeedback TetherKernel) :
-    inner ℝ (vorticity (u t) x)
-        (time_deriv (fun s => vorticity (u s)) t x) ≤
-      C * vorticity_sup_norm (vorticity (u t)) ^ 3 ∧
-    inner ℝ (vorticity (u t) x)
-        (time_deriv (fun s => vorticity (u s)) t x) ≤
-      (C * vorticity_sup_norm (vorticity (u t)) -
-          kappa * vorticity_sup_norm (vorticity (u t)) ^ 2) *
-        vorticity_sup_norm (vorticity (u t)) ^ 2 +
-        kappa * vorticity_sup_norm (vorticity (u t)) ^ 4 ∧
-    TetherKernel orbit testF testF ≤
-      -kappa * Enstrophy orbit * ∫ y,
-          ‖Pi_u (velocity_from_vorticity orbit)
-              (FunctionalDerivative testF orbit) y‖ ^ 2 ∂volume ∧
-    TetherKernel orbit testF testF ≤ 0 ∧
-    (inner ℝ (vorticity (u t) x)
-        (time_deriv (fun s => vorticity (u s)) t x) ≤
-      (C * vorticity_sup_norm (vorticity (u t)) -
-          kappa * vorticity_sup_norm (vorticity (u t)) ^ 2) *
-        vorticity_sup_norm (vorticity (u t)) ^ 2 ↔
-      inner ℝ (vorticity (u t) x)
-          (time_deriv (fun s => vorticity (u s)) t x) +
-        kappa * vorticity_sup_norm (vorticity (u t)) ^ 4 ≤
-      C * vorticity_sup_norm (vorticity (u t)) ^ 3) := by
-  set pairing := inner ℝ (vorticity (u t) x)
-      (time_deriv (fun s => vorticity (u s)) t x)
-  set M := vorticity_sup_norm (vorticity (u t))
-  set integrand : T3 → ℝ := fun y =>
-      ‖Pi_u (velocity_from_vorticity orbit)
-          (FunctionalDerivative testF orbit) y‖ ^ 2
-  have hpair :=
-    stretching_pairing_le_at_spatial_max u p ν t ht x hNS hreg hu C
-      hCZ htransp hvisc hν
-  have hcubic : pairing ≤ C * M ^ 3 := by
-    have hrew : ‖vorticity (u t) x‖ = M := by simpa [M] using hmax
-    rw [hrew] at hpair
-    have hsup : vorticity_sup_norm (vorticity (u t)) = M := rfl
-    rw [hsup] at hpair
-    have hpow : C * M * M ^ 2 = C * M ^ 3 := by ring
-    simpa [pairing] using hpair.trans (le_of_eq hpow)
-  have hsplit :
-      C * M ^ 3 = (C * M - kappa * M ^ 2) * M ^ 2 + kappa * M ^ 4 := by ring
-  have hrem : pairing ≤ (C * M - kappa * M ^ 2) * M ^ 2 + kappa * M ^ 4 :=
-    hcubic.trans (le_of_eq hsplit)
-  have hdiag : TetherKernel orbit testF testF ≤
-      -kappa * Enstrophy orbit * ∫ y, integrand y ∂volume := hC3 testF orbit
-  have hnn : 0 ≤ integrand := fun y => sq_nonneg _
-  have hint : 0 ≤ ∫ y, integrand y ∂volume := integral_nonneg hnn
-  have hE : 0 ≤ Enstrophy orbit := integral_nonneg fun y => sq_nonneg _
-  have hsign : -kappa * Enstrophy orbit * ∫ y, integrand y ∂volume ≤ 0 := by
-    rw [neg_mul, neg_mul]
-    exact neg_nonpos.mpr (mul_nonneg (mul_nonneg kappa_pos.le hE) hint)
-  have hnonpos : TetherKernel orbit testF testF ≤ 0 := hdiag.trans hsign
-  have hiff := reduced_pairing_iff_cancels_kappa_M4 pairing C kappa M
-  exact ⟨hcubic, hrem, hdiag, hnonpos, hiff⟩
-
-/-- Step 4 on the kinetic-energy slot. Adding `TetherKernel(F,H)` to the
-classical stretching scalar adds zero when that slot vanishes. The sum is
-still the cubic source, not `C M³ - κ M⁴`. No `CorrectedMaxRate` and no
-`ReducedStrain`. -/
-public theorem tethered_h_slot_stretching_remains_cubic
-    (ωField uField : VelocityField) (x : T3) (C : ℝ)
-    (hu : DifferentiableAt ℝ uField x)
-    (hCZ : ‖fderiv ℝ uField x‖ ≤ C * vorticity_sup_norm ωField)
-    (hmax : ‖ωField x‖ = vorticity_sup_norm ωField)
-    (orbit : CoadjointOrbit) (testF : Functional)
-    (hdeg : TetherKernel orbit testF KineticEnergyHamiltonian = 0) :
-    inner ℝ (ωField x) (convective ωField uField x) +
-        TetherKernel orbit testF KineticEnergyHamiltonian ≤
-      C * vorticity_sup_norm ωField ^ 3 := by
-  rw [hdeg, add_zero]
-  exact stretching_inner_le_at_max ωField uField x C hu hCZ hmax
 
 /-- The projected kernel density has no positive part. `Π_u` is the
 `L²` complement of `span{u}`; this pointwise sign does not need
@@ -602,109 +519,13 @@ public theorem time_pairing_le_stretching_at_max
     exact mul_nonpos_of_nonneg_of_nonpos hν hvisc
   linarith [hinter, htransp, hviscν]
 
-/-! ## Original Conjectured Bridges: `reduced_pairing_of_unmodified_and_tether` and `tethered_stretching_of_weight`
+/-! ## Removed: bridges conditional on the false strain bound
 
-Preserved in full from the original development without `sorry`.
-- `ConjecturedUnmodifiedTetherPairing` records the author's original conjectured reduction
-  at a spatial maximum of the unmodified vorticity as an explicit `Prop`.
-- `reduced_pairing_of_unmodified_and_tether` proves the reduced pairing under the explicit
-  quartic-cancellation hypothesis `hcancels` (`⟨ω,(ω·∇)u⟩ + κ M⁴ ≤ C M³`), kernel-verified via
-  `reduced_pairing_iff_cancels_kappa_M4` with zero `sorry`.
-- `tethered_stretching_of_weight` moves `TetherKernel(F,F)` onto the classical stretching bound
-  under the explicit weight comparison `hweight`, kernel-verified with zero `sorry`.
-See `HWEIGHT_OBSTRUCTION.md` and `scripts/hweight_plausibility_check.py` for the scaling audit.
--/
-
-/-- The author's original conjectured reduction at a spatial maximum of the unmodified
-vorticity equation: that the symplectic tether feedback reduces the stretching pairing
-from `C M³` to `(C M - κ M²) M²`. Recorded openly as an explicit `Prop`. Its strain
-antecedent is `PointwiseStrainSupBound`, which is false in general at `L∞`. -/
-@[expose] public def ConjecturedUnmodifiedTetherPairing
-    (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν : ℝ)
-    (t : ℝ) (x : T3) (C M : ℝ) : Prop :=
-  0 ≤ t →
-  NS_PDE u p ν →
-  VorticityTransportRegularity u p t x →
-  DifferentiableAt ℝ (u t) x →
-  PointwiseStrainSupBound (u t) (vorticity (u t)) C x →
-  inner ℝ (vorticity (u t) x) (convective (u t) (vorticity (u t)) x) = 0 →
-  inner ℝ (vorticity (u t) x) (laplacian (vorticity (u t)) x) ≤ 0 →
-  0 ≤ ν →
-  (‖vorticity (u t) x‖ = M ∧ M = vorticity_sup_norm (vorticity (u t))) →
-  ProducesControllableNegativeFeedback TetherKernel →
-  kappa = CalderonZygmundConstant3D →
-  inner ℝ (vorticity (u t) x) (convective (vorticity (u t)) (u t) x) ≤
-    (C * M - kappa * M ^ 2) * M ^ 2
-
-/-- Reduced pairing at a spatial maximum from the unmodified equation + tether, given the
-explicit quartic-cancellation hypothesis `hcancels` from `reduced_pairing_iff_cancels_kappa_M4`.
-Kernel-verified with zero `sorry`. -/
-public theorem reduced_pairing_of_unmodified_and_tether
-    (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν : ℝ)
-    (t : ℝ) (_ht : 0 ≤ t) (x : T3)
-    (_hNS : NS_PDE u p ν)
-    (_hreg : VorticityTransportRegularity u p t x)
-    (_hu : DifferentiableAt ℝ (u t) x)
-    (C M : ℝ)
-    (_hCZ : ‖fderiv ℝ (u t) x‖ ≤ C * vorticity_sup_norm (vorticity (u t)))
-    (_htransp : inner ℝ (vorticity (u t) x)
-      (convective (u t) (vorticity (u t)) x) = 0)
-    (_hvisc : inner ℝ (vorticity (u t) x)
-      (laplacian (vorticity (u t)) x) ≤ 0)
-    (_hν : 0 ≤ ν)
-    (_hmax : ‖vorticity (u t) x‖ = M ∧
-      M = vorticity_sup_norm (vorticity (u t)))
-    (_htether : ProducesControllableNegativeFeedback TetherKernel)
-    (_hκ : kappa = CalderonZygmundConstant3D)
-    (hcancels : inner ℝ (vorticity (u t) x)
-        (convective (vorticity (u t)) (u t) x) +
-      kappa * M ^ 4 ≤ C * M ^ 3) :
-    inner ℝ (vorticity (u t) x)
-        (convective (vorticity (u t)) (u t) x) ≤
-      (C * M - kappa * M ^ 2) * M ^ 2 :=
-  (reduced_pairing_iff_cancels_kappa_M4
-    (inner ℝ (vorticity (u t) x) (convective (vorticity (u t)) (u t) x))
-    C kappa M).mpr hcancels
-
-/-- Move `TetherKernel(F,F)` onto the classical stretching bound.
-`(C3)` gives `TetherKernel(F,F) = -κ ‖ω‖² ∫ ‖Π_u δF‖²`.
-If `‖ω‖² ∫ ‖Π_u δF‖²` is at least `M⁴` (`hweight`), the sum is at most `C M³ - κ M⁴`. -/
-public theorem tethered_stretching_of_weight
-    (ωField uField : VelocityField) (x : T3) (C M : ℝ)
-    (hu : DifferentiableAt ℝ uField x)
-    (hCZ : ‖fderiv ℝ uField x‖ ≤ C * vorticity_sup_norm ωField)
-    (hmax : ‖ωField x‖ = M ∧ M = vorticity_sup_norm ωField)
-    (orbit : CoadjointOrbit) (testF : Functional)
-    (hweight : M ^ 4 ≤ Enstrophy orbit * ∫ y,
-          ‖Pi_u (velocity_from_vorticity orbit)
-              (FunctionalDerivative testF orbit) y‖ ^ 2 ∂volume) :
-    inner ℝ (ωField x) (convective ωField uField x) +
-        TetherKernel orbit testF testF ≤
-      (C * M - kappa * M ^ 2) * M ^ 2 := by
-  have hpoint : ‖ωField x‖ = vorticity_sup_norm ωField := by
-    rw [← hmax.2, hmax.1]
-  have hstretch :=
-    stretching_inner_le_at_max ωField uField x C hu hCZ hpoint
-  have hcubic :
-      inner ℝ (ωField x) (convective ωField uField x) ≤ C * M ^ 3 := by
-    simpa [hmax.2] using hstretch
-  have hker : TetherKernel orbit testF testF =
-      -kappa * Enstrophy orbit * ∫ y,
-          ‖Pi_u (velocity_from_vorticity orbit)
-              (FunctionalDerivative testF orbit) y‖ ^ 2 ∂volume :=
-    tetherKernel_quadratic_form testF orbit
-  have hkerLe : TetherKernel orbit testF testF ≤ -kappa * M ^ 4 := by
-    rw [hker, mul_assoc]
-    exact mul_le_mul_of_nonpos_left hweight (neg_nonpos.mpr kappa_pos.le)
-  have hsum :
-      inner ℝ (ωField x) (convective ωField uField x) +
-          TetherKernel orbit testF testF ≤
-        C * M ^ 3 + -kappa * M ^ 4 := by
-    linarith
-  have hrew :
-      C * M ^ 3 + -kappa * M ^ 4 = (C * M - kappa * M ^ 2) * M ^ 2 := by
-    ring
-  exact hsum.trans_eq hrew
+`ConjecturedUnmodifiedTetherPairing`, `reduced_pairing_of_unmodified_and_tether`,
+`tethered_stretching_of_weight`, `tethered_h_slot_stretching_remains_cubic` and
+`unmodified_pairing_and_c3_diagonal` all assumed the pointwise strain bound
+`‖Du(x)‖ ≤ C ‖ω‖_∞` (formerly `PointwiseStrainSupBound`). That bound is false in general
+(`StrainBoundRefutation.not_forall_strain_le_sup_vorticity`), so they were deleted. -/
 
 /-! ## The Frohmanian tether hypotheses (explicit, open, not axioms)
 
@@ -926,7 +747,7 @@ lemma euler_energy_conservation (u : ℝ → VelocityField) (p : ℝ → Pressur
 
 /-! ### 5-Step Uniqueness moved to Uniqueness.lean (per clean low-sorry organization from ns_lean_local_clean)
 
-The detailed 5-step canonicity lemmas (step1_locality ... step5_higher_order and uniqueness_of_minimal_tether)
+The detailed 5-step canonicity lemmas (step1_locality_sym, step2_quadratic, step3_scalar, ... and uniqueness_of_minimal_symmetric_tether)
 have been moved to `Uniqueness.lean` to keep SymplecticTether focused on the geometric construction,
 the (C1)-(C3) interface, the critical early degeneracy proxy, and the explicit Jacobi (with the long blocks).
 
@@ -942,34 +763,18 @@ See the comment in Uniqueness.lean for the move rationale and non-circularity.
 -- (5-step uniqueness block moved to Uniqueness.lean to match the low-sorry modular organization from ns_lean_local_clean. This drastically cuts schematic True and kernel issues in this file. See Uniqueness.lean for the moved code.)
 
 
-/-! ## Invariance (C1) — skeleton -/
+/-! ## Invariance (C1) — skeleton
 
-/-- **C1 integral-preservation hypothesis (OPEN)** for the abstract SDiff action: the
-spatial integral of the projected pairing `⟨Π_u δF, Π_u δG⟩` (no weight; the global
-enstrophy factor is handled by `SDiffActionHyp.enstrophy_invariant`) is unchanged by `g • ω`. -/
-@[expose] public def TetherIntegralPreserved (SDiff : Type*) [Group SDiff]
-    [MulAction SDiff CoadjointOrbit] : Prop :=
-  ∀ (g : SDiff) (F G : Functional) (ω : CoadjointOrbit),
-    (∫ x,
-      inner ℝ
-        (Pi_u (velocity_from_vorticity (CoadjointAction g ω))
-          (FunctionalDerivative F (CoadjointAction g ω)) x)
-        (Pi_u (velocity_from_vorticity (CoadjointAction g ω))
-          (FunctionalDerivative G (CoadjointAction g ω)) x) ∂volume) =
-    ∫ x,
-      inner ℝ
-        (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) x)
-        (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative G ω) x) ∂volume
-
-/-- C1 for `TetherKernel` under the abstract SDiff action (formerly `simp [CoadjointAction]`
-under the identity stub), now from the integral-preservation hypothesis. -/
-public theorem tether_coadjoint_invariance (SDiff : Type*) [Group SDiff]
-    [MulAction SDiff CoadjointOrbit] (hyp : SDiffActionHyp SDiff)
-    (h_density : TetherIntegralPreserved SDiff)
-    (g : SDiff) (F G : Functional) (ω : CoadjointOrbit) :
-    TetherKernel (CoadjointAction g ω) F G = TetherKernel ω F G := by
-  unfold TetherKernel
-  rw [hyp.enstrophy_invariant g ω, h_density g F G ω]
+**Removed (Nov 2026).** The hypothesis `TetherIntegralPreserved` (the integral of
+`⟨Π_u δF, Π_u δG⟩` is unchanged by `g • ω`, for EVERY pair of functionals `F, G`) and the
+theorems that consumed it (`tether_coadjoint_invariance`, `tether_satisfies_C1`,
+`tetherKernel_C1`, `tether_coadjoint_invariance_of_integral_eq`,
+`ConjecturedSDiffPushforwardInvariance`) were deleted. The hypothesis quantifies over all
+functionals, including ones that do not transform covariantly, and `FunctionalDerivative` is an
+arbitrary `Classical.choose` among non-unique Gâteaux representatives
+(`KineticEnergyDerivative.not_unique_isGateauxRepresentative`), so the statement is about that
+choice rather than about vorticity. It is not refuted in Lean; it was removed because no
+argument supports it. C1 for `TetherKernel` is therefore NOT proved in this repository. -/
 
 /-- **Formerly trivial.** Under the identity stub, C1 for `TetherKernel` held by `simp`.
 With the abstract action it is a NAMED HYPOTHESIS: `TetherKernel` is invariant under `A`
@@ -977,49 +782,6 @@ With the abstract action it is a NAMED HYPOTHESIS: `TetherKernel` is invariant u
 @[expose] public def TetherKernelInvariant (SDiff : Type*) [Group SDiff]
     [MulAction SDiff CoadjointOrbit] : Prop :=
   InvariantUnderCoadjointAction SDiff TetherKernel
-
-/-- C1 for `TetherKernel`, conditional on the named hypothesis. -/
-public theorem tether_satisfies_C1 (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
-    (hyp : SDiffActionHyp SDiff) (h_density : TetherIntegralPreserved SDiff) :
-    TetherKernelInvariant SDiff :=
-  tether_coadjoint_invariance SDiff hyp h_density
-
-/-- Former name of `tether_satisfies_C1`. -/
-public theorem tetherKernel_C1 (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
-    (hyp : SDiffActionHyp SDiff) (h_density : TetherIntegralPreserved SDiff) :
-    TetherKernelInvariant SDiff :=
-  tether_satisfies_C1 SDiff hyp h_density
-
-/-- Explicit conjectured invariance under an arbitrary volume-preserving
-diffeomorphism pushforward action `act : (T3 → T3) → CoadjointOrbit → CoadjointOrbit`
-on the coadjoint orbit of `SDiff(𝕋³)`. -/
-@[expose] public def ConjecturedSDiffPushforwardInvariance
-    (act : (T3 → T3) → CoadjointOrbit → CoadjointOrbit) : Prop :=
-  ∀ (g : T3 → T3) (F G : Functional) (ω : CoadjointOrbit),
-    TetherKernel (act g ω) F G = TetherKernel ω F G
-
-/-- For any orbit action `act` whose volume-preserving change of variables preserves
-the spatial integral of the quadratic tether density `‖ω(x)‖² ⟨Π_u δF(x), Π_u δG(x)⟩`
-(e.g. isometric volume-preserving transformations on `𝕋³`), `TetherKernel` is
-invariant under `act`. -/
-public theorem tether_coadjoint_invariance_of_integral_eq
-    (act : (T3 → T3) → CoadjointOrbit → CoadjointOrbit)
-    (henst : ∀ (g : T3 → T3) (ω : CoadjointOrbit), Enstrophy (act g ω) = Enstrophy ω)
-    (hint : ∀ (g : T3 → T3) (F G : Functional) (ω : CoadjointOrbit),
-      (∫ x,
-        inner ℝ
-          (Pi_u (velocity_from_vorticity (act g ω))
-            (FunctionalDerivative F (act g ω)) x)
-          (Pi_u (velocity_from_vorticity (act g ω))
-            (FunctionalDerivative G (act g ω)) x) ∂volume) =
-      ∫ x,
-        inner ℝ
-          (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) x)
-          (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative G ω) x) ∂volume) :
-    ConjecturedSDiffPushforwardInvariance act := by
-  intro g F G ω
-  unfold TetherKernel
-  rw [henst g ω, hint g F G ω]
 
 /-! ## C2 — degeneracy on the kinetic-energy Hamiltonian -/
 
@@ -1045,28 +807,16 @@ The former lemmas `tetherKernel_degenerates_on_kinetic_energy`,
 is false with these definitions (`KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity`),
 so they were deleted. C2 for `TetherKernel` is not proved in this repository. -/
 
-/-! ## Jacobi identity on the reduced orbit (Marsden–Weinstein–Ratiu + explicit test functionals) -/
+/-! ## Jacobi identity: NOT proved (circular theorem removed)
 
-/-!
-### Note on the remaining `sorry` inside `tethered_jacobi_identity`
-
-The large block titled "FINAL SUMMED FORMULATION" (with the explicit three-term integral
-expression involving the quadratic tether kernel B) is the result of the most recent cracking
-pass. Every term is named and the target identity is written out.
-
-The `sorry` that remains inside `h_cyclic_integrand_zero` (and the supporting classical MWR part)
-is of the "Classical black-box" kind for the following reasons:
-- The classical Marsden–Weinstein–Ratiu reduction theorem is a standard result in
-  infinite-dimensional symplectic geometry.
-- The cancellation of the three correction contributions when ∇ · δu = 0 follows from the
-  specific algebraic form of the quadratic correction (after L² projection Π_u) being
-  compatible with the coadjoint action of volume-preserving diffeomorphisms. This is asserted
-  in all three source documents for the test family F_p, but the sources do not contain the
-  fully expanded term-by-term algebra.
-
-These are therefore expected classical integral identities on the reduced orbit, **not** gaps
-in the novel 5-step canonicity argument. The structure around them is now fully explicit.
--/
+The former `tethered_jacobi_identity` took two hypotheses, `hident : jacobiator F G H ω =
+∫ cyclicLiePairing X Y Z` and `hvanish : ∫ cyclicLiePairing X Y Z = 0`, and concluded
+`jacobiator F G H ω = 0` by `rw [hident, hvanish]`. The hypotheses were the conclusion in two
+pieces, so the theorem was vacuous as evidence for the Jacobi identity; it and its re-exports
+(`ClosureBlueprint.tether_kernel_jacobi`, `ClosureBlueprint.jacobi_cyclic_sum_skeleton`) were
+deleted. `TetheredBracket` adds a SYMMETRIC correction to an antisymmetric bracket, so it is
+not a Lie bracket and there is no reason to expect the Jacobi identity. The pointwise
+cross-product identity `SymplecticConstraint.cross_jacobi_identity` is unaffected. -/
 
 /-- Jacobiator of the tethered bracket. Vanishing is the Jacobi identity. -/
 public noncomputable def jacobiator (F G H : Functional) (ω : CoadjointOrbit) : ℝ :=
@@ -1074,18 +824,6 @@ public noncomputable def jacobiator (F G H : Functional) (ω : CoadjointOrbit) :
   let HF : Functional := fun ω' => TetheredBracket H F ω'
   let FG : Functional := fun ω' => TetheredBracket F G ω'
   TetheredBracket F GH ω + TetheredBracket G HF ω + TetheredBracket H FG ω
-
-public theorem tethered_jacobi_identity (F G H : Functional) (ω : CoadjointOrbit)
-    (X Y Z : VelocityField)
-    (_hF : FunctionalDerivative F ω = X)
-    (_hG : FunctionalDerivative G ω = Y)
-    (_hH : FunctionalDerivative H ω = Z)
-    (hident : jacobiator F G H ω =
-      ∫ x, cyclicLiePairing X Y Z x ∂volume)
-    (hvanish : (∫ x, cyclicLiePairing X Y Z x ∂volume) = 0) :
-    jacobiator F G H ω = 0 := by
-  rw [hident, hvanish]
-
 
 /-! ## Pointwise Diagonal Coercivity & Casimir Defect Non-Degeneracy of the Symplectic Tether -/
 
@@ -1187,7 +925,6 @@ the original mathematical work (5-step canonicity + explicit Jacobi on F_p).
 While the Jacobi crack is still in progress they will show `sorryAx` — this is the honest signal.
 -/
 
-#print axioms tethered_jacobi_identity
 #print axioms tetherKernel_comm
 #print axioms antisymmetric_correction_diagonal_zero
 #print axioms tetherKernel_C2_of_no_gateaux
@@ -1195,8 +932,6 @@ While the Jacobi crack is still in progress they will show `sorryAx` — this is
 #print axioms div_biot_savart_velocity_of_interchange
 -- (step* and uniqueness_of_minimal_tether moved to Uniqueness.lean / FrohmanianTether namespace per modular cleanup.
 -- Validation prints live there now; see Uniqueness.lean end for #print axioms on the 5-step.)
--- #print axioms step1_locality
--- #print axioms step2_degree
 -- #print axioms uniqueness_of_minimal_tether
 
 -- Practical Usage (as specified in the naming standard

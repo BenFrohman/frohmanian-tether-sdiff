@@ -212,17 +212,19 @@ end SDiffAbstract
 @[expose] public noncomputable def Enstrophy (ω : CoadjointOrbit) : ℝ :=
   Casimir (fun r => r ^ 2) ω
 
-/-- **Hypothesis structure for the SDiff action (fields OPEN; passed as arguments, never
-`axiom`s).** `casimir_invariant` is expected for the real pushforward;
-`transitive_on_casimir_levels` is the author's reading of "only |ω|² is invariant" and is NOT
-expected to hold for the real SDiff action (orbits are finer than Casimir level sets).
-Enstrophy invariance is the `f = (·)^2` case, derived as `SDiffActionHyp.enstrophy_invariant`. -/
+/-- **Hypothesis structure for the SDiff action (passed as an argument, never an `axiom`).**
+`casimir_invariant`: every Casimir `∫ f(|ω|)` is invariant under the action. It is PROVED for
+the concrete measure-preserving action (`ConcreteSDiff.sdiffActionHyp`).
+
+**Removed field (Nov 2026).** The former field `transitive_on_casimir_levels` (fields with equal
+Casimirs lie in one orbit) is false for the concrete action:
+`ConcreteSDiff.not_transitive_on_casimir_levels` (two constant fields `e₀`, `e₁` have the same
+Casimirs, but composition with a bijection never changes the value of a constant field). It and
+the theorem `orbit_eq_casimir_level` that used it were deleted. -/
 public structure SDiffActionHyp (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit] :
     Prop where
   casimir_invariant : ∀ (f : ℝ → ℝ) (g : SDiff) (ω : CoadjointOrbit),
     (∫ x, f ‖(g • ω).val x‖ ∂volume) = ∫ x, f ‖ω.val x‖ ∂volume
-  transitive_on_casimir_levels : ∀ ω₁ ω₂ : CoadjointOrbit,
-    (∀ f : ℝ → ℝ, Casimir f ω₁ = Casimir f ω₂) → ∃ g : SDiff, g • ω₁ = ω₂
 
 /-- Proved: enstrophy invariance from `casimir_invariant` with `f = (·)^2`. -/
 public theorem SDiffActionHyp.enstrophy_invariant {SDiff : Type*} [Group SDiff]
@@ -236,14 +238,6 @@ public theorem casimir_const_on_orbit {SDiff : Type*} [Group SDiff]
     (h : ω' ∈ MulAction.orbit SDiff ω) : Casimir f ω' = Casimir f ω := by
   obtain ⟨g, rfl⟩ := h
   exact H.casimir_invariant f g ω
-
-/-- Proved from `SDiffActionHyp`: orbits = Casimir level sets (uses `transitive_on_levels`). -/
-public theorem orbit_eq_casimir_level {SDiff : Type*} [Group SDiff]
-    [MulAction SDiff CoadjointOrbit] (H : SDiffActionHyp SDiff) (ω ω' : CoadjointOrbit) :
-    ω' ∈ MulAction.orbit SDiff ω ↔ ∀ f, Casimir f ω = Casimir f ω' := by
-  constructor
-  · intro h f; exact (casimir_const_on_orbit H f ω ω' h).symm
-  · intro h; obtain ⟨g, hg⟩ := H.transitive_on_casimir_levels ω ω' h; exact ⟨g, hg⟩
 
 /-- Vector cross product on the model `ℝ³`, via mathlib `crossProduct`. -/
 @[expose] public noncomputable def cross (u v : EuclideanSpace ℝ (Fin 3)) : EuclideanSpace ℝ (Fin 3) :=
@@ -329,6 +323,25 @@ public theorem FunctionalDerivative_eq_choose
     (h : ∃ dH, IsGateauxRepresentative F ω dH) :
     FunctionalDerivative F ω = Classical.choose h :=
   dif_pos h
+
+/-- **Degeneracy of the encoding at non-differentiable vorticity.** If some component of `ω`
+fails to be differentiable somewhere, the Gâteaux condition is vacuous (its binder `hω` cannot be
+supplied), so EVERY field is a representative of EVERY functional, and `FunctionalDerivative F ω`
+is one fixed `Classical.choose` independent of `F`. Nothing about its value can be proved. -/
+public theorem functionalDerivative_indep_of_not_differentiable
+    {ω : CoadjointOrbit} (hω : ¬ ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x)
+    (F G : CoadjointOrbit → ℝ) :
+    FunctionalDerivative F ω = FunctionalDerivative G ω := by
+  have hall : ∀ (H : CoadjointOrbit → ℝ), IsGateauxRepresentative H ω = fun _ => True := by
+    intro H
+    funext δ
+    apply propext
+    exact ⟨fun _ => trivial, fun _ ε hω' => absurd hω' hω⟩
+  have key : ∀ (H : CoadjointOrbit → ℝ), FunctionalDerivative H ω =
+      (fun P : (T3 → EuclideanSpace ℝ (Fin 3)) → Prop =>
+        if h : ∃ δ, P δ then Classical.choose h else 0) (IsGateauxRepresentative H ω) :=
+    fun _ => rfl
+  rw [key F, key G, hall F, hall G]
 
 /-- Unfolding lemma for `IsGateauxRepresentative` (its body is not exposed to importers). -/
 public theorem isGateauxRepresentative_iff (F : CoadjointOrbit → ℝ) (ω : CoadjointOrbit)
@@ -1109,6 +1122,7 @@ public theorem classical_bracket_reproduces_Euler
 #print axioms cross_smul_left
 #print axioms FunctionalDerivative_eq_zero_of_not
 #print axioms FunctionalDerivative_eq_choose
+#print axioms functionalDerivative_indep_of_not_differentiable
 #print axioms kineticEnergy_hasDerivAt_velocity_pairing
 #print axioms biotSavartKernel_of_ne
 #print axioms cross_coord

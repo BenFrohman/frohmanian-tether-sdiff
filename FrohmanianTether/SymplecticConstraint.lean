@@ -206,8 +206,9 @@ Replaces the identity stub `CoadjointAction _g ω := ω` with a coherent mathema
 representing the action of a group of volume-preserving diffeomorphisms on `CoadjointOrbit`:
 1. `act g ω` is a divergence-free vorticity field on the coadjoint orbit;
 2. Every diffeomorphism $g$ preserves spatial Bochner integrals (`integral_comp_eq`);
-3. For any isometric volume-preserving transformation $g$, the projected pairing
-   `⟨Π_u δF, Π_u δG⟩` (the integrand of `TetherKernel` after the global enstrophy factor) pulls back by composition with $g$. -/
+(The former third field `tether_integrand_pullback`, a pointwise form of the removed
+hypothesis `TetherIntegralPreserved`, was deleted together with
+`volumePreservingCoadjointAction_preserves_TetherKernel`.) -/
 public structure VolumePreservingCoadjointAction (SDiff : Type*) [Group SDiff]
     [MulAction SDiff CoadjointOrbit] where
   /-- The underlying volume-preserving map of `g` (only these maps are required to
@@ -216,41 +217,6 @@ public structure VolumePreservingCoadjointAction (SDiff : Type*) [Group SDiff]
   diffeo : SDiff → T3 → T3
   integral_comp_eq : ∀ (g : SDiff) (f : T3 → ℝ),
     (∫ x : T3, f (diffeo g x) ∂NavierStokes3D.volume) = ∫ x : T3, f x ∂NavierStokes3D.volume
-  tether_integrand_pullback :
-    ∀ (g : SDiff) (F G : Functional) (ω : CoadjointOrbit) (x : T3),
-        inner ℝ
-          (Pi_u (velocity_from_vorticity (g • ω))
-            (FunctionalDerivative F (g • ω)) x)
-          (Pi_u (velocity_from_vorticity (g • ω))
-            (FunctionalDerivative G (g • ω)) x) =
-        inner ℝ
-          (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) (diffeo g x))
-          (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative G ω) (diffeo g x))
-
-/-- **Proved (`volumePreservingCoadjointAction_preserves_TetherKernel`):**
-Any `VolumePreservingCoadjointAction SDiff` satisfies the C1 integral-preservation hypothesis `TetherIntegralPreserved SDiff`, hence (via `tether_satisfies_C1`) C1 for the tether:
-$B(\mathrm{act}_g \omega, F, G) = B(\omega, F, G)$. -/
-public theorem volumePreservingCoadjointAction_preserves_TetherKernel
-    {SDiff : Type*} [Group SDiff] [MulAction SDiff CoadjointOrbit]
-    (A : VolumePreservingCoadjointAction SDiff) :
-    TetherIntegralPreserved SDiff := by
-  intro g F G ω
-  let f : T3 → ℝ := fun y =>
-      inner ℝ
-        (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) y)
-        (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative G ω) y)
-  have hfun :
-      (fun x =>
-        inner ℝ
-          (Pi_u (velocity_from_vorticity (CoadjointAction g ω))
-            (FunctionalDerivative F (CoadjointAction g ω)) x)
-          (Pi_u (velocity_from_vorticity (CoadjointAction g ω))
-            (FunctionalDerivative G (CoadjointAction g ω)) x)) =
-      fun x => f (A.diffeo g x) := by
-    funext x
-    exact A.tether_integrand_pullback g F G ω x
-  have hint := congrArg (fun φ : T3 → ℝ => ∫ x, φ x ∂NavierStokes3D.volume) hfun
-  exact hint.trans (A.integral_comp_eq g f)
 
 /-- **Ontological Correction 2b (`HelicityCasimir`):**
 The classical 3D hydrodynamic Casimir invariant on $\mathfrak{sdiff}(\mathbb{T}^3)^*$:
@@ -476,16 +442,6 @@ public structure SpatialMaxVorticityEnvelope
       inner ℝ (vorticity (u t) (x_max t))
         (time_deriv (fun s => vorticity (u s)) t (x_max t)) / M t
 
-/-- **Open Proof Obligation A (`PointwiseCZGradientBoundAtMax`):**
-At the spatial maximum $x_{\max}(t)$, the velocity gradient obeys the linear Calderón–Zygmund bound
-$\|\nabla u(t, x_{\max}(t))\| \le C_{\mathrm{CZ}} M(t)$ without a logarithmic higher-Sobolev loss. This is false in general: Calderón–Zygmund fails at
-`p = ∞`, so results assuming it are conditional on a bound that is false in general. -/
-public def PointwiseCZGradientBoundAtMax
-    (u : TimeDependentVelocity) (M : ℝ → ℝ) (x_max : ℝ → T3) (C_CZ : ℝ) : Prop :=
-  ∀ t ≥ (0 : ℝ),
-    DifferentiableAt ℝ (u t) (x_max t) ∧
-    ‖fderiv ℝ (u t) (x_max t)‖ ≤ C_CZ * M t
-
 /-- **Open Proof Obligation B (`SymplecticQuarticStretchingSinkAtMax`):**
 The central gap between the unmodified vorticity transport equation and the Frohmanian cubic rate
 (`certs/CubicSourceGap.tex` Eq. (6), `Modules/AssemblyGap.lean`):
@@ -498,49 +454,6 @@ public def SymplecticQuarticStretchingSinkAtMax
     inner ℝ (vorticity (u t) (x_max t))
       (convective (vorticity (u t)) (u t) (x_max t)) +
       κ'' * (M t) ^ 4 ≤ C_CZ * (M t) ^ 3
-
-/-- **Proved Theorem 1 (`unmodified_envelope_yields_classical_quadratic_rate`):**
-From the bare unmodified Navier–Stokes equations, `SpatialMaxVorticityEnvelope`, and
-`PointwiseCZGradientBoundAtMax` alone (without `SymplecticQuarticStretchingSinkAtMax`),
-one obtains **only** the classical quadratic differential inequality
-$$\mathrm{deriv}\,M(t) \le C_{\mathrm{CZ}} M(t)^2,$$
-whose comparison ODE $y' = C_{\mathrm{CZ}} y^2$ blows up in finite time $T = 1/(C_{\mathrm{CZ}} M(0))$. -/
-public theorem unmodified_envelope_yields_classical_quadratic_rate
-    {u : TimeDependentVelocity} {p : TimeDependentPressure} {ν : ℝ}
-    {M : ℝ → ℝ} {x_max : ℝ → T3} {C_CZ : ℝ}
-    (henv : SpatialMaxVorticityEnvelope u p ν M x_max)
-    (hCZ : PointwiseCZGradientBoundAtMax u M x_max C_CZ)
-    (t : ℝ) (ht : 0 ≤ t) (hM_pos : 0 < M t) :
-    deriv M t ≤ C_CZ * (M t) ^ 2 := by
-  have htime_le_stretch :=
-    time_pairing_le_stretching_at_max u p ν t ht (x_max t)
-      henv.satisfies_ns (henv.transport_reg t ht)
-      (henv.convective_grad_zero t ht) (henv.viscous_laplacian_nonpos t ht)
-      henv.viscosity_nonneg
-  have hCZ_t := hCZ t ht
-  have hCZ_sup : ‖fderiv ℝ (u t) (x_max t)‖ ≤ C_CZ * vorticity_sup_norm (vorticity (u t)) := by
-    rw [← henv.def_M t ht]
-    exact hCZ_t.2
-  have hmax_sup : ‖vorticity (u t) (x_max t)‖ = vorticity_sup_norm (vorticity (u t)) := by
-    rw [henv.attains_max t ht, henv.def_M t ht]
-  have hstretch_cubic :=
-    stretching_inner_le_at_max (vorticity (u t)) (u t) (x_max t) C_CZ
-      hCZ_t.1 hCZ_sup hmax_sup
-  rw [← henv.def_M t ht] at hstretch_cubic
-  have hdt_cubic :
-      inner ℝ (vorticity (u t) (x_max t))
-        (time_deriv (fun s => vorticity (u s)) t (x_max t)) ≤ C_CZ * (M t) ^ 3 :=
-    htime_le_stretch.trans hstretch_cubic
-  have hdanskin := henv.danskin_rate_le t ht hM_pos
-  have hdiv :
-      inner ℝ (vorticity (u t) (x_max t))
-        (time_deriv (fun s => vorticity (u s)) t (x_max t)) / M t ≤
-      (C_CZ * (M t) ^ 3) / M t :=
-    div_le_div_of_nonneg_right hdt_cubic (le_of_lt hM_pos)
-  have hM_ne : M t ≠ 0 := ne_of_gt hM_pos
-  have hring : (C_CZ * (M t) ^ 3) / M t = C_CZ * (M t) ^ 2 := by
-    field_simp [hM_ne]
-  linarith
 
 /-- **Proved Theorem 2 (`symplectic_constraint_yields_cubic_damping_and_ceiling`):**
 When the open obligation `SymplecticQuarticStretchingSinkAtMax u M x_max C_CZ κ''` is supplied
@@ -862,14 +775,12 @@ end -- noncomputable section
 #print axioms cross_jacobi_identity
 #print axioms kksPointwise_cyclic_jacobi_identity
 #print axioms kksSymplecticForm_functional_skew
-#print axioms volumePreservingCoadjointAction_preserves_TetherKernel
 #print axioms Pi_u_idempotent
 #print axioms Pi_u_self_adjoint
 #print axioms TetherKernel_eq_tetherMetricForm
 #print axioms tetherMetricForm_symm
 #print axioms FrohmanianMetriplecticPairing_diag_eq_metric
 #print axioms periodicCellPhysical_implies_IsPeriodicSmoothSolution
-#print axioms unmodified_envelope_yields_classical_quadratic_rate
 #print axioms symplectic_constraint_yields_cubic_damping_and_ceiling
 #print axioms first_remaining_gap_bochner_polar_damping_at_max
 #print axioms bddAbove_range_norm_of_attained_max

@@ -20,7 +20,9 @@ public import Mathlib.GroupTheory.Perm.Basic
 Scope (honest): `T3` here is `EuclideanSpace ℝ (Fin 3)` (not the quotient torus); no smoothness
 is imposed; the action is NOT the geometric pushforward `(Dg · ω) ∘ g⁻¹`; divergence
 preservation is part of the subgroup's defining predicate, not a theorem. `casimir_invariant`
-is PROVED (`MeasurePreserving.integral_comp'`); `transitive_on_casimir_levels` stays OPEN.
+is PROVED (`MeasurePreserving.integral_comp'`), so `SDiffActionHyp` holds for this action
+(`sdiffActionHyp`). The former field `transitive_on_casimir_levels` is REFUTED for this action
+(`not_transitive_on_casimir_levels`) and was removed from `SDiffActionHyp`.
 -/
 
 @[expose] public section
@@ -92,12 +94,34 @@ theorem casimir_invariant (f : ℝ → ℝ) (g : G) (ω : CoadjointOrbit) :
 theorem enstrophy_invariant (g : G) (ω : CoadjointOrbit) :
     Enstrophy (g • ω) = Enstrophy ω := casimir_invariant (fun r => r ^ 2) g ω
 
-/-- `SDiffActionHyp` for the concrete group, with the remaining field as a named open hypothesis. -/
-theorem sdiffActionHyp_of_transitive
-    (htrans : ∀ ω₁ ω₂ : CoadjointOrbit,
-      (∀ f : ℝ → ℝ, Casimir f ω₁ = Casimir f ω₂) → ∃ g : G, g • ω₁ = ω₂) :
-    SDiffActionHyp G :=
-  ⟨casimir_invariant, htrans⟩
+/-- **Proved.** `SDiffActionHyp` holds for the concrete group (no open field remains). -/
+theorem sdiffActionHyp : SDiffActionHyp G :=
+  ⟨casimir_invariant⟩
+
+/-- A constant vector field, as a (divergence-free) element of `CoadjointOrbit`. -/
+noncomputable def constOrbit (c : EuclideanSpace ℝ (Fin 3)) : CoadjointOrbit :=
+  ⟨fun _ => c, fun x => by simp [NavierStokes3D.div]⟩
+
+theorem smul_constOrbit (g : G) (c : EuclideanSpace ℝ (Fin 3)) :
+    g • constOrbit c = constOrbit c := rfl
+
+/-- **Refutation of the removed hypothesis `transitive_on_casimir_levels`** for the concrete
+action. The constant fields `e₀` and `e₁` have pointwise norm `1`, hence the same Casimir
+`∫ f(|ω|)` for every `f`, but the action (composition with a bijection) fixes every constant
+field, so no group element maps `e₀` to `e₁`. -/
+theorem not_transitive_on_casimir_levels :
+    ¬ ∀ ω₁ ω₂ : CoadjointOrbit,
+      (∀ f : ℝ → ℝ, Casimir f ω₁ = Casimir f ω₂) → ∃ g : G, g • ω₁ = ω₂ := by
+  intro h
+  set e0 : EuclideanSpace ℝ (Fin 3) := EuclideanSpace.single 0 1
+  set e1 : EuclideanSpace ℝ (Fin 3) := EuclideanSpace.single 1 1
+  have hcas : ∀ f : ℝ → ℝ, Casimir f (constOrbit e0) = Casimir f (constOrbit e1) := by
+    intro f
+    simp [Casimir, constOrbit, e0, e1]
+  obtain ⟨g, hg⟩ := h _ _ hcas
+  rw [smul_constOrbit] at hg
+  have h1 := congrArg (fun ω : CoadjointOrbit => ω.val 0 0) hg
+  simp [constOrbit, e0, e1] at h1
 
 end ConcreteSDiff
 
@@ -105,4 +129,5 @@ end
 
 #print axioms ConcreteSDiff.casimir_invariant
 #print axioms ConcreteSDiff.enstrophy_invariant
-#print axioms ConcreteSDiff.sdiffActionHyp_of_transitive
+#print axioms ConcreteSDiff.sdiffActionHyp
+#print axioms ConcreteSDiff.not_transitive_on_casimir_levels

@@ -1,4 +1,4 @@
--- FrohmanianTether/Uniqueness.lean, line 583
+-- FrohmanianTether/Uniqueness.lean, line 580
 public theorem uniqueness_of_minimal_tether_core
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (h_sym : ∀ ω F G, B ω F G = B ω G F)

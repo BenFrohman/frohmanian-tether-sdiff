@@ -1,4 +1,4 @@
--- FrohmanianTether/TetheredLyapunov.lean, line 1930
+-- FrohmanianTether/TetheredLyapunov.lean, line 1857
 @[expose] public def KatoUniquenessOnExistenceTimes (u₀ : VelocityField) (ν : ℝ)
     (w : KatoLocalWitness u₀ ν) : Prop :=
   ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),

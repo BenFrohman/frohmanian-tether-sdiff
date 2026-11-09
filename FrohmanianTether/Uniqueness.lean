@@ -83,37 +83,10 @@ should cite.
 -- The detailed proofs (case analyses) are preserved with their source citations.
 -- ============================================================================
 
-/-- Step 1: coadjoint invariance of an admissible correction is a locality / support condition. -/
-lemma step1_locality
-    (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (_h_antisym : ∀ ω F G, B ω F G = -B ω G F)
-    (h_inv : InvariantUnderCoadjointAction SDiff B) :
-    InvariantUnderCoadjointAction SDiff B :=
-  h_inv
-
 -- Step 2 is not a theorem from antisymmetry of an arbitrary `B`. The honest
 -- statements are `step2_degree` / `step2_degree_of_canonical_density` below
 -- (`TetherKernel` or a canonical density, with frozen Gâteaux / `Π_u`).
 -- `uniqueness_of_minimal_tether` does not use either; it polarizes.
-
-/-- Step 3: C2 forces vanishing on the kinetic-energy Hamiltonian, hence `Π_u`. -/
-lemma step3_projection
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (_h_antisym : ∀ ω F G, B ω F G = -B ω G F)
-    (h_deg : DegenerateWRTKineticEnergy B) :
-    ∀ (F : Functional) (ω : CoadjointOrbit),
-      B ω F KineticEnergyHamiltonian = 0 := by
-  intro F ω
-  simpa [DegenerateWRTKineticEnergy] using h_deg F ω
-
-/-- Step 4: C3 forces the tether strength `κ = C_CZ(3)`. -/
-lemma step4_coefficient
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (_h_antisym : ∀ ω F G, B ω F G = -B ω G F)
-    (_h_feedback : ProducesControllableNegativeFeedback B) :
-    kappa = CalderonZygmundConstant3D :=
-  rfl
 
 -- Step 5 for an arbitrary antisymmetric `B` is not a theorem from C2–C3
 -- alone. See `step5_higher_order` (`TetherKernel` via `step2_degree`).
@@ -326,31 +299,6 @@ public theorem tetherKernel_polarizes
   intro hP
   simpa using hP ω F G
 
-/-- Unique minimal bilinear correction: C1–C3 plus saturation of the
-quadratic form plus polarization. This is the paper's "minimal" uniqueness,
-not the false claim that every antisymmetric map equals `TetherKernel`. -/
-public theorem uniqueness_of_minimal_tether_antisymmetric
-    (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (h_antisym : ∀ ω F G, B ω F G = -B ω G F)
-    (hC1 : InvariantUnderCoadjointAction SDiff B)
-    (hC2 : DegenerateWRTKineticEnergy B)
-    (hC3 : ProducesControllableNegativeFeedback B)
-    (h_sat : SaturatesTetherQuadratic B)
-    (h_polarB : Polarizes B)
-    (h_polarT : Polarizes TetherKernel) :
-    ∀ (ω : CoadjointOrbit) (F G : Functional), B ω F G = TetherKernel ω F G := by
-  intro ω F G
-  have _h1 := step1_locality SDiff B h_antisym hC1
-  have _h3 := step3_projection B h_antisym hC2
-  have _h4 := step4_coefficient B h_antisym hC3
-  have hB := h_polarB ω F G
-  have hT := h_polarT ω F G
-  have hFF := h_sat F ω
-  have hGG := h_sat G ω
-  have hFG := h_sat (fun ω' => F ω' + G ω') ω
-  linarith
-
 /-- `TetherKernel` is symmetric in `F` and `G` because the real inner product
 `⟨Π_u δF, Π_u δG⟩` is symmetric. -/
 public theorem tetherKernel_symmetric (ω : CoadjointOrbit) (F G : Functional) :
@@ -384,8 +332,11 @@ public theorem uniqueness_of_minimal_symmetric_tether
 /-! ## Theorem 2.3 over the abstract SDiff action — SYMMETRIC (author's choice)
 
 The antisymmetric reading is vacuous: with saturation, antisymmetry forces
-`TetherKernel ω F F = 0` for every `F` (`antisym_sat_forces_zero_diag`), so it holds only
-where the tether quadratic form vanishes. -/
+`TetherKernel ω F F = 0` for every `F` (`antisym_sat_forces_zero_diag`), and with polarization
+it forces `B = TetherKernel = 0` (`antisymmetric_clause_forces_zero`). The antisymmetric
+theorem `uniqueness_of_minimal_tether_antisymmetric` and the vacuous step lemmas
+`step1_locality`, `step3_projection`, `step4_coefficient` (which carried an unused
+antisymmetry hypothesis and returned their input or `rfl`) were removed. -/
 
 /-- Proved: antisymmetry + saturation kill the tether diagonal (vacuity of the
 antisymmetric version). -/
@@ -395,6 +346,53 @@ public theorem antisym_sat_forces_zero_diag
     (ω : CoadjointOrbit) (F : Functional) : TetherKernel ω F F = 0 := by
   have h := h_antisym ω F F
   rw [← h_sat F ω]; linarith
+
+/-- **What `Polarizes TetherKernel` costs.** The polarization hypothesis on the tether (used by
+`uniqueness_of_minimal_symmetric_tether`) forces `TetherKernel ω F G = 0` at every vorticity
+with a non-differentiable component, because there the kernel is independent of `F, G`
+(`tetherKernel_indep_of_not_differentiable`) and `2K = K - K - K` gives `K = 0`. Neither this
+hypothesis nor the non-degeneracy hypothesis `h_nondeg` (the tether is not identically zero)
+can be proved from the current definitions: `FunctionalDerivative` is an unspecified
+`Classical.choose` among non-unique Gâteaux representatives. -/
+public theorem polarizes_tetherKernel_zero_of_not_differentiable
+    (hP : Polarizes TetherKernel)
+    {ω : CoadjointOrbit} (hω : ¬ ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x)
+    (F G : Functional) : TetherKernel ω F G = 0 := by
+  have h := hP ω F G
+  have e1 := tetherKernel_indep_of_not_differentiable hω
+    (fun ω' => F ω' + G ω') (fun ω' => F ω' + G ω') F G
+  have e2 := tetherKernel_indep_of_not_differentiable hω F F F G
+  have e3 := tetherKernel_indep_of_not_differentiable hω G G F G
+  rw [e1, e2, e3] at h
+  linarith
+
+/-- **Vacuity of the removed antisymmetric clause.** The former
+`uniqueness_of_minimal_tether_antisymmetric` (and clause 1 of `frohmanian_tether_theorem`)
+took an antisymmetric `B` with `SaturatesTetherQuadratic B`, `Polarizes B` and
+`Polarizes TetherKernel`. Those hypotheses force BOTH `B` and `TetherKernel` to vanish
+identically (`TetherKernel` is symmetric), so the clause could only ever apply when the tether
+is the zero form; it said nothing about the tether. The clause and the theorem were removed. -/
+public theorem antisymmetric_clause_forces_zero
+    (B : CoadjointOrbit → Functional → Functional → ℝ)
+    (h_antisym : ∀ ω F G, B ω F G = -B ω G F)
+    (h_sat : SaturatesTetherQuadratic B)
+    (h_polarB : Polarizes B)
+    (h_polarT : Polarizes TetherKernel) :
+    ∀ (ω : CoadjointOrbit) (F G : Functional), B ω F G = 0 ∧ TetherKernel ω F G = 0 := by
+  have hBT : ∀ ω F G, B ω F G = TetherKernel ω F G := by
+    intro ω F G
+    have hB := h_polarB ω F G
+    have hT := h_polarT ω F G
+    have hFF := h_sat F ω
+    have hGG := h_sat G ω
+    have hFG := h_sat (fun ω' => F ω' + G ω') ω
+    linarith
+  intro ω F G
+  have h1 := h_antisym ω F G
+  have h2 := tetherKernel_comm ω F G
+  rw [hBT ω F G, hBT ω G F] at h1
+  have hT0 : TetherKernel ω F G = 0 := by linarith
+  exact ⟨(hBT ω F G).trans hT0, hT0⟩
 
 /-- `B` pairs every zero-derivative functional to zero. -/
 @[expose] public def PairsToZeroIfDerivativeVanishes
@@ -532,9 +530,8 @@ public theorem step2_quadratic_and_locality
 
 /-- **Step 3 (scalar multiple of the canonical density)**: from Step 2, the named
 density hypothesis `h_density` (OPEN: the pointwise kernel `Q = ∫ α ⟨·,·⟩`, a
-Schwartz-kernel / isotropy statement) and the named weight hypothesis `h_weight` (OPEN: the "only |ω|² is invariant" step; would follow from
-`SDiffActionHyp.transitive_on_casimir_levels` plus a Casimir-classification theorem that
-is not formalized). -/
+Schwartz-kernel / isotropy statement) and the named weight hypothesis `h_weight` (OPEN: the "only |ω|² is invariant" step; the transitivity field that
+was once proposed for this is FALSE, see `ConcreteSDiff.not_transitive_on_casimir_levels`). -/
 public theorem step3_scalar
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (h2' : FactorsThroughProjection B)

@@ -1,4 +1,4 @@
--- FrohmanianTether/ClosureBlueprint.lean, line 262
+-- FrohmanianTether/ClosureBlueprint.lean, line 215
 public theorem conditional_regularity_of_open_hyps
     (u₀ : VelocityField) (ν : ℝ)
     (h_divfree : ∀ x, div u₀ x = 0)

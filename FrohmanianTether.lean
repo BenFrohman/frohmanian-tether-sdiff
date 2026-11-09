@@ -17,6 +17,7 @@ import FrohmanianTether.NS_Equations
 import FrohmanianTether.PhysicalSolutionSanity
 import FrohmanianTether.PlanSteps
 import FrohmanianTether.ScalingIdentities
+import FrohmanianTether.StrainBoundRefutation
 import FrohmanianTether.SymplecticConstraint
 import FrohmanianTether.SymplecticTether
 import FrohmanianTether.TetheredLyapunov

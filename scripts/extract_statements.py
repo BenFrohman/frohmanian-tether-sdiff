@@ -26,8 +26,6 @@ ITEMS = [  # key, file (under FrohmanianTether/), declaration name as written in
  ("isVelocityGateauxRepresentative_kineticEnergy_at","ArnoldGeometric","isVelocityGateauxRepresentative_kineticEnergy_at"),
  ("tetherKernel_C3","SymplecticTether","tetherKernel_C3"),
  ("tetherKernel_comm","SymplecticTether","tetherKernel_comm"),
- ("TetherIntegralPreserved","SymplecticTether","TetherIntegralPreserved"),
- ("tether_coadjoint_invariance","SymplecticTether","tether_coadjoint_invariance"),
  ("left_H_zero_of_C2_symm","Combined","left_H_zero_of_C2_symm"),
  ("tetherKernel_left_H_zero","Combined","tetherKernel_left_H_zero"),
  ("classicalBracket_antisymm","ArnoldGeometric","classicalBracket_antisymm"),
@@ -37,7 +35,6 @@ ITEMS = [  # key, file (under FrohmanianTether/), declaration name as written in
  ("FactorsThroughProjection","Uniqueness","FactorsThroughProjection"),
  ("uniqueness_of_minimal_tether","Uniqueness","uniqueness_of_minimal_tether"),
  ("uniqueness_of_minimal_tether_core","Uniqueness","uniqueness_of_minimal_tether_core"),
- ("tethered_jacobi_identity","SymplecticTether","tethered_jacobi_identity"),
  ("casimir_invariant_concrete","ConcreteSDiff","casimir_invariant"),
  ("IsCoadjointMotion","PlanSteps","IsCoadjointMotion"),
  ("casimir_conserved","PlanSteps","casimir_conserved"),
@@ -52,16 +49,23 @@ ITEMS = [  # key, file (under FrohmanianTether/), declaration name as written in
  ("conditional_regularity_of_open_hyps_blueprint","ClosureBlueprint","conditional_regularity_of_open_hyps"),
  ("conditional_regularity_of_open_hyps_main","ConditionalRegularity","conditional_regularity_of_open_hyps"),
  ("frohmanian_tether_theorem","ConditionalRegularity","frohmanian_tether_theorem"),
- ("combined_conditional_capstone","Combined","combined_conditional_capstone"),
  ("conditional_regularity_nonvacuous_at_zero","ClayStatements","conditional_regularity_nonvacuous_at_zero"),
  ("stepField_not_physical","ClayStatements","stepField_not_physical"),
  ("Clay_B_exact","ClayStatements","Clay_B_exact"),
  ("PeriodicTetherClosingBound","ClayStatements","PeriodicTetherClosingBound"),
  ("PeriodicBKMContinuation","ClayStatements","PeriodicBKMContinuation"),
  ("clay_B_exact_of_periodic_tether_bound","ClayStatements","clay_B_exact_of_periodic_tether_bound"),
- ("tethered_stretching_of_weight","SymplecticTether","tethered_stretching_of_weight"),
- ("reduced_pairing_of_unmodified_and_tether","SymplecticTether","reduced_pairing_of_unmodified_and_tether"),
  ("tether_bound_not_scale_invariant","PlanSteps","tether_bound_not_scale_invariant"),
+ ("IsPhysicalNSSolution","NS_Equations","IsPhysicalNSSolution"),
+ ("exists_physical_time_deriv_ne_zero","PhysicalSolutionSanity","exists_physical_time_deriv_ne_zero"),
+ ("not_forall_physical_time_deriv_zero","PhysicalSolutionSanity","not_forall_physical_time_deriv_zero"),
+ ("SDiffActionHyp","ArnoldGeometric","SDiffActionHyp"),
+ ("sdiffActionHyp","ConcreteSDiff","sdiffActionHyp"),
+ ("not_transitive_on_casimir_levels","ConcreteSDiff","not_transitive_on_casimir_levels"),
+ ("not_forall_strain_le_sup_vorticity","StrainBoundRefutation","not_forall_strain_le_sup_vorticity"),
+ ("antisymmetric_clause_forces_zero","Uniqueness","antisymmetric_clause_forces_zero"),
+ ("polarizes_tetherKernel_zero_of_not_differentiable","Uniqueness","polarizes_tetherKernel_zero_of_not_differentiable"),
+ ("functionalDerivative_indep_of_not_differentiable","ArnoldGeometric","functionalDerivative_indep_of_not_differentiable"),
 ]
 def grab(L, i, k):
     out = []; j = i
@@ -75,6 +79,9 @@ def grab(L, i, k):
         j += 1
     return '\n'.join(out)
 os.makedirs('manuscript/lean', exist_ok=True)
+for _f in os.listdir('manuscript/lean'):
+    if _f.endswith('.lean'):
+        os.remove(os.path.join('manuscript/lean', _f))
 for key, f, name in ITEMS:
     path = f'FrohmanianTether/{f}.lean'
     L = open(path).read().split('\n')

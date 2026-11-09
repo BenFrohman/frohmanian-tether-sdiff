@@ -1,4 +1,4 @@
--- FrohmanianTether/NS_Equations.lean, line 2422
+-- FrohmanianTether/NS_Equations.lean, line 2433
 public structure KatoLocalWitness (u₀ : VelocityField) (ν : ℝ) where
   T : ℝ
   Tpos : 0 < T

@@ -401,46 +401,6 @@ public theorem stepField_not_physical : ¬ IsPhysicalNSSolution stepField := by
   have h2 := congrArg (fun v : EuclideanSpace ℝ (Fin 3) => v 0) (congrFun h20 0)
   simp [stepField] at h2
 
-/-- With `IsPhysicalNSSolution v`, the `L²` integrability hypothesis `hInt` of
-`restart_of_kato_quantitative`, `conditional_regularity_of_constructions`, and
-`frohmanian_tether_theorem` holds **unconditionally** for every initial datum
-`u₀` and viscosity `ν`. -/
-public theorem repaired_hInt (u₀ : VelocityField) (ν : ℝ) :
-    ∀ (T : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
-      T ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T,
-        Integrable (fun x : T3 => ‖v t x‖ ^ 2) := by
-  intro _T v _q _hmem _hv0 _hpde _hsm hphys t ht
-  exact hphys.2.2.1 t ht.1
-
-/-- With `IsPhysicalNSSolution v`, the shifted-restart uniqueness hypothesis
-`huniq_shift` of `restart_of_kato_quantitative`,
-`conditional_regularity_of_constructions`, and `frohmanian_tether_theorem` is
-**provably satisfied** at `u₀ = 0`: both `v` and any restart witness `w'`
-starting at `v t = 0` vanish identically on `[0, ∞)`. -/
-public theorem repaired_huniq_shift_at_zero (ν : ℝ) :
-    ∀ (T : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
-      T ∈ existenceTimes (0 : VelocityField) ν →
-      v 0 = (0 : VelocityField) →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T,
-        ∀ (w' : KatoLocalWitness (v t) ν),
-          ∀ s ∈ Set.Icc (0 : ℝ) w'.T, v (t + s) = w'.u s := by
-  intro _T v _q _hmem hv0 _hpde _hsm hphys t ht w' s hs
-  have hvt : v t = 0 := eq_zero_of_isPhysicalNSSolution_zero v hv0 hphys t ht.1
-  have hvts : v (t + s) = 0 :=
-    eq_zero_of_isPhysicalNSSolution_zero v hv0 hphys (t + s) (add_nonneg ht.1 hs.1)
-  have hw0 : w'.u 0 = 0 := w'.init.trans hvt
-  have hws : w'.u s = 0 :=
-    eq_zero_of_isPhysicalNSSolution_zero w'.u hw0 w'.phys s hs.1
-  rw [hvts, hws]
-
 /-- With `IsPhysicalNSSolution v`, the uniqueness binder `huniq` of `conditional_regularity_of_open_hyps`
 is unconditionally satisfied at `u₀ = 0` for *every* `w : KatoLocalWitness 0 ν`. -/
 public theorem repaired_huniq_at_zero (ν : ℝ) (w : KatoLocalWitness 0 ν) :
@@ -597,7 +557,6 @@ public theorem clay_B_exact_of_periodic_tether_bound
 #print axioms conditional_regularity_nonvacuous_at_zero
 #print axioms frohmanianTetherRate_zero
 #print axioms frohmanianTetherBound_zero
-#print axioms repaired_hInt
 #print axioms repaired_huniq_at_zero
 #print axioms stepField_not_physical
 #print axioms clay_B_exact_of_periodic_tether_bound
