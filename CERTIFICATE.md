@@ -12,6 +12,7 @@
 | Build | `lake build`: 2712 jobs, success |
 | CI run, Lean certificate (build + source scan + strict axiom audit), passed | https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42610807892 |
 | CI run, Lean 4 (lean-action build), passed | https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42610807893 |
+| Zenodo archive (v0.1.1) | [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)) |
 | Modules | 22 (`FrohmanianTether` and 21 submodules) |
 | Declarations audited | 761 |
 | Theorem constants audited | 519 (483 stated in the sources, 36 auto-generated equation/congruence/injectivity lemmas) |
