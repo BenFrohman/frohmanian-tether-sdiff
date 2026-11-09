@@ -14,6 +14,7 @@ import FrohmanianTether.HighSetDepletionAndBKM
 import FrohmanianTether.IndependentMajorant
 import FrohmanianTether.KineticEnergyDerivative
 import FrohmanianTether.NS_Equations
+import FrohmanianTether.PhysicalSolutionSanity
 import FrohmanianTether.PlanSteps
 import FrohmanianTether.ScalingIdentities
 import FrohmanianTether.SymplecticConstraint

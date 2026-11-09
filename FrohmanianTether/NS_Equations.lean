@@ -2255,13 +2255,24 @@ public theorem vorticity_transport_equation
 2. Spatial continuity and finite L² energy (`Integrable (fun x => ‖u t x‖ ^ 2)`) obeying the
    Leray energy inequality `∫ ‖u t x‖² ≤ ∫ ‖u 0 x‖²`, ruling out unbounded parasitic pressure
    waves on `ℝ³`.
-3. Causal extension `u t = u 0` for `t ≤ 0` on the total time line `ℝ`. -/
+3. First-order (affine) extension to negative times: there is a field `v₀` with
+   `u t = u 0 + t • v₀` for `t ≤ 0`. This pins the (unphysical) values at `t < 0` so that the
+   two-sided time derivative at `t = 0` is the genuine right derivative of the solution
+   (`v₀ = ∂ₜu(0⁺)`, see `PhysicalSolutionSanity.physical_time_deriv_at_zero`).
+
+**Repair (Nov 2026).** The previous clause 3 was the constant extension `u t = u 0` for `t ≤ 0`.
+Together with two-sided differentiability at `t = 0` it forced `∂ₜu(0) = 0`, so every
+`KatoLocalWitness` started from data solving the *steady* equations. The affine extension
+removes that restriction: `PhysicalSolutionSanity.exists_physical_time_deriv_ne_zero`
+exhibits a member of this class with `∂ₜu(0) ≠ 0`, and
+`PhysicalSolutionSanity.not_forall_physical_time_deriv_zero` records that the old consequence
+no longer follows. -/
 @[expose] public def IsPhysicalNSSolution (u : TimeDependentVelocity) : Prop :=
   (∀ t ≥ (0 : ℝ), ∀ x : T3, DifferentiableAt ℝ (fun s => u s x) t) ∧
   (∀ t ≥ (0 : ℝ), Continuous (u t)) ∧
   (∀ t ≥ (0 : ℝ), Integrable (fun x : T3 => ‖u t x‖ ^ 2)) ∧
   (∀ t ≥ (0 : ℝ), (∫ x, ‖u t x‖ ^ 2 ∂volume) ≤ ∫ x, ‖u 0 x‖ ^ 2 ∂volume) ∧
-  (∀ t ≤ (0 : ℝ), u t = u 0)
+  (∃ v₀ : VelocityField, ∀ t ≤ (0 : ℝ), u t = u 0 + t • v₀)
 
 public theorem isPhysicalNSSolution_zero :
     IsPhysicalNSSolution (fun _ => (0 : VelocityField)) :=
@@ -2269,7 +2280,7 @@ public theorem isPhysicalNSSolution_zero :
    fun _ _ => continuous_const,
    fun _ _ => by simp,
    fun _ _ => le_rfl,
-   fun _ _ => rfl⟩
+   ⟨0, fun _ _ => by simp⟩⟩
 
 /-- Finite existence times: a positive `T` such that a physically admissible smooth NS solution
 starting at `u₀` exists on the compact interval `[0, T]`. -/
@@ -3469,9 +3480,28 @@ public theorem eq_zero_of_isPhysicalNSSolution_zero_all
     (u : TimeDependentVelocity) (hu0 : u 0 = 0)
     (hphys : IsPhysicalNSSolution u) (t : ℝ) :
     u t = 0 := by
+  obtain ⟨v₀, hv₀⟩ := hphys.2.2.2.2
+  -- The extension slope `v₀` vanishes: the right derivative at `0` is `0` (the solution is
+  -- identically zero on `[0, ∞)`), the left derivative is `v₀ x`, and `u` is differentiable at `0`.
+  have hv0 : v₀ = 0 := by
+    funext x
+    have hd := (hphys.1 0 le_rfl x).hasDerivAt
+    have hL : HasDerivWithinAt (fun s => u s x) (v₀ x) (Set.Iic 0) 0 := by
+      have hlin : HasDerivWithinAt (fun s : ℝ => u 0 x + s • v₀ x) (v₀ x) (Set.Iic 0) 0 := by
+        simpa using ((hasDerivAt_id (0 : ℝ)).smul_const (v₀ x)).const_add (u 0 x)
+          |>.hasDerivWithinAt
+      refine hlin.congr (fun s hs => ?_) (by simp)
+      rw [hv₀ s hs]; rfl
+    have hR : HasDerivWithinAt (fun s => u s x) 0 (Set.Ici 0) 0 := by
+      refine (hasDerivWithinAt_const (0 : ℝ) (Set.Ici 0) (0 : EuclideanSpace ℝ (Fin 3))).congr
+        (fun s hs => ?_) (by simp [hu0])
+      rw [eq_zero_of_isPhysicalNSSolution_zero u hu0 hphys s hs]; rfl
+    have e1 := (uniqueDiffOn_Iic (0:ℝ) 0 Set.self_mem_Iic).eq_deriv _ hd.hasDerivWithinAt hL
+    have e2 := (uniqueDiffOn_Ici (0:ℝ) 0 Set.self_mem_Ici).eq_deriv _ hd.hasDerivWithinAt hR
+    simpa using e1.symm.trans e2
   rcases le_or_gt 0 t with ht | ht
   · exact eq_zero_of_isPhysicalNSSolution_zero u hu0 hphys t ht
-  · rw [hphys.2.2.2.2 t ht.le, hu0]
+  · rw [hv₀ t ht.le, hu0, hv0]; simp
 
 /-- Cauchy uniqueness from the energy Grönwall: if the L² difference of two
 continuous fields obeys `E' ≤ K E` and `E 0 = 0`, then the fields coincide. -/
