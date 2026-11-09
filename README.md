@@ -13,8 +13,9 @@ Correction, Its Canonicity, and an Obstruction to Damping* (Benjamin Stanley Fro
 
 ## Scope (read this first)
 
-**This repository does not prove global regularity of the 3D Navier–Stokes equations and makes no
-claim toward the Clay Millennium Problem.** All results about the full program are *conditional
+**Not peer-reviewed. Not an unconditional Navier–Stokes proof.** This repository does not prove
+global regularity of the 3D Navier–Stokes equations and makes no claim toward the Clay Millennium
+Problem. All results about the full program are *conditional
 implications*: every open assumption is an explicit Lean hypothesis.
 
 What is formalized:
@@ -79,4 +80,4 @@ vacuous.
 
 ## License
 
-Apache 2.0 (see `LICENSE`). Cite via `CITATION.cff` or the Zenodo archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)).
+Apache 2.0 (see `LICENSE`). Cite via `CITATION.cff` or the Zenodo archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)). Do not cite the older-project DOI `10.5281/zenodo.23717084` (NS_Millennium_Proof) as identifying this repository.
