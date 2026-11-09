@@ -18,6 +18,7 @@ elab "#strict_axiom_audit" : command => do
   let env ← getEnv
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
   let mut nThm := 0
+  let mut nAuto := 0
   let mut nDecl := 0
   let mut lines : Array String := #[]
   let mut bad : Array String := #[]
@@ -35,11 +36,14 @@ elab "#strict_axiom_audit" : command => do
       unless std.contains a do bad := bad.push s!"{c} depends on nonstandard axiom {a}"
     if ci matches .thmInfo _ then
       nThm := nThm + 1
+      let last := match c with | .str _ s => s | _ => ""
+      if last.startsWith "eq_" || ["congr_simp", "inj", "injEq", "sizeOf_spec"].contains last then
+        nAuto := nAuto + 1
       let s := if axsSorted.isEmpty then s!"'{c}' does not depend on any axioms"
         else s!"'{c}' depends on axioms: {axsSorted.toList}"
       lines := lines.push s
   for l in lines.qsort (· < ·) do IO.println l
-  IO.println s!"AUDIT SUMMARY: theorems audited: {nThm}; declarations audited: {nDecl}; violations: {bad.size}"
+  IO.println s!"AUDIT SUMMARY: theorems audited: {nThm} ({nThm - nAuto} stated in the sources, {nAuto} auto-generated equation/congruence/injectivity lemmas); declarations audited: {nDecl}; violations: {bad.size}"
   if bad.isEmpty then
     IO.println "AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations"
   else

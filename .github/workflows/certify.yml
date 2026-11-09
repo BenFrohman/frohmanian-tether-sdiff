@@ -27,7 +27,7 @@ jobs:
       - name: Check audit summary
         run: |
           grep -q "^AUDIT PASS" axioms.txt
-          if grep -qE "AUDIT FAIL|sorryAx|ofReduceBool|error" axioms.txt; then cat axioms.txt; exit 1; fi
+          if grep -v "^AUDIT PASS" axioms.txt | grep -qE "AUDIT FAIL|sorryAx|ofReduceBool|error"; then cat axioms.txt; exit 1; fi
           grep "^AUDIT SUMMARY" axioms.txt
       - name: Upload axiom report
         if: always()
