@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 1172
+-- FrohmanianTether/SymplecticTether.lean, line 1078
 public theorem tethered_jacobi_identity (F G H : Functional) (ω : CoadjointOrbit)
     (X Y Z : VelocityField)
     (_hF : FunctionalDerivative F ω = X)

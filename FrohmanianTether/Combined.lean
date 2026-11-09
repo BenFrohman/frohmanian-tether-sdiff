@@ -20,10 +20,13 @@ C1–C3 status for `TetherKernel` (checked 2026-11-04):
 * C1 `InvariantUnderCoadjointAction` — CONDITIONAL on `SDiffActionHyp.casimir_invariant`
   (only that field: it gives enstrophy invariance) and `TetherIntegralPreserved` (open).
   `TetherIntegralPreserved` is supplied by any `VolumePreservingCoadjointAction`.
-* C2 `DegenerateWRTKineticEnergy` — CONDITIONAL on `KineticEnergyDerivIsVelocity` (open),
-  `div u = 0` and finite kinetic energy, via `Pi_u u = 0`.
+* C2 `DegenerateWRTKineticEnergy` — NOT PROVED. The former route assumed `δH/δω = u`
+  (`KineticEnergyDerivIsVelocity`), which is false with these definitions
+  (`KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity`);
+  that hypothesis and every theorem using it were removed.
 * C3 `ProducesControllableNegativeFeedback` — UNCONDITIONAL (`tetherKernel_C3`, equality).
-* C2 + symmetry ⇒ `T(M,H) = 0` for every `M` (`tetherKernel_left_H_zero`): no damping.
+* IF C2 held, symmetry would force `T(M,H) = 0` for every `M` (`tetherKernel_left_H_zero`,
+  which takes C2 as a hypothesis): no damping.
 -/
 
 @[expose] public section
@@ -47,14 +50,6 @@ theorem tetherKernel_C1_of_volumePreserving
   tether_coadjoint_invariance SDiff hyp
     (Symplectori.SymplecticConstraint.volumePreservingCoadjointAction_preserves_TetherKernel A)
 
-/-- C2 for `TetherKernel`, conditional on `KineticEnergyDerivIsVelocity`. -/
-theorem tetherKernel_C2_of_KEDeriv
-    (hδ : PlanSteps.KineticEnergyDerivIsVelocity)
-    (hdiv : ∀ ω x, div (velocity_from_vorticity ω) x = 0)
-    (hInt : ∀ ω, Integrable (fun y => ‖velocity_from_vorticity ω y‖ ^ 2)) :
-    DegenerateWRTKineticEnergy TetherKernel :=
-  tetherKernel_C2_of_identifications hδ hdiv hInt
-
 /-- C3, unconditional. -/
 theorem tetherKernel_C3' : ProducesControllableNegativeFeedback TetherKernel :=
   tetherKernel_C3
@@ -75,12 +70,13 @@ theorem tetherKernel_left_H_zero (hC2 : DegenerateWRTKineticEnergy TetherKernel)
 
 /-- **Combined conditional capstone (geometric + analytic layers).** An IMPLICATION only:
 every open assumption is an explicit hypothesis. This is NOT a proof of Navier–Stokes
-regularity. Under the current symmetric C2 design the rate hypothesis `hRate` is
-UNSUPPORTED: C2 plus symmetry force `T(M,H) = 0` (conclusion (4)), i.e. the tether's damping
-coefficient on `M` is 0, so nothing in the geometric layer supplies `hRate` or `hClose`.
+regularity. Nothing in the geometric layer supplies the rate hypothesis `hRate` or `hClose`
+(and if C2 held, `tetherKernel_left_H_zero` would make the tether's damping coefficient 0).
+C2 is not a conclusion: the former hypothesis `KineticEnergyDerivIsVelocity` is refuted
+(`KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity`) and removed.
 
 Open hypotheses: `hyp : SDiffActionHyp`, `h_density : TetherIntegralPreserved`,
-`hδ : KineticEnergyDerivIsVelocity`, `hω : IsCoadjointMotion`, `h_proj`, `h_dens`
+`hω : IsCoadjointMotion`, `h_proj`, `h_dens`
 (projection-factorization ⇒ density), `h_weight`, `h_sat`, `h_nondeg`,
 `hRate : FrohmanianTetherRate`, `hClose : FrohmanianTetherClosingBound`, `hcrit` (BKM),
 `huniq` (Kato uniqueness), `w` (Kato local witness). -/
@@ -88,9 +84,6 @@ theorem combined_conditional_capstone
     (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
     (hyp : SDiffActionHyp SDiff)
     (h_density : TetherIntegralPreserved SDiff)
-    (hδ : PlanSteps.KineticEnergyDerivIsVelocity)
-    (hdivω : ∀ ω x, div (velocity_from_vorticity ω) x = 0)
-    (hIntω : ∀ ω, Integrable (fun y => ‖velocity_from_vorticity ω y‖ ^ 2))
     (ωt : ℝ → CoadjointOrbit) (hω : PlanSteps.IsCoadjointMotion SDiff ωt)
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (h_sym : ∀ ω F G, B ω F G = B ω G F)
@@ -113,28 +106,23 @@ theorem combined_conditional_capstone
     (hClose : ClayStatements.FrohmanianTetherClosingBound ν)
     (hcrit : TetheredLyapunov.PhysicalBKMContinuationCriterionFor u₀ ν)
     (huniq : TetheredLyapunov.KatoUniquenessOnExistenceTimes u₀ ν w) :
-    -- (1) C1, C2, C3 for the tether
+    -- (1) C1 and C3 for the tether (C2 is not proved)
     (InvariantUnderCoadjointAction SDiff TetherKernel ∧
-      DegenerateWRTKineticEnergy TetherKernel ∧
       ProducesControllableNegativeFeedback TetherKernel) ∧
     -- (2) canonicity: B is the tether
     (∀ ω F G, B ω F G = TetherKernel ω F G) ∧
     -- (3) Casimirs conserved along the coadjoint motion
     (∀ f t, Casimir f (ωt t) = Casimir f (ωt 0)) ∧
-    -- (4) no damping: T(M,H) = 0
-    (∀ ω M, TetherKernel ω KineticEnergyHamiltonian M = 0) ∧
-    -- (5) analytic layer, conditional on hRate / hClose
+    -- (4) analytic layer, conditional on hRate / hClose
     TetheredLyapunov.PhysicalVorticityCubicRate u₀ ν ∧
     (∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
       NS_PDE u p ν ∧ u 0 = u₀ ∧
       (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
       (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (u t)) ≥ 0) ∧
       (∀ t ≥ (0 : ℝ), ∀ x, div (u t) x = 0)) := by
-  have hC2 := tetherKernel_C2_of_KEDeriv hδ hdivω hIntω
-  refine ⟨⟨tetherKernel_C1_of_casimir SDiff hyp h_density, hC2, tetherKernel_C3'⟩,
+  refine ⟨⟨tetherKernel_C1_of_casimir SDiff hyp h_density, tetherKernel_C3'⟩,
     uniqueness_of_minimal_tether_core B h_sym h_proj h_dens h_weight h_sat h_nondeg,
     fun f t => PlanSteps.casimir_conserved hyp ωt hω f t,
-    fun ω M => (tetherKernel_left_H_zero hC2 ω M).1,
     TetheredLyapunov.physicalVorticityCubicRate_of_tetherRate h_pos_ν hRate, ?_⟩
   exact ClosureBlueprint.conditional_regularity_of_open_hyps u₀ ν h_divfree h_smooth h_finite_energy h_pos_ν
     w (hClose u₀ h_divfree h_smooth h_finite_energy) hcrit huniq
@@ -145,7 +133,6 @@ end
 
 #print axioms Combined.tetherKernel_C1_of_casimir
 #print axioms Combined.tetherKernel_C1_of_volumePreserving
-#print axioms Combined.tetherKernel_C2_of_KEDeriv
 #print axioms Combined.tetherKernel_C3'
 #print axioms Combined.left_H_zero_of_C2_symm
 #print axioms Combined.tetherKernel_left_H_zero

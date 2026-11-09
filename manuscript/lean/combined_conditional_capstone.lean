@@ -1,11 +1,8 @@
--- FrohmanianTether/Combined.lean, line 87
+-- FrohmanianTether/Combined.lean, line 83
 theorem combined_conditional_capstone
     (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
     (hyp : SDiffActionHyp SDiff)
     (h_density : TetherIntegralPreserved SDiff)
-    (hδ : PlanSteps.KineticEnergyDerivIsVelocity)
-    (hdivω : ∀ ω x, div (velocity_from_vorticity ω) x = 0)
-    (hIntω : ∀ ω, Integrable (fun y => ‖velocity_from_vorticity ω y‖ ^ 2))
     (ωt : ℝ → CoadjointOrbit) (hω : PlanSteps.IsCoadjointMotion SDiff ωt)
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (h_sym : ∀ ω F G, B ω F G = B ω G F)
@@ -28,17 +25,14 @@ theorem combined_conditional_capstone
     (hClose : ClayStatements.FrohmanianTetherClosingBound ν)
     (hcrit : TetheredLyapunov.PhysicalBKMContinuationCriterionFor u₀ ν)
     (huniq : TetheredLyapunov.KatoUniquenessOnExistenceTimes u₀ ν w) :
-    -- (1) C1, C2, C3 for the tether
+    -- (1) C1 and C3 for the tether (C2 is not proved)
     (InvariantUnderCoadjointAction SDiff TetherKernel ∧
-      DegenerateWRTKineticEnergy TetherKernel ∧
       ProducesControllableNegativeFeedback TetherKernel) ∧
     -- (2) canonicity: B is the tether
     (∀ ω F G, B ω F G = TetherKernel ω F G) ∧
     -- (3) Casimirs conserved along the coadjoint motion
     (∀ f t, Casimir f (ωt t) = Casimir f (ωt 0)) ∧
-    -- (4) no damping: T(M,H) = 0
-    (∀ ω M, TetherKernel ω KineticEnergyHamiltonian M = 0) ∧
-    -- (5) analytic layer, conditional on hRate / hClose
+    -- (4) analytic layer, conditional on hRate / hClose
     TetheredLyapunov.PhysicalVorticityCubicRate u₀ ν ∧
     (∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
       NS_PDE u p ν ∧ u 0 = u₀ ∧

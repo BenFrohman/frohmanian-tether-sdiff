@@ -57,14 +57,6 @@ theorem bsSymbol_curl (k w : Fin 3 → ℝ) (hk : k ≠ 0) (hw : k ⬝ᵥ w = 0)
   simp only [bsSymbol, LinearMap.map_smul, ← smul_neg, key, smul_smul, inv_mul_cancel₀ hkk,
     one_smul]
 
-/-- Step 3 hypothesis (named, OPEN; user answer 2026-11-03: "δH = u"): the functional
-derivative of the kinetic-energy Hamiltonian is the velocity `u = velocity_from_vorticity ω`
-(not `BS* BS ω`). Not proved: `FunctionalDerivative` is a `Classical.choose` of a Gâteaux
-representative, and the representative of `½∫|BS ω|²` is `BS* BS ω`, equal to `u` only
-under a self-adjointness/gauge identification that is not formalized. -/
-def KineticEnergyDerivIsVelocity : Prop :=
-  ∀ ω : CoadjointOrbit, FunctionalDerivative KineticEnergyHamiltonian ω = velocity_from_vorticity ω
-
 /-- Step 3 hypothesis (named, OPEN): the trajectory `ω` is a coadjoint motion. -/
 def IsCoadjointMotion (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
     (ω : ℝ → CoadjointOrbit) : Prop :=

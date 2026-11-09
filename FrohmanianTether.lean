@@ -12,6 +12,7 @@ import FrohmanianTether.CubicSourceCertificate
 import FrohmanianTether.ForMathlib.Projection
 import FrohmanianTether.HighSetDepletionAndBKM
 import FrohmanianTether.IndependentMajorant
+import FrohmanianTether.KineticEnergyDerivative
 import FrohmanianTether.NS_Equations
 import FrohmanianTether.PlanSteps
 import FrohmanianTether.ScalingIdentities

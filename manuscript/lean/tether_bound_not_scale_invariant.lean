@@ -1,3 +1,3 @@
--- FrohmanianTether/PlanSteps.lean, line 84
+-- FrohmanianTether/PlanSteps.lean, line 76
 theorem tether_bound_not_scale_invariant (S C κ M : ℝ) (hκ : 0 < κ) (hM : M ≠ 0) :
     ¬ ∀ l : ℝ, 0 < l → l ^ 6 * S ≤ C * (l ^ 2 * M) ^ 3 - κ * (l ^ 2 * M) ^ 4 := ...

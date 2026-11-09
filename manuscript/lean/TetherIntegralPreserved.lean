@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 974
+-- FrohmanianTether/SymplecticTether.lean, line 950
 @[expose] public def TetherIntegralPreserved (SDiff : Type*) [Group SDiff]
     [MulAction SDiff CoadjointOrbit] : Prop :=
   ∀ (g : SDiff) (F G : Functional) (ω : CoadjointOrbit),

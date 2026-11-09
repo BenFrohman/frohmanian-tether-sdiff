@@ -75,7 +75,10 @@ The work is split across SymplecticTether.lean (existence + uniqueness of the Te
 and TetheredLyapunov.lean (global regularity conditional on the rate, via the majorant).
 Editor green ticks only mean this declaration elaborated. The certificate is
 `#print axioms frohmanian_tether_theorem`: it must list `propext`,
-`Classical.choice`, `Quot.sound` and must **not** list `sorryAx`. -/
+`Classical.choice`, `Quot.sound` and must **not** list `sorryAx`.
+The former first clause ("the tethered bracket reproduces the classical one on `H`", under the
+hypothesis `δH/δω = u`) was removed: that hypothesis is false with these definitions
+(`KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity`). -/
 public theorem frohmanian_tether_theorem
     (hKato : ∀ u₀ ν, ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) → 0 < ν →
@@ -115,13 +118,6 @@ public theorem frohmanian_tether_theorem
         IsPhysicalNSSolution v →
         ∀ t ∈ Set.Icc (0 : ℝ) T', w.u t = v t) :
   ∃ (𝔗_F : CoadjointOrbit → Functional → Functional → ℝ),
-    (∀ F ω,
-      FunctionalDerivative KineticEnergyHamiltonian ω =
-          velocity_from_vorticity ω →
-      (∀ x, div (velocity_from_vorticity ω) x = 0) →
-      Integrable (fun y => ‖velocity_from_vorticity ω y‖ ^ 2) →
-      TetheredBracket F KineticEnergyHamiltonian ω =
-        ClassicalBracket F KineticEnergyHamiltonian ω) ∧
     (∀ (SDiff : Type) [Group SDiff] [MulAction SDiff CoadjointOrbit] (B : CoadjointOrbit → Functional → Functional → ℝ),
       (∀ ω F G, B ω F G = -B ω G F) →
       InvariantUnderCoadjointAction SDiff B →
@@ -147,9 +143,7 @@ public theorem frohmanian_tether_theorem
         (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
         (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (u t)) ≥ 0) ∧
         (∀ t ≥ (0 : ℝ), ∀ x, div (u t) x = 0)) := by
-  refine ⟨TetherKernel, ?_, ?_, ?_, ?_⟩
-  · intro F ω hδ hdiv hInt
-    exact tethered_reproduces_classical_euler F ω hδ hdiv hInt
+  refine ⟨TetherKernel, ?_, ?_, ?_⟩
   · intro SDiff _ _ B hanti hC1 hC2 hC3 hsat hpolB hpolT ω F G
     exact uniqueness_of_minimal_tether_antisymmetric SDiff B hanti hC1 hC2 hC3 hsat hpolB hpolT ω F G
   · intro B α hrepr hα ω F G

@@ -309,7 +309,8 @@ public def IsGateauxRepresentative (F : CoadjointOrbit → ℝ) (ω : CoadjointO
       (∫ x, pairing (δ x) (ε.val x) ∂volume) 0
 
 /-- Functional derivative as the Gâteaux representative when one exists, else `0`.
-Choice, not `sorry`. The kinetic-energy case is `functional_derivative_of_kinetic_energy`. -/
+Choice, not `sorry`. For kinetic energy this is NOT the velocity in general:
+see `KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity`. -/
 public noncomputable def FunctionalDerivative (F : CoadjointOrbit → ℝ)
     (ω : CoadjointOrbit) : T3 → EuclideanSpace ℝ (Fin 3) :=
   if h : ∃ δ, IsGateauxRepresentative F ω δ then Classical.choose h else 0
@@ -328,6 +329,19 @@ public theorem FunctionalDerivative_eq_choose
     (h : ∃ dH, IsGateauxRepresentative F ω dH) :
     FunctionalDerivative F ω = Classical.choose h :=
   dif_pos h
+
+/-- Unfolding lemma for `IsGateauxRepresentative` (its body is not exposed to importers). -/
+public theorem isGateauxRepresentative_iff (F : CoadjointOrbit → ℝ) (ω : CoadjointOrbit)
+    (d : T3 → EuclideanSpace ℝ (Fin 3)) :
+    IsGateauxRepresentative F ω d ↔
+      ∀ (ε : CoadjointOrbit)
+        (hω : ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x)
+        (hε : ∀ i x, DifferentiableAt ℝ (fun y => ε.val y i) x),
+        HasDerivAt (fun t : ℝ =>
+          F ⟨fun x => ω.val x + t • ε.val x,
+            fun x => orbit_add_smul_div_free ω ε t hω hε x⟩)
+          (∫ x, pairing (d x) (ε.val x) ∂volume) 0 := by
+  unfold IsGateauxRepresentative; exact Iff.rfl
 
 /-- Two continuous finite-energy divergence-free Gâteaux representatives
 coincide: the orbit variation in the difference direction forces vanishing
@@ -599,6 +613,11 @@ Mapping properties (`div = 0`, `curl ∘ BiotSavart = id` on the orbit) are theo
 public noncomputable def BiotSavart (ω : T3 → EuclideanSpace ℝ (Fin 3)) :
     T3 → EuclideanSpace ℝ (Fin 3) :=
   fun x => ∫ y, biotSavartKernel x y • cross (ω y) (x - y) ∂volume
+
+/-- Unfolding lemma for `BiotSavart` (its body is not exposed to importers). -/
+public theorem BiotSavart_apply (ω : T3 → EuclideanSpace ℝ (Fin 3)) (x : T3) :
+    BiotSavart ω x = ∫ y, biotSavartKernel x y • cross (ω y) (x - y) ∂volume := by
+  unfold BiotSavart; rfl
 
 /-- The kernel applied to the zero field is the zero field. -/
 public theorem BiotSavart_zero :
@@ -930,22 +949,6 @@ public theorem velocity_from_zero_orbit (ω : CoadjointOrbit)
     velocity_from_vorticity ω = 0 := by
   simp [velocity_from_vorticity, hω, BiotSavart_zero]
 
-/-- If `u` is the unique Gâteaux representative of kinetic energy, the
-encoding's `Classical.choose` returns `u`. Existence/uniqueness of that
-representative remain the Biot–Savart identification. -/
-public theorem functional_derivative_eq_velocity_of_unique_repr
-    (ω : CoadjointOrbit)
-    (h : IsGateauxRepresentative KineticEnergyHamiltonian ω
-      (velocity_from_vorticity ω))
-    (huniq : ∀ dH, IsGateauxRepresentative KineticEnergyHamiltonian ω dH →
-      dH = velocity_from_vorticity ω) :
-    FunctionalDerivative KineticEnergyHamiltonian ω =
-      velocity_from_vorticity ω := by
-  have hex : ∃ dH, IsGateauxRepresentative KineticEnergyHamiltonian ω dH :=
-    ⟨velocity_from_vorticity ω, h⟩
-  rw [FunctionalDerivative_eq_choose hex]
-  exact huniq _ (Classical.choose_spec hex)
-
 /-- Paper `δH = u` in the Lie-algebra pairing: the Gâteaux derivative of
 kinetic energy along `ω + t ε` is `∫ ⟨Kω, Kε⟩`, not the vorticity pairing
 `∫ ⟨Kω, ε⟩`. Dominated integrability of the affine Biot–Savart line is
@@ -1118,8 +1121,9 @@ public theorem classical_bracket_reproduces_Euler
 #print axioms div_biotSavart_integrand
 #print axioms div_biotSavart_integrand_ae
 #print axioms div_BiotSavart_of_interchange
-#print axioms functional_derivative_eq_velocity_of_unique_repr
 #print axioms gateaux_representative_unique
+#print axioms isGateauxRepresentative_iff
+#print axioms BiotSavart_apply
 #print axioms kineticEnergyHamiltonian_hasDerivAt_velocity_pairing
 #print axioms isVelocityGateauxRepresentative_kineticEnergy_at
 

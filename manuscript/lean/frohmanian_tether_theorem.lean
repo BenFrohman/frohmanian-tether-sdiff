@@ -1,4 +1,4 @@
--- FrohmanianTether/ConditionalRegularity.lean, line 79
+-- FrohmanianTether/ConditionalRegularity.lean, line 82
 public theorem frohmanian_tether_theorem
     (hKato : ∀ u₀ ν, ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) → 0 < ν →
@@ -38,13 +38,6 @@ public theorem frohmanian_tether_theorem
         IsPhysicalNSSolution v →
         ∀ t ∈ Set.Icc (0 : ℝ) T', w.u t = v t) :
   ∃ (𝔗_F : CoadjointOrbit → Functional → Functional → ℝ),
-    (∀ F ω,
-      FunctionalDerivative KineticEnergyHamiltonian ω =
-          velocity_from_vorticity ω →
-      (∀ x, div (velocity_from_vorticity ω) x = 0) →
-      Integrable (fun y => ‖velocity_from_vorticity ω y‖ ^ 2) →
-      TetheredBracket F KineticEnergyHamiltonian ω =
-        ClassicalBracket F KineticEnergyHamiltonian ω) ∧
     (∀ (SDiff : Type) [Group SDiff] [MulAction SDiff CoadjointOrbit] (B : CoadjointOrbit → Functional → Functional → ℝ),
       (∀ ω F G, B ω F G = -B ω G F) →
       InvariantUnderCoadjointAction SDiff B →

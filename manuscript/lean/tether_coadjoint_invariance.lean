@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 990
+-- FrohmanianTether/SymplecticTether.lean, line 966
 public theorem tether_coadjoint_invariance (SDiff : Type*) [Group SDiff]
     [MulAction SDiff CoadjointOrbit] (hyp : SDiffActionHyp SDiff)
     (h_density : TetherIntegralPreserved SDiff)

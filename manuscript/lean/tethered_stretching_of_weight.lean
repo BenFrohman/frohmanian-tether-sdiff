@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 674
+-- FrohmanianTether/SymplecticTether.lean, line 672
 public theorem tethered_stretching_of_weight
     (ωField uField : VelocityField) (x : T3) (C M : ℝ)
     (hu : DifferentiableAt ℝ uField x)

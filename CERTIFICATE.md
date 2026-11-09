@@ -1,29 +1,44 @@
 # Verification certificate
 
-**Paper:** *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping — Conditional statements verified in Lean 4*, version 0.1.1
+**Paper:** *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping — Conditional statements verified in Lean 4*, version 0.1.2 (draft, unreleased; branch `remove-kinetic-energy-hypothesis`)
 **Author:** Benjamin Stanley Frohman (frohmanbenjamin@gmail.com, ORCID 0009-0006-7068-3718)
 **PDF:** `manuscript/main.pdf` (source `manuscript/main.tex`)
 
 | Item | Value |
 |---|---|
-| Verified commit | `36e150eb1db507561374a6280aa28db242bbdec8` |
+| Verified commit | tip of branch `remove-kinetic-energy-hypothesis` (see CI runs) |
 | Lean toolchain | `leanprover/lean4:v4.30.0-rc1` (`lean-toolchain`) |
 | Mathlib | `v4.30.0-rc1`, rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` (`lake-manifest.json`) |
-| Build | `lake build`: 2712 jobs, success |
-| CI run, Lean certificate (build + source scan + strict axiom audit), passed | https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42610807892 |
-| CI run, Lean 4 (lean-action build), passed | https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42610807893 |
-| Zenodo archive (v0.1.1) | [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)) |
-| Modules | 22 (`FrohmanianTether` and 21 submodules) |
-| Declarations audited | 761 |
-| Theorem constants audited | 519 (483 stated in the sources, 36 auto-generated equation/congruence/injectivity lemmas) |
+| Build | `lake build`: 2713 jobs, success |
+| CI run, Lean certificate (build + source scan + strict axiom audit) | pending |
+| CI run, Lean 4 (lean-action build) | pending |
+| Zenodo archive | none for 0.1.2. The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
+| Modules | 23 (`FrohmanianTether` and 22 submodules) |
+| Declarations audited | 783 |
+| Theorem constants audited | 536 (496 stated in the sources, 40 auto-generated equation/congruence/injectivity lemmas) |
 | Axioms used | only `propext`, `Classical.choice`, `Quot.sound` (some declarations use a subset) |
 | `sorry` / `admit` / `native_decide` | none |
 | `axiom` declarations | none |
 
-The Lean sources (`FrohmanianTether/`, `FrohmanianTether.lean`, `lakefile.lean`, `lean-toolchain`,
-`lake-manifest.json`) are unchanged from tag `v0.1.0` (`ed705bd8b62da1ec15142f75b26154bf427beb46`).
-The release commit for `v0.1.1` changes only documentation, metadata, the manuscript and its statement-extraction script relative to
-the verified commit; CI runs on it are linked in the release notes.
+## Changes from v0.1.1
+
+- **Removed (false):** `PlanSteps.KineticEnergyDerivIsVelocity`
+  (`∀ ω, FunctionalDerivative KineticEnergyHamiltonian ω = velocity_from_vorticity ω`). Its negation is
+  proved: `KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity`
+  (new module `FrohmanianTether/KineticEnergyDerivative.lean`, standard axioms only).
+- **Deleted** because they assumed the hypothesis or its pointwise form:
+  `Combined.tetherKernel_C2_of_KEDeriv`, `tetherKernel_degenerates_on_kinetic_energy`,
+  `tetherKernel_C2_of_identifications`, `tethered_reproduces_classical_euler`,
+  `degeneracy_for_mollified_sup_norm_proxy`.
+- **Deleted** because their hypotheses can never hold (a Gâteaux representative is never unique,
+  `KineticEnergyDerivative.not_unique_isGateauxRepresentative` and
+  `not_unique_velocity_representative`): `ArnoldGeometric.functional_derivative_eq_velocity_of_unique_repr`,
+  `functional_derivative_of_kinetic_energy_of_unique_repr`, `functional_derivative_of_kinetic_energy`.
+- **Statements changed:** `ConditionalRegularity.frohmanian_tether_theorem` lost its first clause
+  (bracket agreement on `H` under δH = u); `Combined.combined_conditional_capstone` lost the hypotheses
+  `hδ`, `hdivω`, `hIntω` and the conclusions C2 and `T(H,M) = 0`.
+- **Added:** unfolding lemmas `ArnoldGeometric.isGateauxRepresentative_iff`, `ArnoldGeometric.BiotSavart_apply`.
+- No other Lean statement was changed.
 
 ## Checks
 
@@ -41,10 +56,8 @@ the verified commit; CI runs on it are linked in the release notes.
 The repository declares no axioms. Open assumptions are explicit hypotheses (Lean arguments or
 named `Prop`s), so every theorem that uses them is a conditional implication. In particular:
 
-- `PlanSteps.KineticEnergyDerivIsVelocity` (δH/δω = u, believed false as stated) is a hypothesis of
-  `Combined.tetherKernel_C2_of_KEDeriv` and `Combined.combined_conditional_capstone`; its pointwise
-  instance is a hypothesis of `tetherKernel_degenerates_on_kinetic_energy`,
-  `tethered_reproduces_classical_euler` and clause (1) of `ConditionalRegularity.frohmanian_tether_theorem`.
+- No theorem takes `KineticEnergyDerivIsVelocity` (δH/δω = u) or its pointwise form as a hypothesis;
+  it is refuted (see above). C2 for `TetherKernel` is not proved.
 - `SDiffActionHyp`, `TetherIntegralPreserved`, `IsCoadjointMotion`, `FrohmanianTetherRate`,
   `FrohmanianTetherBound`, `FrohmanianTetherClosingBound`, `KatoLocalWitness`,
   `PhysicalBKMContinuationCriterionFor`, `KatoUniquenessOnExistenceTimes`,
@@ -66,7 +79,7 @@ named `Prop`s), so every theorem that uses them is a conditional implication. In
 | batteries | `v4.30.0-rc1` | `bf597c77bf9b8e66720d724928207f5911533113` |
 | Cli | `v4.30.0-rc1` | `f7d0ca7c926cdde0562af20394dd25d028b839a5` |
 
-## Axiom report (`lake env lean scripts/AxiomAudit.lean`, CI artifact of run 42610807892)
+## Axiom report (`lake env lean scripts/AxiomAudit.lean`, local run on the verified commit; the CI artifact `axioms` of the certificate run is identical in content)
 
 One line per theorem constant, in `#print axioms` format, followed by the audit summary.
 
@@ -87,6 +100,7 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'AnalyticPipeline.youngs_absorption_elimination' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.BiotSavart_add' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.BiotSavart_affine' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ArnoldGeometric.BiotSavart_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.BiotSavart_smul' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.BiotSavart_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.CoadjointAction_div' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -124,12 +138,12 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'ArnoldGeometric.div_biotSavart_integrand_ae' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.div_cross_offset' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.div_cross_right' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ArnoldGeometric.functional_derivative_eq_velocity_of_unique_repr' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.gateaux_representative_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.hasDerivAt_half_norm_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.hasDerivAt_half_norm_sq_at' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.hasFDerivAt_biotSavartKernel_of_ne' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.hasFDerivAt_norm_sq_offset' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ArnoldGeometric.isGateauxRepresentative_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.isVelocityGateauxRepresentative_kineticEnergy_at' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.kineticEnergyHamiltonian_hasDerivAt_velocity_pairing' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.kineticEnergy_hasDerivAt_velocity_pairing' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -167,7 +181,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'Combined.left_H_zero_of_C2_symm' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Combined.tetherKernel_C1_of_casimir' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Combined.tetherKernel_C1_of_volumePreserving' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Combined.tetherKernel_C2_of_KEDeriv' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Combined.tetherKernel_C3'' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Combined.tetherKernel_left_H_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConcreteSDiff.casimir_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -254,7 +267,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'FrohmanianTether.antisymmetric_correction_diagonal_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.div_biot_savart_of_eq_curl' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.div_biot_savart_velocity_of_interchange' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.functional_derivative_of_kinetic_energy_of_unique_repr' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.hPi_of_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.kappa'_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.kappa_eq_three_halves' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -277,11 +289,9 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'FrohmanianTether.step5_eq_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.step5_higher_order' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_C1' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.tetherKernel_C2_of_identifications' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_C2_of_no_gateaux' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_C3' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_comm' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.tetherKernel_degenerates_on_kinetic_energy' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_diagonal_nonpos' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_has_canonical_density' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_nondegenerate_on_casimir_defect' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -298,7 +308,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'FrohmanianTether.tether_satisfies_C1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tethered_h_slot_stretching_remains_cubic' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tethered_jacobi_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.tethered_reproduces_classical_euler' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tethered_stretching_of_weight' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.time_pairing_le_stretching_at_max' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.uniqueness_of_kernel_density' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -310,6 +319,27 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'FrohmanianTether.unmodified_pairing_and_c3_diagonal' depends on axioms: [propext, Classical.choice, Quot.sound]
 'IndependentMajorant.comparison_majorant_global_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
 'IndependentMajorant.lemma_3_1_uniform_bound_and_continuation' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.biotSavart_indField_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.bsField0_coord2' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.choose_eq_of_pred_eq_true' depends on axioms: [Classical.choice]
+'KineticEnergyDerivative.continuousOn_bsInt0' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.ctr.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.div_indField' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.e1.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.fderiv_eq_zero_of_two_valued' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.functionalDerivative_of_not_differentiable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.indField.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.indField_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.indField_smul' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.indOrbit.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.integrable_bsField0' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.isGateauxRepresentative_of_not_differentiable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.ne_zero_of_mem_closedBall' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.not_differentiableAt_indField' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.not_unique_isGateauxRepresentative' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.not_unique_velocity_representative' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KineticEnergyDerivative.one_lt_coord_of_mem_ball' depends on axioms: [propext, Classical.choice, Quot.sound]
 'LinearMap.mk₂.congr_simp' depends on axioms: [propext, Quot.sound]
 'NavierStokes3D.KatoLocalWitness.Tpos' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.KatoLocalWitness.init' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -590,6 +620,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'crossProduct.eq_1' depends on axioms: [propext, Quot.sound]
 'fderivInnerCLM.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'gradient.congr_simp' depends on axioms: [propext, Classical.choice, Quot.sound]
-AUDIT SUMMARY: theorems audited: 519 (483 stated in the sources, 36 auto-generated equation/congruence/injectivity lemmas); declarations audited: 761; violations: 0
+AUDIT SUMMARY: theorems audited: 536 (496 stated in the sources, 40 auto-generated equation/congruence/injectivity lemmas); declarations audited: 783; violations: 0
 AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations
 ```

@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 644
+-- FrohmanianTether/SymplecticTether.lean, line 642
 public theorem reduced_pairing_of_unmodified_and_tether
     (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν : ℝ)
     (t : ℝ) (_ht : 0 ≤ t) (x : T3)

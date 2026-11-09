@@ -239,10 +239,8 @@ This module follows the guidance in §7 Definitions, with the following delibera
   - Property definitions that are not pure theorems (`InvariantUnderCoadjointAction`, `DegenerateWRTKineticEnergy`, `ProducesControllableNegativeFeedback`). These are `def` because they define the meaning of the three necessary conditions (C1)–(C3) as predicates, not as statements to be proved.
 
 - `theorem` / `lemma` is reserved for actual assertions that require proof:
-  - `degeneracy_for_mollified_sup_norm_proxy`
   - `uniqueness_of_minimal_tether` (the 5-step canonicity Theorem 2.3)
   - `tether_coadjoint_invariance`
-  - `tethered_reproduces_classical_euler`
   - `tethered_jacobi_identity` (the explicit verification on test functionals F_p)
 
 - `noncomputable section` + `noncomputable def` (7.1 Modifiers) is used because large parts of the development rely on classical reasoning (choice for existence of solutions to ODEs, excluded middle in case distinctions, etc.). This is the recommended pattern when a section contains noncomputable definitions.
@@ -774,28 +772,6 @@ def mollify (_ε : ℝ) (f : T3 → (EuclideanSpace ℝ (Fin 3))) : T3 → (Eucl
 def MollifiedSupNormFunctional (ε : ℝ) (ω : CoadjointOrbit) : ℝ :=
   ⨆ x, ‖mollify ε ω.val x‖
 
-/-- If `u` is the unique Gâteaux representative of kinetic energy, `δH = u`.
-Existence/uniqueness of that representative remain the Biot–Savart identification. -/
-public theorem functional_derivative_of_kinetic_energy_of_unique_repr
-    (ω : CoadjointOrbit)
-    (h : IsGateauxRepresentative KineticEnergyHamiltonian ω
-      (velocity_from_vorticity ω))
-    (huniq : ∀ dH, IsGateauxRepresentative KineticEnergyHamiltonian ω dH →
-      dH = velocity_from_vorticity ω) :
-    FunctionalDerivative KineticEnergyHamiltonian ω =
-      velocity_from_vorticity ω :=
-  functional_derivative_eq_velocity_of_unique_repr ω h huniq
-
-/-- Kinetic energy has functional derivative equal to the Biot–Savart velocity
-once `u` is the unique Gâteaux representative (paper `δH = u`). -/
-lemma functional_derivative_of_kinetic_energy (ω : CoadjointOrbit)
-    (h : IsGateauxRepresentative KineticEnergyHamiltonian ω
-      (velocity_from_vorticity ω))
-    (huniq : ∀ dH, IsGateauxRepresentative KineticEnergyHamiltonian ω dH →
-      dH = velocity_from_vorticity ω) :
-    FunctionalDerivative KineticEnergyHamiltonian ω = velocity_from_vorticity ω :=
-  functional_derivative_of_kinetic_energy_of_unique_repr ω h huniq
-
 /-! ## Theorem 2.3 — Uniqueness of the Minimal Correction (PASS 2 / GotItNavier_Final Section 2.7) -/
 
 /-! ### Supporting lemmas for degeneracy and the 5-step (drawn from classical analysis)
@@ -1060,84 +1036,14 @@ public theorem tetherKernel_C2_of_no_gateaux
   rw [FunctionalDerivative_eq_zero_of_not h]
   exact Pi_u_zero _
 
-/-- C2 mechanism (Reconstruction Lemma 2.3.2): if `FunctionalDerivative H = u`
-and `div u = 0`, the projector kills the Hamiltonian slot on finite-energy
-orbits. Energy-nonzero is `Π_u u = 0`; the zero field is `Pi_u_zero`;
-integrable energy-zero is `u = 0` a.e. The paper is on `𝕋³` with finite
-kinetic energy; `hInt` is that standing hypothesis. -/
-public theorem tetherKernel_degenerates_on_kinetic_energy
-    (F : Functional) (ω : CoadjointOrbit)
-    (hδH : FunctionalDerivative KineticEnergyHamiltonian ω = velocity_from_vorticity ω)
-    (hdiv : ∀ x, div (velocity_from_vorticity ω) x = 0)
-    (hInt : Integrable (fun y => ‖velocity_from_vorticity ω y‖ ^ 2)) :
-    TetherKernel ω F KineticEnergyHamiltonian = 0 := by
-  by_cases hE : (∫ y, ‖velocity_from_vorticity ω y‖ ^ 2 ∂volume) ≠ 0
-  · have hPi :=
-      projection_orthogonal_to_u (velocity_from_vorticity ω) hdiv hE
-    apply tetherKernel_of_right_factor_zero
-    rw [hδH]
-    exact hPi
-  · simp only [ne_eq, not_not] at hE
-    by_cases hz : velocity_from_vorticity ω = 0
-    · apply tetherKernel_of_right_factor_zero
-      rw [hδH, hz]
-      exact Pi_u_zero (0 : VelocityField)
-    · set u := velocity_from_vorticity ω
-      unfold TetherKernel
-      rw [hδH]
-      have hnn : ∀ y, 0 ≤ ‖u y‖ ^ 2 := fun _ => pow_nonneg (norm_nonneg _) _
-      have hae : (fun y => ‖u y‖ ^ 2) =ᵐ[volume] 0 :=
-        (integral_eq_zero_iff_of_nonneg hnn hInt).mp (by simpa using hE)
-      have hu : u =ᵐ[volume] 0 :=
-        hae.mono fun x hx =>
-          norm_eq_zero.mp (sq_eq_zero_iff.mp (by simpa using hx))
-      refine mul_eq_zero.mpr (Or.inr ?_)
-      have hker :
-          (fun x =>
-              inner ℝ
-                (Pi_u u (FunctionalDerivative F ω) x)
-                (Pi_u u u x)) =ᵐ[volume] 0 :=
-        hu.mono fun x hx => by simp [Pi_u, hx, inner_zero_right]
-      rw [integral_congr_ae hker]
-      simp [integral_zero]
+/-! ## Removed: C2 via `δH/δω = u`
 
-/-- C2 for `TetherKernel` given the Biot–Savart identifications `δH = u`,
-`div u = 0`, and finite kinetic energy. The identifications themselves
-remain named lemmas. -/
-public theorem tetherKernel_C2_of_identifications
-    (hδ : ∀ ω, FunctionalDerivative KineticEnergyHamiltonian ω =
-      velocity_from_vorticity ω)
-    (hdiv : ∀ ω x, div (velocity_from_vorticity ω) x = 0)
-    (hInt : ∀ ω, Integrable (fun y => ‖velocity_from_vorticity ω y‖ ^ 2)) :
-    DegenerateWRTKineticEnergy TetherKernel :=
-  fun F ω => tetherKernel_degenerates_on_kinetic_energy F ω (hδ ω) (hdiv ω) (hInt ω)
-
-/-! ## The tethered bracket reproduces classical reversible dynamics -/
-
-public theorem tethered_reproduces_classical_euler (F : Functional) (ω : CoadjointOrbit)
-    (hδ : FunctionalDerivative KineticEnergyHamiltonian ω =
-      velocity_from_vorticity ω)
-    (hdiv : ∀ x, div (velocity_from_vorticity ω) x = 0)
-    (hInt : Integrable (fun y => ‖velocity_from_vorticity ω y‖ ^ 2)) :
-    TetheredBracket F KineticEnergyHamiltonian ω =
-      ClassicalBracket F KineticEnergyHamiltonian ω := by
-  simp only [TetheredBracket]
-  have hker : TetherKernel ω F KineticEnergyHamiltonian = 0 :=
-    tetherKernel_degenerates_on_kinetic_energy F ω hδ hdiv hInt
-  rw [hker, add_zero]
-
-/-- 4-point degeneracy on the mollified sup-norm proxy is C2: `TetherKernel F_ε H = 0`. -/
-theorem degeneracy_for_mollified_sup_norm_proxy (ε : ℝ) (ω : CoadjointOrbit)
-    (hδ : FunctionalDerivative KineticEnergyHamiltonian ω =
-      velocity_from_vorticity ω)
-    (hdiv : ∀ x, div (velocity_from_vorticity ω) x = 0)
-    (hInt : Integrable (fun y => ‖velocity_from_vorticity ω y‖ ^ 2)) :
-    TetherKernel ω (fun ω' => MollifiedSupNormFunctional ε ω') KineticEnergyHamiltonian = 0 := by
-  have h :=
-    tethered_reproduces_classical_euler
-      (fun ω' => MollifiedSupNormFunctional ε ω') ω hδ hdiv hInt
-  simp only [TetheredBracket] at h
-  exact add_eq_left.mp h
+The former lemmas `tetherKernel_degenerates_on_kinetic_energy`,
+`tetherKernel_C2_of_identifications`, `tethered_reproduces_classical_euler` and
+`degeneracy_for_mollified_sup_norm_proxy` assumed
+`FunctionalDerivative KineticEnergyHamiltonian ω = velocity_from_vorticity ω`. That identification
+is false with these definitions (`KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity`),
+so they were deleted. C2 for `TetherKernel` is not proved in this repository. -/
 
 /-! ## Jacobi identity on the reduced orbit (Marsden–Weinstein–Ratiu + explicit test functionals) -/
 
@@ -1285,12 +1191,8 @@ While the Jacobi crack is still in progress they will show `sorryAx` — this is
 #print axioms tetherKernel_comm
 #print axioms antisymmetric_correction_diagonal_zero
 #print axioms tetherKernel_C2_of_no_gateaux
-#print axioms tetherKernel_degenerates_on_kinetic_energy
-#print axioms tetherKernel_C2_of_identifications
-#print axioms functional_derivative_of_kinetic_energy_of_unique_repr
 #print axioms div_biot_savart_of_eq_curl
 #print axioms div_biot_savart_velocity_of_interchange
-#print axioms degeneracy_for_mollified_sup_norm_proxy
 -- (step* and uniqueness_of_minimal_tether moved to Uniqueness.lean / FrohmanianTether namespace per modular cleanup.
 -- Validation prints live there now; see Uniqueness.lean end for #print axioms on the 5-step.)
 -- #print axioms step1_locality
