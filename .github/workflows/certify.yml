@@ -1,0 +1,37 @@
+name: Lean certificate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan (toolchain pinned by lean-toolchain = leanprover/lean4:v4.30.0-rc1)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Get Mathlib cache
+        run: lake exe cache get
+      - name: Build
+        run: lake build
+      - name: No sorry / admit / native_decide / axiom declarations in the sources
+        run: python3 scripts/check_no_sorry.py
+      - name: Strict axiom audit (fails on any axiom beyond propext, Classical.choice, Quot.sound)
+        run: |
+          set -o pipefail
+          lake env lean scripts/AxiomAudit.lean 2>&1 | tee axioms.txt
+      - name: Check audit summary
+        run: |
+          grep -q "^AUDIT PASS" axioms.txt
+          if grep -qE "AUDIT FAIL|sorryAx|ofReduceBool|error" axioms.txt; then cat axioms.txt; exit 1; fi
+          grep "^AUDIT SUMMARY" axioms.txt
+      - name: Upload axiom report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axioms
+          path: axioms.txt
