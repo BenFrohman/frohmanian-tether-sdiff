@@ -1,0 +1,48 @@
+name: Lean build and axiom audit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-audit:
+    name: Build, axiom audit, certificate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+
+      - name: Build
+        run: lake build
+
+      - name: Axiom audit
+        run: |
+          set -euo pipefail
+          mkdir -p certificates
+          lake env lean scripts/AxiomAudit.lean 2>&1 | tee certificates/axiom-audit.txt
+          grep -q 'theorems audited: 519; nonstandard axioms: 0' certificates/axiom-audit.txt
+          grep -q 'Combined.combined_conditional_capstone' certificates/axiom-audit.txt
+          grep -q 'ConcreteSDiff.casimir_invariant' certificates/axiom-audit.txt
+
+      - name: Upload axiom-audit certificate
+        uses: actions/upload-artifact@v4
+        with:
+          name: axiom-audit-certificate
+          path: certificates/axiom-audit.txt

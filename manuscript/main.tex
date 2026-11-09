@@ -73,7 +73,7 @@
 
 \title{The Frohmanian Tether on $\mathrm{SDiff}(\mathbb{T}^3)$: A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping% lean: tether_kernel_uniqueness, tetherKernel_degenerates_on_kinetic_energy
 }
-\author{Benjamin Stanley Frohman\thanks{Copyright \copyright\ 2026 Benjamin Stanley Frohman. All rights reserved. Licensed under the Apache License, Version 2.0 (\url{http://www.apache.org/licenses/LICENSE-2.0}). Companion Lean~4 repository: \url{https://github.com/BenFrohman/NS_Millennium_Proof}. Zenodo DOI: \href{https://doi.org/10.5281/zenodo.23717084}{10.5281/zenodo.23717084}.}\\Independent Researcher\\\small ORCID: \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718} \quad \texttt{frohmanbenjamin@gmail.com}}
+\author{Benjamin Stanley Frohman\thanks{Copyright \copyright\ 2026 Benjamin Stanley Frohman. All rights reserved. Licensed under the Apache License, Version 2.0 (\url{http://www.apache.org/licenses/LICENSE-2.0}). Companion Lean~4 repository: \url{https://github.com/BenFrohman/frohmanian-tether-sdiff}. Zenodo DOI: not yet assigned for this repository (the older-project DOI \texttt{10.5281/zenodo.23717084} is \emph{not} a DOI for this work).}\\Independent Researcher\\\small ORCID: \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718} \quad \texttt{frohmanbenjamin@gmail.com}}
 \date{24 October 2026}
 
 \sloppy
@@ -81,7 +81,7 @@
 \maketitle
 
 \begin{abstract}
-We present in full both (1)~the complete original geometric and physical framework of the \textbf{Frohmanian Symplectic Tether} $\Tf$ (preserving without omission all original definitions, physical motivations, conjectured geometric--analytic bridges, and extensions from \emph{Frohmanian\_Tether\_Final\_Submission\_v8}), and (2)~its complete, kernel-verified, non-vacuous conditional formalization in Lean~4 (repository \texttt{NS\_Millennium\_Proof}: \textbf{537 theorems across 23 modules, zero \texttt{sorryAx}, and only the standard axioms \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}}).
+We present in full both (1)~the complete original geometric and physical framework of the \textbf{Frohmanian Symplectic Tether} $\Tf$ (preserving without omission all original definitions, physical motivations, conjectured geometric--analytic bridges, and extensions from \emph{Frohmanian\_Tether\_Final\_Submission\_v8}), and (2)~its complete, kernel-verified, non-vacuous conditional formalization in Lean~4 (repository \texttt{frohmanian-tether-sdiff}: \textbf{519 theorems in the \texttt{FrohmanianTether.*} modules, zero \texttt{sorryAx}, and only the standard axioms \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}}, as counted by \texttt{scripts/AxiomAudit.lean}). This manuscript is \textbf{not peer-reviewed} and is \textbf{not} an unconditional Navier--Stokes proof.
 
 Let $M(t)=\|\omega(t)\|_{L^\infty}$ denote the vorticity sup-norm (\lean{vorticity_sup_norm}) along a physical solution (\lean{IsPhysicalNSSolution}) of the three-dimensional incompressible Navier--Stokes equations with smooth, divergence-free, finite-energy initial data and viscosity $\nu>0$. We prove in Lean~4 (\lean{frohmanian_tether_theorem} and \lean{conditional_regularity_of_open_hyps}) that if (i)~Kato local existence holds with a uniform restart length on the class of physical solutions (\lean{IsPhysicalNSSolution}, enforcing pointwise time-differentiability and the Leray $L^2$ energy inequality), (ii)~uniqueness holds within \lean{IsPhysicalNSSolution}, and (iii)~$M(t)$ satisfies the Frohmanian cubic differential inequality (\lean{FrohmanianTetherRate})
 \[
@@ -134,7 +134,7 @@ Then $M(t)\le\max\bigl(M(0),\CZ/\kappa''\bigr)$ for all $t\ge0$, and \eqref{eq:N
 
 \paragraph{Verification status of Theorem~\ref{thm:main}.}
 \begin{itemize}
-\item \textbf{Axiom-clean \& sorry-free:} The entire repository \texttt{NS\_Millennium\_Proof} builds cleanly (\texttt{lake build NS\_Millennium\_Proof}, 2717 jobs); its default target contains \textbf{537 theorems across 23 modules, zero \texttt{sorryAx}, and zero nonstandard axioms} (counted by \texttt{collectAxioms} over every theorem; \texttt{lake env lean scripts/AxiomAudit.lean} also passes) (depending only on \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}).
+\item \textbf{Axiom-clean \& sorry-free:} This repository \texttt{frohmanian-tether-sdiff} builds cleanly (\texttt{lake build}, 2712 jobs); \texttt{scripts/AxiomAudit.lean} audits \textbf{519 theorems} in \texttt{FrohmanianTether.*} with \textbf{zero nonstandard axioms} (depending only on \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}).
 \item \textbf{Kernel-verified non-vacuous:} The physical-solution predicate \lean{IsPhysicalNSSolution} (Section~\ref{sec:vacuity}) rules out pathological time-step fields that previously exploited Mathlib's totalized derivative \lean{deriv} $=0$ at jump discontinuities (\lean{stepField_not_physical}). In \lean{ClayStatements.lean}, all hypotheses of Theorem~\ref{thm:main} are proved to be jointly satisfiable and unconditionally realized at $u_0=0$ (\lean{conditional_regularity_nonvacuous_at_zero}).
 \item \textbf{Clear separation of proved implications vs.\ open premises:} The implication $\text{(K)}+\text{(R)}+\text{(U)}\implies\text{(the conclusion of Theorem~\ref{thm:main})}$ is kernel-verified \emph{as an implication} (\lean{Combined.combined_conditional_capstone}). Hypothesis (R) is an open assumption: the tether does not supply it (its damping coefficient is $0$, Section~\ref{sec:damping}), and no derivation of (R) from \eqref{eq:vort} is known. Theorem~\ref{thm:main} therefore depends on an unresolved premise and is \emph{not} a regularity result for Navier--Stokes. Non-vacuity at $u_0=0$ shows only that the hypotheses are jointly satisfiable in a trivial case (\lean{conditional_regularity_nonvacuous_at_zero}).
 \end{itemize}
@@ -370,7 +370,7 @@ In the Lean~4 statement of Theorem~\ref{thm:main}, \emph{if} a vorticity ceiling
 \end{itemize}
 
 \subsection{Complete Preservation of the 14-Point Programme from Appendix~A of \emph{v8}}
-For historical completeness and traceability, Table~\ref{tab:14point} maps each of the 14 mandatory items from Appendix~A of \emph{Frohmanian\_Tether\_Final\_Submission\_v8.tex} to its exact realization in the Lean~4 formalization \texttt{NS\_Millennium\_Proof}.
+For historical completeness and traceability, Table~\ref{tab:14point} maps each of the 14 mandatory items from Appendix~A of \emph{Frohmanian\_Tether\_Final\_Submission\_v8.tex} to its exact realization in the Lean~4 formalization \texttt{frohmanian-tether-sdiff}.
 
 \begin{table}[htbp]
 \centering
@@ -391,7 +391,7 @@ For historical completeness and traceability, Table~\ref{tab:14point} maps each 
 10 & Quartic Lyapunov $S_\varepsilon$, scalar $\varphi$, $L^6$ absorption, cubic ODE $y'=Cy^2-\kappa''y^3$, BKM & \lean{LyapunovS}, \lean{comparison_ode_stability}, \lean{frohmanian_tether_theorem}, \lean{conditional_regularity_of_open_hyps} & Kernel-verified conditional implication + non-vacuity at $u_0=0$; premise (R) open, damping coefficient $=0$\\
 11 & Relation to Onsager's conjecture ($\alpha=1$ persistence) & Section~\ref{sec:original} of this paper & Preserved in manuscript as physical motivation\\
 12 & Metriplectic \& holographic fluid--gravity extensions & \texttt{Skeleton/PaperOverview.lean} (outside the default build target) \& Section~\ref{sec:original} & Preserved in manuscript \& overview module\\
-13 & Technical Appendix: invariance, MWR, mollifiers, pressure & \lean{NS_Equations.lean}, \lean{TetheredLyapunov.lean}, \lean{AnalyticPipeline.lean} & Kernel-verified lemmas (537 theorems in the default target)\\
+13 & Technical Appendix: invariance, MWR, mollifiers, pressure & \lean{NS_Equations.lean}, \lean{TetheredLyapunov.lean}, \lean{AnalyticPipeline.lean} & Kernel-verified lemmas (519 theorems audited in \texttt{FrohmanianTether.*})\\
 14 & Conclusion: non-circular conditional architecture & \lean{ConditionalRegularity.lean}, \lean{ClayStatements.lean} & Checked by \texttt{scripts/AxiomAudit.lean}\\
 \bottomrule
 \end{tabular}
@@ -455,7 +455,7 @@ N5 Clay (B) conditional reduction & \lean{clay_B_exact_of_periodic_tether_bound}
 \section{Certificate}\label{sec:certificate}
 % lean: Combined.combined_conditional_capstone
 \begin{itemize}
-\item Builds clean: \texttt{lake build NS\_Millennium\_Proof} succeeds.
+\item Builds clean: \texttt{lake build} succeeds (2712 jobs); \texttt{scripts/AxiomAudit.lean} audits 519 theorems with 0 nonstandard axioms.
 \item No \texttt{sorry}.
 \item Standard axioms only: \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}.
 \item Geometric layer proved: C1, C2, C3, canonicity, Casimir conservation and $T(M,H)=0$ are proved in \lean{Combined.combined_conditional_capstone} from its listed hypotheses.
@@ -466,7 +466,7 @@ The hypotheses of \lean{Combined.combined_conditional_capstone} are: \lean{SDiff
 %=====================================================================
 \appendix
 \section{Exact Lean Statements}\label{app:lean}
-Quoted verbatim from \texttt{NS\_Millennium\_Proof} (537 theorems, 0 \texttt{sorry}, 0 nonstandard axioms).
+Quoted from this repository \texttt{frohmanian-tether-sdiff} (519 theorems audited, 0 nonstandard axioms; build 2712 jobs).
 
 \paragraph{Physical solution class (\texttt{NS\_Equations.lean}).}
 \leanfile{IsPhysicalNSSolution}
@@ -509,7 +509,7 @@ Quoted verbatim from \texttt{NS\_Millennium\_Proof} (537 theorems, 0 \texttt{sor
 \leanfile{PeriodicBKMContinuation}
 
 \subsection*{Copyright and License}
-Copyright \copyright\ 2026 Benjamin Stanley Frohman (ORCID: \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}). All rights reserved. This manuscript and its companion Lean~4 formalization (\url{https://github.com/BenFrohman/NS_Millennium_Proof}, Zenodo DOI: \href{https://doi.org/10.5281/zenodo.23717084}{10.5281/zenodo.23717084}) are licensed under the Apache License, Version~2.0 (\url{http://www.apache.org/licenses/LICENSE-2.0}).
+Copyright \copyright\ 2026 Benjamin Stanley Frohman (ORCID: \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}). All rights reserved. This manuscript and its companion Lean~4 formalization (\url{https://github.com/BenFrohman/frohmanian-tether-sdiff}; Zenodo DOI not yet assigned) are licensed under the Apache License, Version~2.0 (\url{http://www.apache.org/licenses/LICENSE-2.0}). This work is not peer-reviewed and is not an unconditional Navier--Stokes proof.
 
 \begin{thebibliography}{99}
 \bibitem{Arnold1966} V.~I.~Arnold, Sur la g\'eom\'etrie diff\'erentielle des groupes de Lie de dimension infinie et ses applications \`a l'hydrodynamique des fluides parfaits, \emph{Ann.\ Inst.\ Fourier} 16 (1966), 319--361.

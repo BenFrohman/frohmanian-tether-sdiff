@@ -1,0 +1,12 @@
+Frohmanian tether-sdiff axiom audit certificate
+Date: 2026-11-09 (America/Chicago)
+Base commit audited: ed705bd8b62da1ec15142f75b26154bf427beb46
+Toolchain: leanprover/lean4:v4.30.0-rc1
+Command: lake build && lake env lean scripts/AxiomAudit.lean
+Build: completed successfully (2712 jobs)
+Audit output:
+theorems audited: 519; nonstandard axioms: 0 []
+'Combined.combined_conditional_capstone' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ConcreteSDiff.casimir_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
+Scope: not peer-reviewed; not an unconditional Navier-Stokes proof.
+Note: manuscript/README identity and DOI corrections land in the accompanying PR; CI regenerates certificates/axiom-audit.txt on each run.

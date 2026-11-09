@@ -17,6 +17,10 @@ elab "#audit_axioms" : command => do
     for a in axs do
       unless std.contains a do bad := bad.push (c, a)
   logInfo m!"theorems audited: {n}; nonstandard axioms: {bad.size} {bad.toList}"
+  if bad.size ≠ 0 then
+    throwError "AxiomAudit FAIL: nonstandard axioms present {bad.toList}"
+  if n = 0 then
+    throwError "AxiomAudit FAIL: audited zero theorems"
 #audit_axioms
 #print axioms Combined.combined_conditional_capstone
 #print axioms ConcreteSDiff.casimir_invariant
