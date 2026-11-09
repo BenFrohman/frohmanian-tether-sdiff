@@ -6,12 +6,12 @@
 
 | Item | Value |
 |---|---|
-| Verified commit | tip of branch `remove-kinetic-energy-hypothesis` (see CI runs) |
+| Verified commit | `e84c04f895b6a36757949fc71ff7576732aa3e09` (branch `remove-kinetic-energy-hypothesis`) |
 | Lean toolchain | `leanprover/lean4:v4.30.0-rc1` (`lean-toolchain`) |
 | Mathlib | `v4.30.0-rc1`, rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` (`lake-manifest.json`) |
 | Build | `lake build`: 2713 jobs, success |
-| CI run, Lean certificate (build + source scan + strict axiom audit) | pending |
-| CI run, Lean 4 (lean-action build) | pending |
+| CI run, Lean certificate (build + source scan + strict axiom audit) | passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42614959392 |
+| CI run, Lean 4 (lean-action build) | passed (workflow_dispatch on the branch): https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42614969344 |
 | Zenodo archive | none for 0.1.2. The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
 | Modules | 23 (`FrohmanianTether` and 22 submodules) |
 | Declarations audited | 783 |
@@ -79,7 +79,7 @@ named `Prop`s), so every theorem that uses them is a conditional implication. In
 | batteries | `v4.30.0-rc1` | `bf597c77bf9b8e66720d724928207f5911533113` |
 | Cli | `v4.30.0-rc1` | `f7d0ca7c926cdde0562af20394dd25d028b839a5` |
 
-## Axiom report (`lake env lean scripts/AxiomAudit.lean`, local run on the verified commit; the CI artifact `axioms` of the certificate run is identical in content)
+## Axiom report (`lake env lean scripts/AxiomAudit.lean`, local run on the verified commit; same summary as the CI artifact `axioms` of run 42614959392)
 
 One line per theorem constant, in `#print axioms` format, followed by the audit summary.
 
