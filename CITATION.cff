@@ -8,7 +8,9 @@ authors:
     orcid: "https://orcid.org/0009-0006-7068-3718"
     email: frohmanbenjamin@gmail.com
 version: "0.1.1"
+doi: "10.5281/zenodo.24082000"
 date-released: "2026-11-09"
+url: "https://doi.org/10.5281/zenodo.24082000"
 license: "Apache-2.0"
 repository-code: "https://github.com/BenFrohman/frohmanian-tether-sdiff"
 abstract: "Lean 4 / Mathlib formalization of conditional statements about the Frohmanian tether, a symmetric quadratic correction to the Arnold Lie-Poisson bracket: (C3) unconditionally, (C1) and (C2) under named hypotheses, canonicity in a restricted class, and an obstruction to damping (T(M,H) = 0 for every functional M under (C2)). Analytic results are implications from open hypotheses. Not a proof of Navier-Stokes global regularity; no Clay Millennium claim."
