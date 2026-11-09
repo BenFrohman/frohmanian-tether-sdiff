@@ -1,11 +1,21 @@
 cff-version: 1.2.0
-message: "If you use this work, please cite it as below."
+message: "If you use this work, please cite it using the metadata below."
 title: "The Frohmanian Tether on SDiff(𝕋³): A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping"
 type: software
 authors:
   - family-names: Frohman
-    given-names: Benjamin Stanley
+    given-names: "Benjamin Stanley"
     orcid: "https://orcid.org/0009-0006-7068-3718"
-version: 0.1.0
-date-released: 2026-11-04
-license: Apache-2.0
+    email: frohmanbenjamin@gmail.com
+version: "0.1.1"
+date-released: "2026-11-09"
+license: "Apache-2.0"
+repository-code: "https://github.com/BenFrohman/frohmanian-tether-sdiff"
+abstract: "Lean 4 / Mathlib formalization of conditional statements about the Frohmanian tether, a symmetric quadratic correction to the Arnold Lie-Poisson bracket: (C3) unconditionally, (C1) and (C2) under named hypotheses, canonicity in a restricted class, and an obstruction to damping (T(M,H) = 0 for every functional M under (C2)). Analytic results are implications from open hypotheses. Not a proof of Navier-Stokes global regularity; no Clay Millennium claim."
+keywords:
+  - Lean 4
+  - formal verification
+  - Navier-Stokes
+  - Lie-Poisson bracket
+  - metriplectic
+  - conditional results

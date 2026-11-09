@@ -1,4 +1,7 @@
-.lake/
 *.olean
+.lake/
+axioms.txt
 manuscript/*.aux
 manuscript/*.log
+manuscript/*.out
+manuscript/*.toc

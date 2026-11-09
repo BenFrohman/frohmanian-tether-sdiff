@@ -1,0 +1,3 @@
+-- FrohmanianTether/ConcreteSDiff.lean, line 85
+theorem casimir_invariant (f : ℝ → ℝ) (g : G) (ω : CoadjointOrbit) :
+    (∫ x, f ‖(g • ω).val x‖ ∂volume) = ∫ x, f ‖ω.val x‖ ∂volume := ...
