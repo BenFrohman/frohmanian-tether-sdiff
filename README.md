@@ -21,9 +21,9 @@ What is formalized:
 
 * The tether kernel `TetherKernel` (a symmetric quadratic metric correction to the Arnold
   Lie–Poisson bracket) and the conditions (C1)–(C3).
-* C1 (coadjoint invariance): conditional on `SDiffActionHyp` (the theorem takes the whole
-  structure, including `transitive_on_casimir_levels`; the proof uses only `casimir_invariant`) and
-  `TetherIntegralPreserved` (open).
+* C1 (coadjoint invariance): **not proved**. The two hypotheses earlier versions used for it
+  (`SDiffActionHyp.transitive_on_casimir_levels`, refuted, and `TetherIntegralPreserved`) were removed
+  together with the C1 theorems (see below).
 * C2 (degeneracy w.r.t. kinetic energy): **not proved** for `TetherKernel`. The hypothesis
   `KineticEnergyDerivIsVelocity` (δH/δω = u) that earlier versions used for it is **false** with the
   repository's definitions; the refutation is proved in Lean
@@ -32,16 +32,24 @@ What is formalized:
 * C3 (controllable negative feedback): unconditional (`tetherKernel_C3`).
 * Canonicity: uniqueness only within the restricted kernel class and under the explicit
   hypotheses of `uniqueness_of_minimal_tether` — not an unconditional uniqueness theorem. The proof
-  uses only diagonal saturation (`B(F,F) = T(F,F)`) and polarization; C1–C3 are not used.
+  uses only diagonal saturation (`B(F,F) = T(F,F)`) and polarization; C1–C3 are not used. The
+  hypothesis `Polarizes TetherKernel` is not proved and forces `T = 0` at every non-differentiable
+  vorticity (`polarizes_tetherKernel_zero_of_not_differentiable`).
 * **Obstruction to damping (proved, conditional on C2):** for every symmetric kernel, C2 forces
   `B(H,M) = B(M,H) = 0` for every functional `M` (`Combined.left_H_zero_of_C2_symm`,
   `Combined.tetherKernel_left_H_zero`). So a symmetric tether that preserved the Euler vector field
   would have damping coefficient 0, and nothing in the geometric layer supplies the rate or
   closing-bound hypotheses.
 * `ConcreteSDiff`: a concrete subgroup of measurable, measure- and divergence-preserving
-  permutations of 𝕋³ with Casimir invariance.
+  permutations of ℝ³; `SDiffActionHyp` (now only Casimir invariance) is proved for it
+  (`ConcreteSDiff.sdiffActionHyp`).
 * Classical bracket antisymmetry and `{H,H}_cl = 0` (`ArnoldGeometric`), vorticity scaling
-  (`ScalingIdentities.vorticity_rescale`). The full tethered bracket is **not** antisymmetric.
+  (`ScalingIdentities.vorticity_rescale`). The full tethered bracket is **not** antisymmetric, and no
+  Jacobi identity is claimed for it.
+* `IsPhysicalNSSolution` was repaired. The old clause `u t = u 0` for `t ≤ 0` forced `∂ₜu(0) = 0`, since
+  `deriv` is two-sided. It is now an affine extension: `∃ v₀, ∀ t ≤ 0, u t = u 0 + t • v₀`. Sanity lemma:
+  `PhysicalSolutionSanity.exists_physical_time_deriv_ne_zero` gives a physical path with a nonzero time
+  derivative at `t = 0`. That path is not a Navier–Stokes solution, and none is formalized.
 
 ## Removed: `KineticEnergyDerivIsVelocity` (δH/δω = u) is false
 
@@ -62,15 +70,47 @@ hypotheses): `PlanSteps.KineticEnergyDerivIsVelocity`, `Combined.tetherKernel_C2
 `functional_derivative_of_kinetic_energy`, `functional_derivative_of_kinetic_energy_of_unique_repr`,
 `ArnoldGeometric.functional_derivative_eq_velocity_of_unique_repr`. Changed statements: clause (1) of
 `ConditionalRegularity.frohmanian_tether_theorem` (bracket agreement on `H` under δH = u) was
-removed; `Combined.combined_conditional_capstone` no longer takes δH = u (nor the `div`/energy
-hypotheses that only served it) and no longer concludes C2 or `T(H,M) = 0`.
+removed; `Combined.combined_conditional_capstone` (since deleted, see below) no longer took δH = u (nor the `div`/energy
+hypotheses that only served it) and no longer concluded C2 or `T(H,M) = 0`.
 
-## Open assumptions (hypotheses of `Combined.combined_conditional_capstone`)
+## Removed in 0.1.2 (false, unprovable or vacuous)
 
-`SDiffActionHyp`, `TetherIntegralPreserved`, `IsCoadjointMotion`, projection factorization ⇒ density, weight/saturation/non-degeneracy
-hypotheses, `FrohmanianTetherRate` and `FrohmanianTetherClosingBound` (not supplied by the
-tether; at least as strong as global regularity), the BKM continuation criterion, Kato
-uniqueness, and a Kato local-existence witness. BKM and Kato are cited, not formalized.
+Each was deleted together with every theorem that used it. No statement was silently weakened.
+
+| Removed hypothesis | Status | Lean evidence |
+|---|---|---|
+| `SDiffActionHyp.transitive_on_casimir_levels` | false | `ConcreteSDiff.not_transitive_on_casimir_levels` |
+| `TetherIntegralPreserved` (and the `tether_integrand_pullback` field) | unprovable: concerns an unspecified `Classical.choose` | `ArnoldGeometric.functionalDerivative_indep_of_not_differentiable` |
+| `PointwiseStrainSupBound` (`‖Du(x)‖ ≤ C‖ω‖∞`) | false | `StrainBoundRefutation.not_forall_strain_le_sup_vorticity` |
+| `hident`/`hvanish` of `tethered_jacobi_identity` | circular (assumed the conclusion) | — |
+| antisymmetric uniqueness clause | vacuous unless `T ≡ 0` | `antisymmetric_clause_forces_zero` |
+| `hTlb` (uniform lower bound on Kato times), with `hInt`, `huniq_shift` | as strong as the open problem; not refuted | — |
+
+The main theorems deleted were `tether_coadjoint_invariance`, `Combined.tetherKernel_C1_of_casimir`,
+`Combined.tetherKernel_C1_of_volumePreserving`, `Combined.combined_conditional_capstone`,
+`tethered_jacobi_identity`, `orbit_eq_casimir_level`, `uniqueness_of_minimal_tether_antisymmetric`,
+the stretching estimates at a spatial maximum, and the bridges built on the strain bound. Full list:
+`CERTIFICATE.md`. `ConditionalRegularity.frohmanian_tether_theorem` lost its antisymmetric clause and the
+hypotheses `hTlb`, `hInt` and `huniq_shift`. It now takes `hKato`, `hDI`, `hcrit` and `huniq`.
+
+## Remaining assumptions (explicit hypotheses; no axioms)
+
+* **(b) Classical results not in Mathlib:**
+  * `KatoLocalWitness` (Kato local existence). As encoded it is stronger than Kato's theorem: its `pde`
+    field asks for `NS_PDE` at every `t ≥ 0`.
+  * `PhysicalBKMContinuationCriterionFor` and `PeriodicBKMContinuation` (Beale–Kato–Majda).
+  * `KatoUniquenessOnExistenceTimes` (uniqueness).
+  * `IsCoadjointMotion` for the Euler flow (Arnold).
+* **(d) Equivalent in strength to the open problem:**
+  * `FrohmanianTetherRate`, which also requires time-differentiability of `‖ω(t)‖∞`.
+  * `FrohmanianTetherBound` and `FrohmanianTetherClosingBound`.
+  * `PeriodicTetherClosingBound`.
+
+  The tether does not supply any of them.
+* **(c) Kernel-class conditions, not provable in the current encoding:**
+  * `SaturatesTetherQuadratic B`, `Polarizes B` and `Polarizes TetherKernel`.
+  * `h_proj`, `h_density`, `h_weight` and `h_nondeg` (T not identically zero).
+  * C2 for `TetherKernel` (assumed in `tetherKernel_left_H_zero`).
 
 ## Build
 
@@ -80,15 +120,16 @@ lake build
 lake env lean scripts/AxiomAudit.lean
 ```
 
-Build: 2713 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
-`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 783 declarations in the 23
-`FrohmanianTether.*` modules, including 536 theorem constants (496 stated in the sources, 40
+Build: 2715 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
+`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 750 declarations in the 25
+`FrohmanianTether.*` modules, including 507 theorem constants (466 stated in the sources, 41
 auto-generated equation/congruence/injectivity lemmas), and **fails** if any depends on an axiom other
 than `propext`, `Classical.choice`, `Quot.sound` (so `sorryAx` and `native_decide` are rejected). Both
 checks run in CI (`.github/workflows/certify.yml`). See [`CERTIFICATE.md`](CERTIFICATE.md).
 
 Every hypothesis named above is an explicit Lean argument or a named `Prop`; the repository declares no
-axioms. No theorem takes `KineticEnergyDerivIsVelocity` or its pointwise form as a hypothesis.
+axioms. No theorem takes any of the removed hypotheses above, or `KineticEnergyDerivIsVelocity`, as a
+hypothesis.
 
 ## Contents
 

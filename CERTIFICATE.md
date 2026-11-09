@@ -6,21 +6,76 @@
 
 | Item | Value |
 |---|---|
-| Verified commit | `e84c04f895b6a36757949fc71ff7576732aa3e09` (branch `remove-kinetic-energy-hypothesis`) |
+| Verified commit | `63262cdb2eb085ad3c752aec14d6fbe551844421` (branch `remove-kinetic-energy-hypothesis`; later commits on the branch change only documentation) |
 | Lean toolchain | `leanprover/lean4:v4.30.0-rc1` (`lean-toolchain`) |
 | Mathlib | `v4.30.0-rc1`, rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` (`lake-manifest.json`) |
-| Build | `lake build`: 2713 jobs, success |
-| CI run, Lean certificate (build + source scan + strict axiom audit) | passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42614959392 |
+| Build | `lake build`: 2715 jobs, success |
+| CI run, Lean certificate (build + source scan + strict axiom audit) | passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42688334042 |
 | CI run, Lean 4 (lean-action build) | passed (workflow_dispatch on the branch): https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42614969344 |
 | Zenodo archive | none for 0.1.2. The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
-| Modules | 23 (`FrohmanianTether` and 22 submodules) |
-| Declarations audited | 783 |
-| Theorem constants audited | 536 (496 stated in the sources, 40 auto-generated equation/congruence/injectivity lemmas) |
+| Modules | 25 (`FrohmanianTether` and 24 submodules) |
+| Declarations audited | 750 |
+| Theorem constants audited | 507 (466 stated in the sources, 41 auto-generated equation/congruence/injectivity lemmas) |
 | Axioms used | only `propext`, `Classical.choice`, `Quot.sound` (some declarations use a subset) |
 | `sorry` / `admit` / `native_decide` | none |
 | `axiom` declarations | none |
 
-## Changes from v0.1.1
+## Changes in 0.1.2, second pass (false or vacuous hypotheses removed)
+
+- **`IsPhysicalNSSolution` repaired.** The clause `∀ t ≤ 0, u t = u 0` forced `∂ₜu(0) = 0`, because
+  `deriv` is two-sided. It was replaced by `∃ v₀, ∀ t ≤ 0, u t = u 0 + t • v₀`.
+  - Sanity lemmas (new module `PhysicalSolutionSanity`): `exists_physical_time_deriv_ne_zero` and
+    `not_forall_physical_time_deriv_zero`. The witness path is not a Navier–Stokes solution.
+  - `isPhysicalNSSolution_zero` and `eq_zero_of_isPhysicalNSSolution_zero_all` were re-proved.
+- **Removed `SDiffActionHyp.transitive_on_casimir_levels`** (false).
+  - Refutation: `ConcreteSDiff.not_transitive_on_casimir_levels`.
+  - Deleted with it: `orbit_eq_casimir_level`.
+  - The remaining structure is proved for the concrete action: `ConcreteSDiff.sdiffActionHyp`, which
+    replaces `sdiffActionHyp_of_transitive`.
+- **Removed `TetherIntegralPreserved`** and the field `VolumePreservingCoadjointAction.tether_integrand_pullback`.
+  - They cannot be proved or refuted, because they concern an unspecified `Classical.choose`.
+  - Deleted with them: `tether_coadjoint_invariance`, `tether_satisfies_C1`, `tetherKernel_C1`,
+    `tether_coadjoint_invariance_of_integral_eq`, `volumePreservingCoadjointAction_preserves_TetherKernel`,
+    `Combined.tetherKernel_C1_of_casimir`, `Combined.tetherKernel_C1_of_volumePreserving` and
+    `Combined.combined_conditional_capstone`.
+  - C1 for `TetherKernel` is no longer proved under any hypothesis.
+- **Removed `PointwiseStrainSupBound`** (`‖Du(x)‖ ≤ C‖ω‖∞`, false).
+  - Refutation: `StrainBoundRefutation.not_forall_strain_le_sup_vorticity`, in a new module.
+  - Deleted with it:
+    - `strain_sup_le_of_CZ`, `convective_norm_le_of_CZ`, `stretching_inner_le`, `stretching_inner_le_at_max`,
+      `stretching_quartic_le`, `stretching_pairing_le_at_spatial_max`,
+      `stretching_enstrophy_di_at_spatial_max` and `restart_of_kato_quantitative`.
+    - `PointwiseCZGradientBoundAtMax` and `unmodified_envelope_yields_classical_quadratic_rate`.
+    - `ConjecturedSDiffPushforwardInvariance`, `ConjecturedUnmodifiedTetherPairing`,
+      `reduced_pairing_of_unmodified_and_tether`, `tethered_h_slot_stretching_remains_cubic`,
+      `tethered_stretching_of_weight` and `unmodified_pairing_and_c3_diagonal`.
+    - `AssemblyGap.unmodified_max_pairing_is_classical_source`, `AssemblyGap.unmodified_max_rate_of_cubic_source`
+      and `ClosureBlueprint.calderon_zygmund_stretching_bound`.
+    - `enstrophy_di_of_spatial_max`, `lyapunov_density_unweighted_di_at_spatial_max` and
+      `conditional_regularity_of_constructions`.
+- **Removed the circular Jacobi lemma.** `tethered_jacobi_identity` took `hident`/`hvanish`, which
+  together are its conclusion.
+  - Also deleted: `ClosureBlueprint.tether_kernel_jacobi` and `jacobi_cyclic_sum_skeleton`.
+  - No Jacobi identity is claimed.
+- **Removed the antisymmetric uniqueness clause.** It is vacuous unless `T ≡ 0`, as proved by
+  `antisymmetric_clause_forces_zero`.
+  - Deleted: `uniqueness_of_minimal_tether_antisymmetric`, `step1_locality`, `step3_projection`,
+    `step4_coefficient`, `ClosureBlueprint.IsAdmissibleCorrection` and `tether_kernel_uniqueness`.
+  - Clause (1) of `frohmanian_tether_theorem` was dropped.
+- **Removed `hTlb`** (uniform lower bound on Kato existence times), together with `hInt` and `huniq_shift`.
+  - `hTlb` is not refuted: by scaling it has the strength of the open problem.
+  - `ConditionalRegularity.frohmanian_tether_theorem` now takes `hKato`, `hDI`, `hcrit` and `huniq` and is
+    proved through the comparison lemma and BKM continuation.
+  - Also deleted: `ClayStatements.repaired_hInt` and `repaired_huniq_shift_at_zero`.
+- **Added: degeneracy of the encoding.**
+  - `ArnoldGeometric.functionalDerivative_indep_of_not_differentiable`.
+  - `tetherKernel_indep_of_not_differentiable`.
+  - `polarizes_tetherKernel_zero_of_not_differentiable`: `Polarizes TetherKernel` forces `T = 0` at
+    every non-differentiable ω.
+  - As a result, the kernel-class conditions (`Polarizes TetherKernel`, `h_proj`, `h_nondeg`: T not
+    identically zero) cannot be proved from the definitions. They remain hypotheses.
+
+## Changes from v0.1.1 (first pass)
 
 - **Removed (false):** `PlanSteps.KineticEnergyDerivIsVelocity`
   (`∀ ω, FunctionalDerivative KineticEnergyHamiltonian ω = velocity_from_vorticity ω`). Its negation is
@@ -54,14 +109,28 @@
 ## Conditional content
 
 The repository declares no axioms. Open assumptions are explicit hypotheses (Lean arguments or
-named `Prop`s), so every theorem that uses them is a conditional implication. In particular:
+named `Prop`s), so every theorem that uses them is a conditional implication.
 
-- No theorem takes `KineticEnergyDerivIsVelocity` (δH/δω = u) or its pointwise form as a hypothesis;
-  it is refuted (see above). C2 for `TetherKernel` is not proved.
-- `SDiffActionHyp`, `TetherIntegralPreserved`, `IsCoadjointMotion`, `FrohmanianTetherRate`,
-  `FrohmanianTetherBound`, `FrohmanianTetherClosingBound`, `KatoLocalWitness`,
-  `PhysicalBKMContinuationCriterionFor`, `KatoUniquenessOnExistenceTimes`,
-  `PeriodicTetherClosingBound`, `PeriodicBKMContinuation` are hypotheses wherever they occur.
+- **(b) Classical results not in Mathlib:**
+  - `KatoLocalWitness`. As encoded it is stronger than Kato's local theorem, because its `pde` field
+    asks for `NS_PDE` at every `t ≥ 0`.
+  - `PhysicalBKMContinuationCriterionFor` and `PeriodicBKMContinuation`.
+  - `KatoUniquenessOnExistenceTimes`.
+  - `IsCoadjointMotion` for the Euler flow.
+- **(d) Equivalent in strength to the open problem:**
+  - `FrohmanianTetherRate`, which also needs time-differentiability of `‖ω(t)‖∞`.
+  - `FrohmanianTetherBound` and `FrohmanianTetherClosingBound`.
+  - `PeriodicTetherClosingBound`.
+- **(c) Kernel-class conditions, not provable in the current encoding:**
+  - `SaturatesTetherQuadratic`, `Polarizes B` and `Polarizes TetherKernel`.
+  - `h_proj`, `h_density`, `h_weight` and `h_nondeg`.
+  - C2 for `TetherKernel`.
+- **Not proved:** C1 and C2 for `TetherKernel`, and any Jacobi identity. No theorem takes
+  `KineticEnergyDerivIsVelocity` or any hypothesis removed above.
+- **Known gap:** some auxiliary predicates (`UniformVorticityCeiling`, `FiniteTimeVorticityBound`,
+  `BKMIntegrability`, `BKMContinuationCriterionFor`, `SmoothBelowTstarFor`,
+  `ClosureBlueprint.RiccatiMajorantExists`) quantify over solutions without `IsPhysicalNSSolution`. They
+  are not hypotheses of the headline theorems listed above, and they have not been re-audited.
 - Nothing here proves global regularity of the 3D Navier–Stokes equations or any part of the Clay
   Millennium Problem.
 
@@ -79,7 +148,7 @@ named `Prop`s), so every theorem that uses them is a conditional implication. In
 | batteries | `v4.30.0-rc1` | `bf597c77bf9b8e66720d724928207f5911533113` |
 | Cli | `v4.30.0-rc1` | `f7d0ca7c926cdde0562af20394dd25d028b839a5` |
 
-## Axiom report (`lake env lean scripts/AxiomAudit.lean`, local run on the verified commit; same summary as the CI artifact `axioms` of run 42614959392)
+## Axiom report (`lake env lean scripts/AxiomAudit.lean`, local run on the verified commit; same summary as the CI artifact `axioms` of run 42688334042)
 
 One line per theorem constant, in `#print axioms` format, followed by the audit summary.
 
@@ -103,6 +172,7 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'ArnoldGeometric.BiotSavart_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.BiotSavart_smul' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.BiotSavart_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ArnoldGeometric.Casimir.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.CoadjointAction_div' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.CoadjointAction_inv' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.CoadjointAction_mul' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -116,7 +186,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'ArnoldGeometric.FunctionalDerivative_eq_zero_of_not' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.SDiffActionHyp.casimir_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.SDiffActionHyp.enstrophy_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ArnoldGeometric.SDiffActionHyp.transitive_on_casimir_levels' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.biotSavartKernel_diag' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.biotSavartKernel_of_ne' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.casimir_const_on_orbit' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -138,6 +207,7 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'ArnoldGeometric.div_biotSavart_integrand_ae' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.div_cross_offset' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.div_cross_right' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ArnoldGeometric.functionalDerivative_indep_of_not_differentiable' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.gateaux_representative_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.hasDerivAt_half_norm_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.hasDerivAt_half_norm_sq_at' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -149,46 +219,37 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'ArnoldGeometric.kineticEnergy_hasDerivAt_velocity_pairing' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.norm_rpow_neg_three_eq_norm_sq_rpow' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.orbit_add_smul_div_free' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ArnoldGeometric.orbit_eq_casimir_level' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.pairing.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.pairing_cross_self_right' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.velocity_from_vorticity.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.velocity_from_vorticity_eq_BiotSavart' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ArnoldGeometric.velocity_from_zero_orbit' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ClosureBlueprint.IsAdmissibleCorrection.antisym' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ClosureBlueprint.IsAdmissibleCorrection.degeneracy' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ClosureBlueprint.IsAdmissibleCorrection.feedback' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ClosureBlueprint.IsAdmissibleCorrection.invariance' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.beale_kato_majda_criterion' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.bkm_integrableOn_of_uniform_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.bkm_regularity_pipeline' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ClosureBlueprint.calderon_zygmund_stretching_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.comparison_ode_bound_of_equality' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.comparison_ode_solution_existence' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.comparison_ode_stability' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.conditional_regularity_of_open_hyps' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.continuation_under_global_existence' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ClosureBlueprint.jacobi_cyclic_sum_skeleton' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.local_existence_kato' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.lyapunov_quartic_cancellation_skeleton' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.regularity_from_riccati_majorant' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ClosureBlueprint.tether_kernel_jacobi' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ClosureBlueprint.tether_kernel_uniqueness' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.type_composition_sequence' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.uniqueness_of_kernel_density' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ClosureBlueprint.youngs_absorption_elimination' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Combined.combined_conditional_capstone' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Combined.left_H_zero_of_C2_symm' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Combined.tetherKernel_C1_of_casimir' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Combined.tetherKernel_C1_of_volumePreserving' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Combined.tetherKernel_C3'' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Combined.tetherKernel_left_H_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConcreteSDiff.casimir_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConcreteSDiff.coe_mul' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ConcreteSDiff.constOrbit.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConcreteSDiff.divPres_comp' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConcreteSDiff.enstrophy_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConcreteSDiff.good' depends on axioms: [propext, Classical.choice, Quot.sound]
-'ConcreteSDiff.sdiffActionHyp_of_transitive' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ConcreteSDiff.not_transitive_on_casimir_levels' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ConcreteSDiff.sdiffActionHyp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ConcreteSDiff.smul_constOrbit' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConcreteSDiff.smul_val' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConditionalRegularity.conditional_regularity_of_open_hyps' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConditionalRegularity.frohmanian_tether_theorem' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -201,8 +262,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'ForMathlib.projector_orthogonality' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Frohmanian.AssemblyGap.classical_max_rate_of_cubic_source' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Frohmanian.AssemblyGap.classical_source_not_reduced_strain' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Frohmanian.AssemblyGap.unmodified_max_pairing_is_classical_source' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Frohmanian.AssemblyGap.unmodified_max_rate_of_cubic_source' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Frohmanian.CubicSourceAudit.ClassicalStretchingSource.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Frohmanian.CubicSourceAudit.ReducedStrain.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Frohmanian.CubicSourceAudit.corrected_rate_polynomial' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -224,13 +283,10 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'FrohmanianTether.ClayStatements.frohmanian_conditional_regularity_of_closing_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.isZ3Periodic_iff_unit_shifts' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.library_huniq_unsatisfiable_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.ClayStatements.repaired_hInt' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.repaired_huniq_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.ClayStatements.repaired_huniq_shift_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.stepField.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.stepField_not_physical' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.vorticity_sup_norm_zero_field' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.DegenerateWRTKineticEnergy.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.HighSetDepletionAndBKM.clay_B_exact_of_torus_direction_depletion' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.HighSetDepletionAndBKM.comparison_ode_ceiling' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.HighSetDepletionAndBKM.cubic_comparison_field_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -264,6 +320,7 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'FrohmanianTether.TorusStrainExclusion.z3_periodic_linear_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.TorusStrainExclusion.z3_periodic_unit_shift' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.antisym_sat_forces_zero_diag' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.antisymmetric_clause_forces_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.antisymmetric_correction_diagonal_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.div_biot_savart_of_eq_curl' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.div_biot_savart_velocity_of_interchange' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -274,8 +331,8 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'FrohmanianTether.kappa_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.max_rate_of_reduced_pairing' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.pairsToZero_of_C2' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.polarizes_tetherKernel_zero_of_not_differentiable' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.reduced_pairing_iff_cancels_kappa_M4' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.reduced_pairing_of_unmodified_and_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.step1_locality_route1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.step1_locality_sym' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.step1_of_factorization' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -288,12 +345,12 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'FrohmanianTether.step4_scalar_eq_kappa' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.step5_eq_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.step5_higher_order' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.tetherKernel_C1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_C2_of_no_gateaux' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_C3' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_comm' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_diagonal_nonpos' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_has_canonical_density' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.tetherKernel_indep_of_not_differentiable' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_nondegenerate_on_casimir_defect' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_of_right_factor_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_polarizes' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -302,21 +359,13 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'FrohmanianTether.tetherKernel_symmetric' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherPointwiseDensity_nonpos' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherPointwiseDensity_strict_neg_of_noncasimir' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.tether_coadjoint_invariance' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.tether_coadjoint_invariance_of_integral_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tether_kernel_density_nonpos' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.tether_satisfies_C1' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.tethered_h_slot_stretching_remains_cubic' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.tethered_jacobi_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.tethered_stretching_of_weight' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.time_pairing_le_stretching_at_max' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.uniqueness_of_kernel_density' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.uniqueness_of_kernel_density_fun' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.uniqueness_of_minimal_symmetric_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.uniqueness_of_minimal_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.uniqueness_of_minimal_tether_antisymmetric' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.uniqueness_of_minimal_tether_core' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.unmodified_pairing_and_c3_diagonal' depends on axioms: [propext, Classical.choice, Quot.sound]
 'IndependentMajorant.comparison_majorant_global_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
 'IndependentMajorant.lemma_3_1_uniform_bound_and_continuation' depends on axioms: [propext, Classical.choice, Quot.sound]
 'KineticEnergyDerivative.biotSavart_indField_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -374,7 +423,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'NavierStokes3D.convective_energy_pairing_vanishes' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.convective_eq_sum_directional' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.convective_norm_le' depends on axioms: [propext, Classical.choice, Quot.sound]
-'NavierStokes3D.convective_norm_le_of_CZ' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.convective_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.curl.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.curl_add' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -463,17 +511,10 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'NavierStokes3D.pressureGradient_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.pressure_energy_pairing_vanishes' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.reciprocal_of_quadratic_growth' depends on axioms: [propext, Classical.choice, Quot.sound]
-'NavierStokes3D.restart_of_kato_quantitative' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.smoothness_below_Tstar_of_uniqueness' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.smoothness_of_Tstar_top' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.smoothness_on_restart_interval' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.smul_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
-'NavierStokes3D.strain_sup_le_of_CZ' depends on axioms: [propext, Classical.choice, Quot.sound]
-'NavierStokes3D.stretching_enstrophy_di_at_spatial_max' depends on axioms: [propext, Classical.choice, Quot.sound]
-'NavierStokes3D.stretching_inner_le' depends on axioms: [propext, Classical.choice, Quot.sound]
-'NavierStokes3D.stretching_inner_le_at_max' depends on axioms: [propext, Classical.choice, Quot.sound]
-'NavierStokes3D.stretching_pairing_le_at_spatial_max' depends on axioms: [propext, Classical.choice, Quot.sound]
-'NavierStokes3D.stretching_quartic_le' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.sum_univ_fin3' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.time_deriv.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.time_deriv_const' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -491,6 +532,10 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'NavierStokes3D.vorticity_transport_at' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.vorticity_transport_equation' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.vorticity_transport_inner' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PhysicalSolutionSanity.exists_physical_time_deriv_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PhysicalSolutionSanity.not_forall_physical_time_deriv_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PhysicalSolutionSanity.physical_time_deriv_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PhysicalSolutionSanity.sanityPath_isPhysical' depends on axioms: [propext, Classical.choice, Quot.sound]
 'PlanSteps.bsSymbol.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'PlanSteps.bsSymbol_curl' depends on axioms: [propext, Classical.choice, Quot.sound]
 'PlanSteps.bsSymbol_div' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -498,6 +543,7 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'PlanSteps.tether_bound_not_scale_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ScalingIdentities.directionalCoord_rescale' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ScalingIdentities.vorticity_rescale' depends on axioms: [propext, Classical.choice, Quot.sound]
+'StrainBoundRefutation.not_forall_strain_le_sup_vorticity' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.FrohmanianMetriplecticPairing_diag_eq_metric' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.PeriodicCellPhysicalNSSolution.cell_energy_integrable' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.PeriodicCellPhysicalNSSolution.cell_energy_le_init' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -524,7 +570,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'Symplectori.SymplecticConstraint.VolumePreservingCoadjointAction.mk.inj' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.VolumePreservingCoadjointAction.mk.injEq' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.VolumePreservingCoadjointAction.mk.sizeOf_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Symplectori.SymplecticConstraint.VolumePreservingCoadjointAction.tether_integrand_pullback' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.VortexLineMonodromyCondition.casimir_transverse_damping' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.VortexLineMonodromyCondition.coadjoint_monodromy' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.VortexLineMonodromyCondition.kelvin_circulation_preserved' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -556,8 +601,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'Symplectori.SymplecticConstraint.polar_pythagoras_directional_deriv' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.symplectic_constraint_yields_cubic_damping_and_ceiling' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.tetherMetricForm_symm' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Symplectori.SymplecticConstraint.unmodified_envelope_yields_classical_quadratic_rate' depends on axioms: [propext, Classical.choice, Quot.sound]
-'Symplectori.SymplecticConstraint.volumePreservingCoadjointAction_preserves_TetherKernel' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Symplectori.SymplecticConstraint.vorticity_sup_norm_eq_of_isSpatialMax' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.ComparisonODE_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.IsComparisonODESolution.deriv' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -571,12 +614,10 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'TetheredLyapunov.conditional_regularity' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity_of_bkmIntegrability' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity_of_bkm_uniqueness' depends on axioms: [propext, Classical.choice, Quot.sound]
-'TetheredLyapunov.conditional_regularity_of_constructions' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity_of_kato_estimates' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity_of_restart' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity_scaffold' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
-'TetheredLyapunov.enstrophy_di_of_spatial_max' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.finiteTimeVorticityBound_of_uniform' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.hasDerivAt_lyapunov_density' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.hasDerivAt_lyapunov_density_unweighted' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -595,7 +636,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'TetheredLyapunov.lyapunovSminus_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.lyapunovSminus_source_density' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.lyapunovSε_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
-'TetheredLyapunov.lyapunov_density_unweighted_di_at_spatial_max' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.lyapunov_ident_of_transport_cz' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.majorantField.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.majorantFieldClip_eq_of_mem' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -620,6 +660,6 @@ One line per theorem constant, in `#print axioms` format, followed by the audit 
 'crossProduct.eq_1' depends on axioms: [propext, Quot.sound]
 'fderivInnerCLM.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'gradient.congr_simp' depends on axioms: [propext, Classical.choice, Quot.sound]
-AUDIT SUMMARY: theorems audited: 536 (496 stated in the sources, 40 auto-generated equation/congruence/injectivity lemmas); declarations audited: 783; violations: 0
+AUDIT SUMMARY: theorems audited: 507 (466 stated in the sources, 41 auto-generated equation/congruence/injectivity lemmas); declarations audited: 750; violations: 0
 AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations
 ```
