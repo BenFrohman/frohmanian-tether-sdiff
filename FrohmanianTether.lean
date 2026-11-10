@@ -20,9 +20,12 @@ import FrohmanianTether.ScalingIdentities
 import FrohmanianTether.StrainBoundRefutation
 import FrohmanianTether.SymplecticConstraint
 import FrohmanianTether.SymplecticTether
+import FrohmanianTether.TestFieldFamily
 import FrohmanianTether.TetherC1
+import FrohmanianTether.TetherEquivariantC1
 import FrohmanianTether.TetherNondegeneracy
 import FrohmanianTether.TetherWeight
+import FrohmanianTether.TetherWeightProof
 import FrohmanianTether.TetheredLyapunov
 import FrohmanianTether.TorusStrainExclusion
 import FrohmanianTether.Uniqueness

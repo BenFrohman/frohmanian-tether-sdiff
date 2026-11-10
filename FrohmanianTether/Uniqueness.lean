@@ -519,7 +519,8 @@ Bochner integral `0`) without vanishing a.e. -/
   ∀ α, HasTetherKernelDensity B α → ∃ c : ℝ, ∀ ω, IsRegularVorticity ω →
     ∀ᵐ x ∂(MeasureTheory.volume : Measure T3), α ω x = -c * Enstrophy ω
 
-/-- The weight hypothesis `h_weight` in its corrected form (OPEN for `TetherKernel`): every
+/-- The weight hypothesis `h_weight` in its corrected form (PROVED for `TetherKernel`:
+`TetherWeightProof.tetherKernel_aeEnstrophyWeight`; open for a general `B`): every
 density of `B` that is LOCALLY INTEGRABLE at each regular vorticity equals `-c ‖ω‖²` almost
 everywhere, at regular vorticities only (at non-regular ones every derivative is `0`, so the
 density is invisible). The integrability condition excludes the non-measurable densities that
@@ -539,7 +540,7 @@ public theorem canonicalTetherDensity_locallyIntegrable (ω : CoadjointOrbit) :
 /-- **Step 3 (scalar multiple of the canonical density)**: from Step 2, the named density
 hypothesis `h_density` (OPEN for a general `B`: `Q = ∫ α ⟨·,·⟩` with `α ω` locally integrable at
 regular `ω`, a Schwartz-kernel / isotropy statement) and the weight hypothesis
-`h_weight : AEEnstrophyWeight B` (OPEN: the "only |ω|² is invariant" step; the pointwise form
+`h_weight : AEEnstrophyWeight B` (OPEN for a general `B`, PROVED for `B = TetherKernel`; the pointwise form
 and the unrestricted a.e. form are refuted). At non-regular `ω` both sides vanish because
 `FunctionalDerivative` is `0` there. -/
 public theorem step3_scalar
