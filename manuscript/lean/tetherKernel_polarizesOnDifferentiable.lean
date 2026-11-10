@@ -1,0 +1,3 @@
+-- FrohmanianTether/Uniqueness.lean, line 301
+public theorem tetherKernel_polarizesOnDifferentiable :
+    PolarizesOnDifferentiable TetherKernel := ...

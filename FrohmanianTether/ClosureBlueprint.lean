@@ -82,7 +82,7 @@ public theorem comparison_ode_bound_of_equality
 
 /-! ## Section 2 — geometric and PDE theorems (paper statements, Lean types) -/
 
-/-- Kato / Leray local existence on a short interval. Classical. -/
+/-- Kato / Leray local existence on a short interval (equations on `[0, T]` only). Classical. -/
 public theorem local_existence_kato
     (u₀ : VelocityField) (ν : ℝ)
     (h_smooth : ContDiff ℝ (⊤ : ℕ∞) u₀)
@@ -93,8 +93,8 @@ public theorem local_existence_kato
     ∃ T > (0 : ℝ), ∃ u : ℝ → VelocityField,
       (∀ t ∈ Set.Icc 0 T, ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
       u 0 = u₀ ∧
-      IsPhysicalNSSolution u ∧
-      ∃ p : ℝ → PressureField, NS_PDE u p ν :=
+      IsPhysicalNSSolutionOn u T ∧
+      ∃ p : ℝ → PressureField, NS_PDE_On u p ν T :=
   NavierStokes3D.local_existence u₀ ν h_smooth h_divfree h_finite hν w
 
 /-- Beale–Kato–Majda: integrable `‖ω‖_∞` on compact time intervals ⇒ smoothness. -/
@@ -183,55 +183,35 @@ public theorem regularity_from_riccati_majorant
     hloc hcrit hbelow
 
 /-- **Continuation under assumed global existence** (NOT a regularity theorem).
-This takes `hTstar : ∀ u, Tstar (u 0) ν = ⊤`, i.e. it *assumes* the maximal existence
-time is infinite, and only upgrades compact-interval smoothness to all `t ≥ 0`. Global
-existence is the content of regularity, so this statement is circular as a regularity
-claim; it is kept only as a bookkeeping lemma. For the honest conditional regularity
-statement see `conditional_regularity_of_open_hyps` below (tether bound + BKM criterion). -/
+Given a global physical solution `u` and `hTstar : TstarIsTop u ν` (the maximal existence time
+is infinite, i.e. it *assumes* global existence), compact-interval smoothness below `T*`
+upgrades to all `t ≥ 0`. Circular as a regularity claim; a bookkeeping lemma. (Restated Nov 2026:
+the solution is an input, since a `KatoLocalWitness` no longer carries a global path.) -/
 public theorem continuation_under_global_existence
-    (u₀ : VelocityField) (ν : ℝ)
-    (h_divfree : ∀ x, div u₀ x = 0)
-    (h_smooth : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (h_finite_energy : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
-    (h_pos_ν : ν > 0)
-    (w : KatoLocalWitness u₀ ν)
-    (hRiccati : TetheredLyapunov.FiniteTimeVorticityBound u₀ ν)
-    (hTstar : ∀ u : ℝ → VelocityField, TstarIsTop u ν)
-    (hbelow : ∀ u : ℝ → VelocityField, SmoothBelowTstar u ν) :
-    ∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
-      NS_PDE u p ν ∧
-      u 0 = u₀ ∧
-      (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
-      (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (u t)) ≥ 0) ∧
-      (∀ t ≥ (0 : ℝ), ∀ x, div (u t) x = 0) :=
-  TetheredLyapunov.conditional_regularity_scaffold u₀ ν h_divfree h_smooth h_finite_energy h_pos_ν
-    w hRiccati hTstar hbelow
+    (u : ℝ → VelocityField) (ν : ℝ)
+    (hTstar : TstarIsTop u ν)
+    (hbelow : SmoothBelowTstar u ν) :
+    ∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t) :=
+  NavierStokes3D.beale_kato_majda_scaffold_integrability_unused u ν hTstar hbelow
 
 /-- **Conditional global regularity** (Frohmanian Symplectic Tether, conditional).
-Derived from the open `FrohmanianTetherBound` hypothesis plus the classical
-`PhysicalBKMContinuationCriterionFor` and `KatoUniquenessOnExistenceTimes`, via
-`TetheredLyapunov.conditional_regularity_of_bkm_uniqueness`. `Tstar = ⊤` is derived from the
-vorticity bound through the BKM criterion. Not an unconditional Clay solution. -/
+Inputs: the open local-solution bound `LocalTetherBound` (category (d)) and the classical
+continuation statement `BKMGlobalContinuation` (category (b)), via
+`TetheredLyapunov.conditional_regularity`. Not an unconditional Clay solution. -/
 public theorem conditional_regularity_of_open_hyps
     (u₀ : VelocityField) (ν : ℝ)
-    (h_divfree : ∀ x, div u₀ x = 0)
-    (h_smooth : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (h_finite_energy : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
-    (h_pos_ν : ν > 0)
     (w : KatoLocalWitness u₀ ν)
-    (hRiccati : FrohmanianTetherBound u₀ ν)
-    (hcrit : TetheredLyapunov.PhysicalBKMContinuationCriterionFor u₀ ν)
-    (huniq : TetheredLyapunov.KatoUniquenessOnExistenceTimes u₀ ν w) :
+    (hcont : TetheredLyapunov.BKMGlobalContinuation u₀ ν)
+    (hRiccati : TetheredLyapunov.LocalTetherBound u₀ ν) :
     ∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
       NS_PDE u p ν ∧
       u 0 = u₀ ∧
       (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
       (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (u t)) ≥ 0) ∧
-      (∀ t ≥ (0 : ℝ), ∀ x, div (u t) x = 0) :=
-  ⟨w.u, w.p, TetheredLyapunov.conditional_regularity_of_bkm_uniqueness u₀ ν h_pos_ν w
-    (TetheredLyapunov.physicalFiniteTimeVorticityBound_of_uniform
-      (TetheredLyapunov.physicalUniformVorticityCeiling_of_tetherBound hRiccati))
-    hcrit huniq⟩
+      (∀ t ≥ (0 : ℝ), ∀ x, div (u t) x = 0) := by
+  obtain ⟨u, p, hNS, hu0, hsm, -, hnn, hdiv⟩ :=
+    TetheredLyapunov.conditional_regularity u₀ ν w hcont hRiccati
+  exact ⟨u, p, hNS, hu0, hsm, hnn, hdiv⟩
 
 /-! ## Section 4 — named geometric / Lyapunov skeletons (real types) -/
 
@@ -257,13 +237,13 @@ majorant of `‖ω‖_∞`) is the named hypothesis `RiccatiMajorantExists`, not
 `∫ < ∞` comparisons on `ℝ` are not used.
 -/
 
-/-- **Riccati majorant hypothesis** (open for general data). Along every solution of the
-unmodified equations from `u₀`, `M(t) = ‖ω(t)‖_∞` is continuous and is dominated by a
+/-- **Riccati majorant hypothesis** (open for general data). Along every physically admissible
+solution of the unmodified equations from `u₀`, `M(t) = ‖ω(t)‖_∞` is continuous and is dominated by a
 differentiable `y` obeying `y' ≤ C y² − κ'' y³` with `C, κ'' > 0`. A named, dischargeable
 `Prop`; it is not proved for general data. -/
 @[expose] public def RiccatiMajorantExists (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
-    NS_PDE u p ν → u 0 = u₀ →
+    NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u →
       ∃ (C κ'' : ℝ), 0 < C ∧ 0 < κ'' ∧
         ∃ y : ℝ → ℝ,
           (∀ s ≥ (0 : ℝ), DifferentiableAt ℝ y s) ∧
@@ -271,9 +251,10 @@ differentiable `y` obeying `y' ≤ C y² − κ'' y³` with `C, κ'' > 0`. A nam
           (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (u t)) ≤ y t) ∧
           Continuous (fun τ : ℝ => vorticity_sup_norm (vorticity (u τ)))
 
-/-- Sequential composition of the Millennium path.
+/-- Sequential composition of the Millennium path, along a GIVEN global physical solution.
 
-1. `local_existence_kato` produces `u` and `NS_PDE u p ν`.
+1. A global physical solution `u` from `u₀` is an input (a `KatoLocalWitness` only supplies a
+   solution on its own interval; global existence is not derived here).
 2. `youngs_absorption_elimination` is the closed coefficient match
    (`4 C_CZ(3)` absorbed, residual `-(3/4)κ I₆`) that forces the Riccati
    field `y' ≤ C y² − κ'' y³`.
@@ -285,17 +266,13 @@ differentiable `y` obeying `y' ≤ C y² − κ'' y³` with `C, κ'' > 0`. A nam
 public theorem type_composition_sequence
     (u₀ : VelocityField) (ν : ℝ)
     (hν : 0 < ν)
-    (hdiv : ∀ x, div u₀ x = 0)
-    (hsm : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (hE : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
-    (w : KatoLocalWitness u₀ ν)
+    (u : ℝ → VelocityField) (p : ℝ → PressureField)
+    (hNS : NS_PDE u p ν) (hu0 : u 0 = u₀) (hphys : IsPhysicalNSSolution u)
+    (hsm0 : ∀ t ∈ Set.Icc (0 : ℝ) 1, ContDiff ℝ (⊤ : ℕ∞) (u t))
     (hRiccati : RiccatiMajorantExists u₀ ν)
     (hcrit : TetheredLyapunov.BKMContinuationCriterionFor u₀ ν)
     (hbelow : TetheredLyapunov.SmoothBelowTstarFor u₀ ν) :
-    ∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
-      NS_PDE u p ν ∧ u 0 = u₀ ∧ ∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t) := by
-  obtain ⟨_Tloc, _hTloc, u, _hloc, hu0, _hphys, p, hNS⟩ :=
-    local_existence_kato u₀ ν hsm hdiv hE hν w
+    ∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t) := by
   have _young :
       ∀ M I₄ I₆ phi_norm C_abs : ℝ, 0 ≤ I₆ →
         4 * CalderonZygmundConstant3D * M * I₄ ≤
@@ -306,10 +283,12 @@ public theorem type_composition_sequence
     fun M I₄ I₆ phi_norm C_abs hI6 hY =>
       youngs_absorption_elimination M I₄ I₆ phi_norm C_abs hI6 hY
   obtain ⟨C, κ'', hC, hκ, y, hdiff, hy_dot, hmaj, hcont⟩ :=
-    hRiccati u p hNS hu0
-  refine ⟨u, p, hNS, hu0, ?_⟩
+    hRiccati u p hNS hu0 hphys
+  have hloc : LocalExistenceTime u ν := by
+    unfold LocalExistenceTime
+    exact Tstar_pos_of_exists_smooth_solution (u 0) ν
+      ⟨1, one_pos, u, hsm0, rfl, hphys.on 1, p, hNS.on 1⟩
   exact regularity_from_riccati_majorant u p ν hν hNS C κ'' hC hκ y hdiff hy_dot
-    hmaj hcont (TetheredLyapunov.localExistenceTime_of_kato w u hu0)
-    (hcrit u p hNS hu0) (hbelow u p hNS hu0)
+    hmaj hcont hloc (hcrit u p hNS hu0 hphys) (hbelow u p hNS hu0 hphys)
 
 end ClosureBlueprint

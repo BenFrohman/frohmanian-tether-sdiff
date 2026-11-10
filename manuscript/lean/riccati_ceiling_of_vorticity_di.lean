@@ -1,4 +1,4 @@
--- FrohmanianTether/TetheredLyapunov.lean, line 2150
+-- FrohmanianTether/TetheredLyapunov.lean, line 2094
 public theorem riccati_ceiling_of_vorticity_di
     (u : TimeDependentVelocity) (C κ'' : ℝ)
     (hC : 0 < C) (hκ : 0 < κ'')

@@ -1,4 +1,4 @@
--- FrohmanianTether/Uniqueness.lean, line 447
+-- FrohmanianTether/Uniqueness.lean, line 450
 @[expose] public def FactorsThroughProjection
     (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
   ∀ ω : CoadjointOrbit, ∃ Q : (T3 → EuclideanSpace ℝ (Fin 3)) → (T3 → EuclideanSpace ℝ (Fin 3)) → ℝ,

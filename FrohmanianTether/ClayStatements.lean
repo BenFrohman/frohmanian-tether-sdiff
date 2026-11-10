@@ -37,7 +37,8 @@ namespace FrohmanianTether.ClayStatements
 
 /-- **Frohmanian tether closing bound** (OPEN). For every viscosity-`ν` datum in the class
 consumed by `conditional_regularity_of_open_hyps`, the Frohmanian tether bound holds: every solution
-from it has `‖ω(τ)‖_∞` bounded uniformly in `τ ≥ 0`.
+from it has `‖ω(τ)‖_∞` bounded uniformly in `τ ≥ 0`. (Global-solution form; the restructured
+chain consumes the local-solution form `LocalTetherClosingBound`.)
 
 Scaling: `‖ω‖_∞ ↦ λ² ‖ω‖_∞` under `u_λ(x,t) = λ u(λx, λ²t)`, and `sup_t` is
 scale-neutral, so the bound is *supercritical*; its time-integrated form
@@ -49,6 +50,15 @@ is the Millennium Problem itself, not a reduction of it. -/
     (∀ x, div u₀ x = 0) → ContDiff ℝ (⊤ : ℕ∞) u₀ →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) →
         FrohmanianTetherBound u₀ ν
+
+/-- **Local closing bound** (OPEN, category (d); as hard as regularity). The form consumed by
+the restructured chain: for every admissible datum, `TetheredLyapunov.LocalTetherBound` (one
+`‖ω‖_∞` ceiling along every smooth physical solution on every finite interval). -/
+@[expose] public def LocalTetherClosingBound (ν : ℝ) : Prop :=
+  ∀ u₀ : VelocityField,
+    (∀ x, div u₀ x = 0) → ContDiff ℝ (⊤ : ℕ∞) u₀ →
+      Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) →
+        TetheredLyapunov.LocalTetherBound u₀ ν
 
 /-- **BKM closing criterion** (OPEN). Along every solution from admissible data, the
 vorticity supremum is integrable on every `[0, T]`: `∫₀ᵀ ‖ω(t)‖_∞ dt < ∞`.
@@ -132,9 +142,8 @@ public def Clay_B : Prop :=
 /-! ## Proved: the closing bound feeds the Frohmanian assembly -/
 
 /-- **Proved (no `sorry`, standard axioms only).** If the open closing bound held, then,
-together with the classical local-theory binders already used by
-`conditional_regularity_of_open_hyps` (Kato witness `hKato`, BKM continuation criterion `hcrit`,
-uniqueness `huniq`), *every* datum in the library's class would have a unique global
+together with the classical binders already used by `conditional_regularity_of_open_hyps`
+(Kato witness `hKato`, BKM continuation `hcont`, uniqueness `huniq`, all category (b)), *every* datum in the library's class would have a unique global
 solution, smooth (`ContDiff ℝ (⊤ : ℕ∞)`) at every `t ≥ 0`.
 
 This is the exact sense in which `conditional_regularity_of_open_hyps` plus the closing bound
@@ -144,12 +153,11 @@ smoothness in `x` at each time rather than jointly in `(t, x)`, and gives no uni
 energy bound. Those bridges are not formalized. -/
 public theorem frohmanian_conditional_regularity_of_closing_bound
     (ν : ℝ) (hν : 0 < ν)
-    (hclose : FrohmanianTetherClosingBound ν)
+    (hclose : LocalTetherClosingBound ν)
     (hKato : ∀ u₀ : VelocityField, ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) → KatoLocalWitness u₀ ν)
-    (hcrit : ∀ u₀ : VelocityField, TetheredLyapunov.PhysicalBKMContinuationCriterionFor u₀ ν)
-    (huniq : ∀ (u₀ : VelocityField) (w : KatoLocalWitness u₀ ν),
-      TetheredLyapunov.KatoUniquenessOnExistenceTimes u₀ ν w)
+    (hcont : ∀ u₀ : VelocityField, TetheredLyapunov.BKMGlobalContinuation u₀ ν)
+    (huniq : ∀ u₀ : VelocityField, TetheredLyapunov.SmoothPhysicalUniqueness u₀ ν)
     (u₀ : VelocityField) (hdiv : ∀ x, div u₀ x = 0) (hsm : ContDiff ℝ (⊤ : ℕ∞) u₀)
     (hE : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2)) :
     ∃ (u : TimeDependentVelocity),
@@ -163,8 +171,7 @@ public theorem frohmanian_conditional_regularity_of_closing_bound
         (∀ t ≥ (0 : ℝ), ConditionalRegularity.satisfies_NavierStokes v ν) →
         ∀ t ≥ (0 : ℝ), v t = u t) :=
   ConditionalRegularity.conditional_regularity_of_open_hyps (fun _ => u₀) (fun _ x => hdiv x) hsm hE ν hν
-    (hKato u₀ hsm hdiv hE) (hclose u₀ hdiv hsm hE) (hcrit u₀)
-    (huniq u₀ (hKato u₀ hsm hdiv hE))
+    (hKato u₀ hsm hdiv hE) (hcont u₀) (hclose u₀ hdiv hsm hE) (huniq u₀)
 
 
 /-! ## Clay (B) and (D) on `ℝ³/ℤ³`, exactly as in Fefferman's official description
@@ -401,20 +408,21 @@ public theorem stepField_not_physical : ¬ IsPhysicalNSSolution stepField := by
   have h2 := congrArg (fun v : EuclideanSpace ℝ (Fin 3) => v 0) (congrFun h20 0)
   simp [stepField] at h2
 
-/-- With `IsPhysicalNSSolution v`, the uniqueness binder `huniq` of `conditional_regularity_of_open_hyps`
-is unconditionally satisfied at `u₀ = 0` for *every* `w : KatoLocalWitness 0 ν`. -/
-public theorem repaired_huniq_at_zero (ν : ℝ) (w : KatoLocalWitness 0 ν) :
-    ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
-      T' ∈ existenceTimes 0 ν →
-      v 0 = 0 →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T', w.u t = v t := by
+/-- With `IsPhysicalNSSolutionOn v`, the Kato uniqueness binder is satisfied at `u₀ = 0` by the
+rest-state witness `kato_witness_zero` (whose path is `0` at every time). (For a general witness
+the binder also constrains `w.u` beyond its own interval, where it is unconstrained data.) -/
+public theorem repaired_huniq_at_zero (ν : ℝ) :
+    TetheredLyapunov.KatoUniquenessOnExistenceTimes 0 ν (kato_witness_zero ν) := by
   intro T' v _q _hmem hv0 _hpde _hsm hphys t ht
-  have hw_zero : w.u t = 0 := eq_zero_of_isPhysicalNSSolution_zero w.u w.init w.phys t ht.1
-  have hv_zero : v t = 0 := eq_zero_of_isPhysicalNSSolution_zero v hv0 hphys t ht.1
-  exact hw_zero.trans hv_zero.symm
+  show (0 : VelocityField) = v t
+  exact (eq_zero_of_isPhysicalNSSolutionOn_zero v T' hv0 hphys t ht).symm
+
+/-- Uniqueness of smooth physical solutions holds at `u₀ = 0`: both vanish on `[0, T]`. -/
+public theorem smoothPhysicalUniqueness_zero (ν : ℝ) :
+    TetheredLyapunov.SmoothPhysicalUniqueness 0 ν := by
+  intro T u v _p _q hu hv t ht
+  rw [eq_zero_of_isPhysicalNSSolutionOn_zero u T hu.1 hu.2.2.2 t ht,
+    eq_zero_of_isPhysicalNSSolutionOn_zero v T hv.1 hv.2.2.2 t ht]
 
 /-- Vorticity and its sup-norm vanish on the zero velocity field. -/
 public theorem vorticity_sup_norm_zero_field :
@@ -469,11 +477,23 @@ public theorem frohmanianTetherRate_zero (ν : ℝ) : FrohmanianTetherRate 0 ν 
     dsimp [vorticity]
     rw [hu_all τ, curl_zero x, norm_zero]
 
+/-- `LocalTetherBound 0 ν` holds: every local smooth physical solution from `0` vanishes on its
+interval, so `Y = 0` works. -/
+public theorem localTetherBound_zero (ν : ℝ) : TetheredLyapunov.LocalTetherBound 0 ν := by
+  refine ⟨0, fun T u _p hu t ht => ?_⟩
+  rw [eq_zero_of_isPhysicalNSSolutionOn_zero u T hu.1 hu.2.2.2 t ht, vorticity_sup_norm_zero_field]
+
+/-- `BKMGlobalContinuation 0 ν` holds: the rest state is a global smooth physical solution. -/
+public theorem bkmGlobalContinuation_zero (ν : ℝ) :
+    TetheredLyapunov.BKMGlobalContinuation 0 ν := fun _ _ =>
+  ⟨fun _ => 0, fun _ => (0 : PressureField), rfl, navier_stokes_eq_zero ν,
+    fun _ _ => contDiff_const, isPhysicalNSSolution_zero⟩
+
 /-- **Kernel-verified non-vacuity of `ConditionalRegularity.conditional_regularity_of_open_hyps`:**
-at quiescent initial data `u0 = 0`, every hypothesis of `conditional_regularity_of_open_hyps`
-(`h_div_free`, `h_smooth`, `h_finite_energy`, `w = kato_witness_zero ν`,
-`hRiccati = frohmanianTetherBound_zero ν`, `hcrit`, and `huniq = repaired_huniq_at_zero ν`)
-is unconditionally discharged, producing a global smooth solution without any unproved assumptions. -/
+at quiescent initial data `u0 = 0`, every hypothesis (`w = kato_witness_zero ν`,
+`hcont = bkmGlobalContinuation_zero ν`,
+`hRiccati = localTetherBound_zero ν`, `huniq = smoothPhysicalUniqueness_zero ν`) is discharged,
+so the hypothesis set is jointly satisfiable. -/
 public theorem conditional_regularity_nonvacuous_at_zero (ν : ℝ) (hν : 0 < ν) :
     ∃ (u : TimeDependentVelocity),
       (∀ t ≥ (0 : ℝ), ConditionalRegularity.IsSmooth (u t)) ∧
@@ -492,12 +512,9 @@ public theorem conditional_regularity_nonvacuous_at_zero (ν : ℝ) (hν : 0 < �
     (by simp)
     ν hν
     (kato_witness_zero ν)
-    (frohmanianTetherBound_zero ν)
-    (by
-      intro u p _ hu0 _ T hT
-      rw [hu0, Tstar_zero_eq_top] at hT
-      exact absurd hT.symm (EReal.coe_ne_top T))
-    (repaired_huniq_at_zero ν (kato_witness_zero ν))
+    (bkmGlobalContinuation_zero ν)
+    (localTetherBound_zero ν)
+    (smoothPhysicalUniqueness_zero ν)
 
 /-! ## Honest periodic chain: what the tether bound buys on `𝕋³`
 
@@ -558,6 +575,9 @@ public theorem clay_B_exact_of_periodic_tether_bound
 #print axioms frohmanianTetherRate_zero
 #print axioms frohmanianTetherBound_zero
 #print axioms repaired_huniq_at_zero
+#print axioms smoothPhysicalUniqueness_zero
+#print axioms localTetherBound_zero
+#print axioms bkmGlobalContinuation_zero
 #print axioms stepField_not_physical
 #print axioms clay_B_exact_of_periodic_tether_bound
 

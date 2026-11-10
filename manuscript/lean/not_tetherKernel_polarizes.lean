@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherNondegeneracy.lean, line 390
+public theorem not_tetherKernel_polarizes :
+    ¬ ∀ ω F G, 2 * TetherKernel ω F G = TetherKernel ω (fun η => F η + G η) (fun η => F η + G η) - TetherKernel ω F F - TetherKernel ω G G := ...

@@ -1,12 +1,10 @@
--- FrohmanianTether/ConditionalRegularity.lean, line 93
+-- FrohmanianTether/ConditionalRegularity.lean, line 91
 public theorem frohmanian_tether_theorem
     (hKato : ∀ u₀ ν, ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) → 0 < ν →
       KatoLocalWitness u₀ ν)
-    (hDI : ∀ u₀ ν, FrohmanianTetherRate u₀ ν)
-    (hcrit : ∀ u₀ ν, TetheredLyapunov.PhysicalBKMContinuationCriterionFor u₀ ν)
-    (huniq : ∀ u₀ ν (w : KatoLocalWitness u₀ ν),
-      TetheredLyapunov.KatoUniquenessOnExistenceTimes u₀ ν w) :
+    (hcont : ∀ u₀ ν, TetheredLyapunov.BKMGlobalContinuation u₀ ν)
+    (hDI : ∀ u₀ ν, TetheredLyapunov.LocalTetherRate u₀ ν) :
   ∃ (𝔗_F : CoadjointOrbit → Functional → Functional → ℝ),
     (∀ (B : CoadjointOrbit → Functional → Functional → ℝ)
       (α : CoadjointOrbit → T3 → ℝ),

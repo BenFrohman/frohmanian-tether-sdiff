@@ -1,3 +1,3 @@
--- FrohmanianTether/ArnoldGeometric.lean, line 1145
+-- FrohmanianTether/ArnoldGeometric.lean, line 1217
 public theorem classicalBracket_antisymm (F G : CoadjointOrbit → ℝ) (ω : CoadjointOrbit) :
     ClassicalBracket F G ω = - ClassicalBracket G F ω := ...

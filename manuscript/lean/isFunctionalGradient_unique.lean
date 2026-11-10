@@ -1,0 +1,3 @@
+-- FrohmanianTether/ArnoldGeometric.lean, line 359
+public theorem isFunctionalGradient_unique {F : CoadjointOrbit → ℝ} {ω : CoadjointOrbit} {g₁ g₂ : L2Field}
+    (h₁ : IsFunctionalGradient F ω g₁) (h₂ : IsFunctionalGradient F ω g₂) : g₁ = g₂ := ...

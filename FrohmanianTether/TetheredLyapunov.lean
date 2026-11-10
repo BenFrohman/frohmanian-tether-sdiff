@@ -1709,11 +1709,12 @@ public theorem lyapunov_ident_of_transport_cz
 Each conditional regularity theorem below takes one of these as an explicit argument.
 None is proved for general data; a proof of the `Prop` discharges the theorem. -/
 
-/-- **Uniform vorticity ceiling** (open for general data): along every solution of the
-unmodified equations from `u₀`, `‖ω(t)‖_∞` is bounded uniformly in `t ≥ 0` and continuous. -/
+/-- **Uniform vorticity ceiling** (open for general data): along every physically admissible
+solution of the unmodified equations from `u₀`, `‖ω(t)‖_∞` is bounded uniformly in `t ≥ 0` and
+continuous. (Restricted to `IsPhysicalNSSolution` paths, Nov 2026.) -/
 @[expose] public def UniformVorticityCeiling (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
-    NS_PDE u p ν → u 0 = u₀ →
+    NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u →
       ∃ Y : ℝ,
         (∀ τ ≥ (0 : ℝ), vorticity_sup_norm (vorticity (u τ)) ≤ Y) ∧
         Continuous (fun τ : ℝ => vorticity_sup_norm (vorticity (u τ)))
@@ -1766,12 +1767,12 @@ use a bound on each compact interval `[0, T]`, with a constant allowed to depend
 on the data, or the Beale–Kato–Majda integrability `∫₀ᵀ ‖ω‖_∞ dt < ∞` for every `T`.
 The uniform ceilings above are the stronger variants; each implies its finite-horizon form. -/
 
-/-- **Finite-horizon vorticity bound** (open for general data): along every solution of the
-unmodified equations from `u₀`, for every `T ≥ 0` there is `C(T)` with
+/-- **Finite-horizon vorticity bound** (open for general data): along every physically
+admissible solution of the unmodified equations from `u₀`, for every `T ≥ 0` there is `C(T)` with
 `sup_{t ∈ [0,T]} ‖ω(t)‖_∞ ≤ C(T)`, and `t ↦ ‖ω(t)‖_∞` is continuous. -/
 @[expose] public def FiniteTimeVorticityBound (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
-    NS_PDE u p ν → u 0 = u₀ →
+    NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u →
       (∀ T ≥ (0 : ℝ), ∃ C : ℝ,
         ∀ t ∈ Set.Icc (0 : ℝ) T, vorticity_sup_norm (vorticity (u t)) ≤ C) ∧
       Continuous (fun τ : ℝ => vorticity_sup_norm (vorticity (u τ)))
@@ -1785,11 +1786,11 @@ unmodified equations from `u₀`, for every `T ≥ 0` there is `C(T)` with
         ∀ t ∈ Set.Icc (0 : ℝ) T, vorticity_sup_norm (vorticity (u t)) ≤ C) ∧
       Continuous (fun τ : ℝ => vorticity_sup_norm (vorticity (u τ)))
 
-/-- **Beale–Kato–Majda integrability** (open for general data): along every solution from
-`u₀`, `t ↦ ‖ω(t)‖_∞` is integrable on `[0, T]` for every `T`, i.e. `∫₀ᵀ ‖ω‖_∞ dt < ∞`. -/
+/-- **Beale–Kato–Majda integrability** (open for general data): along every physically
+admissible solution from `u₀`, `t ↦ ‖ω(t)‖_∞` is integrable on `[0, T]` for every `T`. -/
 @[expose] public def BKMIntegrability (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
-    NS_PDE u p ν → u 0 = u₀ →
+    NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u →
       ∀ T : ℝ, IntegrableOn (fun t => vorticity_sup_norm (vorticity (u t))) (Set.Icc 0 T)
 
 /-- `BKMIntegrability` restricted to `IsPhysicalNSSolution` paths. -/
@@ -1802,8 +1803,8 @@ unmodified equations from `u₀`, for every `T ≥ 0` there is `C(T)` with
 public theorem finiteTimeVorticityBound_of_uniform
     {u₀ : VelocityField} {ν : ℝ} (h : UniformVorticityCeiling u₀ ν) :
     FiniteTimeVorticityBound u₀ ν :=
-  fun u p hNS hu0 =>
-    let ⟨Y, hb, hc⟩ := h u p hNS hu0
+  fun u p hNS hu0 hphys =>
+    let ⟨Y, hb, hc⟩ := h u p hNS hu0 hphys
     ⟨fun _T _hT => ⟨Y, fun t ht => hb t ht.1⟩, hc⟩
 
 /-- Physical uniform ceiling ⇒ physical finite-horizon bound. -/
@@ -1824,8 +1825,8 @@ public theorem integrableOn_Icc_zero_of_continuous
 public theorem bkmIntegrability_of_finiteTime
     {u₀ : VelocityField} {ν : ℝ} (h : FiniteTimeVorticityBound u₀ ν) :
     BKMIntegrability u₀ ν :=
-  fun u p hNS hu0 T =>
-    integrableOn_Icc_zero_of_continuous _ (h u p hNS hu0).2 T
+  fun u p hNS hu0 hphys T =>
+    integrableOn_Icc_zero_of_continuous _ (h u p hNS hu0 hphys).2 T
 
 /-- Physical finite-horizon bound ⇒ physical BKM integrability. -/
 public theorem physicalBKMIntegrability_of_finiteTime
@@ -1834,20 +1835,22 @@ public theorem physicalBKMIntegrability_of_finiteTime
   fun u p hNS hu0 hphys T =>
     integrableOn_Icc_zero_of_continuous _ (h u p hNS hu0 hphys).2 T
 
-/-- BKM continuation criterion for every solution from `u₀` (classical, Beale–Kato–Majda 1984). -/
+/-- BKM continuation criterion for every physically admissible solution from `u₀`
+(classical, Beale–Kato–Majda 1984). -/
 @[expose] public def BKMContinuationCriterionFor (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
-    NS_PDE u p ν → u 0 = u₀ → BKMContinuationCriterion u ν
+    NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u → BKMContinuationCriterion u ν
 
 /-- `BKMContinuationCriterionFor` restricted to `IsPhysicalNSSolution` paths. -/
 @[expose] public def PhysicalBKMContinuationCriterionFor (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
     NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u → BKMContinuationCriterion u ν
 
-/-- Smoothness below `T*` for every solution from `u₀` (local regularity and uniqueness). -/
+/-- Smoothness below `T*` for every physically admissible solution from `u₀` (local regularity
+and uniqueness). -/
 @[expose] public def SmoothBelowTstarFor (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
-    NS_PDE u p ν → u 0 = u₀ → SmoothBelowTstar u ν
+    NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u → SmoothBelowTstar u ν
 
 /-- Uniform Kato restart of length `τ` below `T*`. -/
 @[expose] public def KatoUniformRestart (u₀ : VelocityField) (ν τ : ℝ) : Prop :=
@@ -1857,9 +1860,9 @@ public theorem physicalBKMIntegrability_of_finiteTime
 @[expose] public def KatoUniquenessOnExistenceTimes (u₀ : VelocityField) (ν : ℝ)
     (w : KatoLocalWitness u₀ ν) : Prop :=
   ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
-    T' ∈ existenceTimes u₀ ν → v 0 = u₀ → NS_PDE v q ν →
+    T' ∈ existenceTimes u₀ ν → v 0 = u₀ → NS_PDE_On v q ν T' →
     (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-    IsPhysicalNSSolution v →
+    IsPhysicalNSSolutionOn v T' →
     ∀ t ∈ Set.Icc (0 : ℝ) T', w.u t = v t
 
 /-- Positive local existence time for any solution starting at `u₀`, from the Kato witness. -/
@@ -1870,110 +1873,172 @@ public theorem localExistenceTime_of_kato {u₀ : VelocityField} {ν : ℝ}
   rw [hu0]
   exact Tstar_pos_of_kato_witness u₀ ν w
 
-/-- **Global regularity from BKM integrability.** `T* = ⊤` is derived from the Kato
-local existence time, `BKMContinuationCriterionFor`, and `BKMIntegrability`
-(`NavierStokes3D.Tstar_eq_top_of_bkm`). Open input: `BKMIntegrability`. -/
-public theorem conditional_regularity_of_bkmIntegrability
+/-! ## Local-solution hypotheses and the global chain (restructured Nov 2026)
+
+`KatoLocalWitness` now demands the equations only on `[0, T]`, so a witness no longer carries a
+global solution. Global existence must therefore come from a continuation statement. It is
+stated explicitly as `BKMGlobalContinuation` (category (b): classical — Kato local existence,
+uniqueness of smooth solutions, Beale–Kato–Majda continuation — not formalized). The open input
+(category (d)) is a vorticity bound over LOCAL smooth physical solutions, with the constant
+chosen before the interval: `LocalFiniteTimeVorticityBound` (finite horizon) or the stronger
+`LocalTetherBound` (one ceiling for all times). The former chain theorems
+`conditional_regularity_of_bkmIntegrability`, `conditional_regularity_scaffold`,
+`conditional_regularity_of_restart`, `conditional_regularity_of_bkm_uniqueness` and
+`conditional_regularity_of_kato_estimates` extracted a global solution from the witness's global
+`pde` field; they were removed. -/
+
+/-- **Local tether bound** (category (d), OPEN; by BKM as hard as regularity): one ceiling `Y`
+for `‖ω(t)‖_∞` along every smooth physical solution from `u₀` on every interval `[0, T]`. -/
+@[expose] public def LocalTetherBound (u₀ : VelocityField) (ν : ℝ) : Prop :=
+  ∃ Y : ℝ, ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
+    IsLocalPhysicalSolution ν T u₀ u p →
+      ∀ t ∈ Set.Icc (0 : ℝ) T, vorticity_sup_norm (vorticity (u t)) ≤ Y
+
+/-- **Local finite-horizon vorticity bound** (category (d), OPEN): for every horizon `T₀` one
+constant `C`, chosen before the interval, bounds `‖ω(t)‖_∞` along every smooth physical
+solution from `u₀` on every `[0, T]` with `T ≤ T₀`. -/
+@[expose] public def LocalFiniteTimeVorticityBound (u₀ : VelocityField) (ν : ℝ) : Prop :=
+  ∀ T₀ : ℝ, ∃ C : ℝ, ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
+    T ≤ T₀ → IsLocalPhysicalSolution ν T u₀ u p →
+      ∀ t ∈ Set.Icc (0 : ℝ) T, vorticity_sup_norm (vorticity (u t)) ≤ C
+
+public theorem localFiniteTimeVorticityBound_of_localTetherBound
+    {u₀ : VelocityField} {ν : ℝ} (h : LocalTetherBound u₀ ν) :
+    LocalFiniteTimeVorticityBound u₀ ν := by
+  obtain ⟨Y, hY⟩ := h
+  exact fun _T₀ => ⟨Y, fun T u p _ hu => hY T u p hu⟩
+
+/-- **Finite-interval Riccati comparison** (PROVED): if `y` is differentiable on `[0, T]` and
+`y' ≤ C y² − κ'' y³` there, then `y ≤ max (y 0) (C/κ'')` on `[0, T]`. -/
+public theorem comparison_ode_stability_Icc
+    (C κ'' : ℝ) (hC : 0 < C) (hκ : 0 < κ'') (y : ℝ → ℝ) (T : ℝ)
+    (hdiff : ∀ s ∈ Set.Icc (0 : ℝ) T, DifferentiableAt ℝ y s)
+    (hy_dot : ∀ s ∈ Set.Icc (0 : ℝ) T, deriv y s ≤ C * (y s) ^ 2 - κ'' * (y s) ^ 3)
+    (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) T) :
+    y t ≤ max (y 0) (C / κ'') := by
+  set Y := max (y 0) (C / κ'')
+  refine le_of_forall_pos_le_add fun ε hε => ?_
+  have hbarrier : C / κ'' < Y + ε :=
+    lt_of_le_of_lt (le_max_right (y 0) (C / κ'')) (lt_add_of_pos_right _ hε)
+  have hy0 : y 0 ≤ Y + ε :=
+    (le_max_left (y 0) (C / κ'')).trans (le_add_of_nonneg_right hε.le)
+  have hyC : ContinuousOn y (Icc (0 : ℝ) t) := fun x hx =>
+    (hdiff x ⟨hx.1, hx.2.trans ht.2⟩).continuousAt.continuousWithinAt
+  have hyW : ∀ x ∈ Ico (0 : ℝ) t, HasDerivWithinAt y (deriv y x) (Ici x) x := fun x hx =>
+    (hdiff x ⟨hx.1, hx.2.le.trans ht.2⟩).hasDerivAt.hasDerivWithinAt
+  have hB : ∀ x, HasDerivAt (fun _ : ℝ => Y + ε) (0 : ℝ) x := fun x => hasDerivAt_const x (Y + ε)
+  have hcontact : ∀ x ∈ Ico (0 : ℝ) t, y x = Y + ε → deriv y x < 0 := by
+    intro x hx hxeq
+    have hneg : C * (Y + ε) ^ 2 - κ'' * (Y + ε) ^ 3 < 0 :=
+      AnalyticPipeline.majorant_vector_field_neg_of_gt hC hκ hbarrier
+    have := hy_dot x ⟨hx.1, hx.2.le.trans ht.2⟩
+    rw [hxeq] at this
+    linarith
+  exact image_le_of_deriv_right_lt_deriv_boundary (f := y) (f' := deriv y)
+    (a := 0) (b := t) (B := fun _ => Y + ε) (B' := fun _ => (0 : ℝ))
+    hyC hyW hy0 hB hcontact ⟨ht.1, le_rfl⟩
+
+/-- **Local tether rate** (category (d), OPEN): constants `C, κ'' > 0`, chosen before the
+interval, such that along every smooth physical solution from `u₀` on every `[0, T]`,
+`M(t) = ‖ω(t)‖_∞` is differentiable and obeys `M' ≤ C M² − κ'' M³` on `[0, T]`. -/
+@[expose] public def LocalTetherRate (u₀ : VelocityField) (ν : ℝ) : Prop :=
+  ∃ C κ'' : ℝ, 0 < C ∧ 0 < κ'' ∧
+    ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
+      IsLocalPhysicalSolution ν T u₀ u p →
+        (∀ s ∈ Set.Icc (0 : ℝ) T,
+          DifferentiableAt ℝ (fun τ => vorticity_sup_norm (vorticity (u τ))) s) ∧
+        (∀ s ∈ Set.Icc (0 : ℝ) T,
+          deriv (fun τ => vorticity_sup_norm (vorticity (u τ))) s ≤
+            C * vorticity_sup_norm (vorticity (u s)) ^ 2 -
+              κ'' * vorticity_sup_norm (vorticity (u s)) ^ 3)
+
+/-- **PROVED**: the local rate implies the local bound, with the uniform ceiling
+`max (‖ω(u₀)‖_∞) (C/κ'')` (every solution starts at `u₀`). -/
+public theorem localTetherBound_of_localTetherRate {u₀ : VelocityField} {ν : ℝ}
+    (h : LocalTetherRate u₀ ν) : LocalTetherBound u₀ ν := by
+  obtain ⟨C, κ'', hC, hκ, hr⟩ := h
+  refine ⟨max (vorticity_sup_norm (vorticity u₀)) (C / κ''), fun T u p hu t ht => ?_⟩
+  obtain ⟨hd, hdi⟩ := hr T u p hu
+  have := comparison_ode_stability_Icc C κ'' hC hκ
+    (fun τ => vorticity_sup_norm (vorticity (u τ))) T hd hdi t ht
+  simpa [hu.1] using this
+
+/-- **Kato–BKM global continuation** (category (b): classical, not formalized). If a local smooth
+physical solution exists (a `KatoLocalWitness`) and the vorticity of the smooth physical solutions
+from `u₀` is bounded on every finite horizon, the solution is global: uniqueness of smooth solutions and the
+Beale–Kato–Majda criterion (`∫₀^{T*} ‖ω‖_∞ = ∞` at a finite maximal time) give a smooth physical
+solution for all `t ≥ 0`. CAVEAT: Kato's theorem is for data in `H^s`, `s > 5/2`; the library's
+data class (smooth, divergence-free, finite energy on ℝ³) is wider, so for data outside `H^s`
+this is not a classical theorem as stated. The Kato witness (local existence, also category
+(b)) is a separate premise. -/
+@[expose] public def BKMGlobalContinuation (u₀ : VelocityField) (ν : ℝ) : Prop :=
+  Nonempty (KatoLocalWitness u₀ ν) → LocalFiniteTimeVorticityBound u₀ ν →
+    ∃ (u : TimeDependentVelocity) (p : TimeDependentPressure),
+      u 0 = u₀ ∧ NS_PDE u p ν ∧ (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
+        IsPhysicalNSSolution u
+
+/-- **Uniqueness of smooth physical solutions** (category (b): classical, not formalized): two
+smooth physical solutions from `u₀` on `[0, T]` coincide there. -/
+@[expose] public def SmoothPhysicalUniqueness (u₀ : VelocityField) (ν : ℝ) : Prop :=
+  ∀ (T : ℝ) (u v : TimeDependentVelocity) (p q : TimeDependentPressure),
+    IsLocalPhysicalSolution ν T u₀ u p → IsLocalPhysicalSolution ν T u₀ v q →
+      ∀ t ∈ Set.Icc (0 : ℝ) T, u t = v t
+
+/-- A global smooth physical solution restricts to a local one on every `[0, T]`. -/
+public theorem isLocalPhysicalSolution_of_global {ν : ℝ} {u₀ : VelocityField}
+    {u : TimeDependentVelocity} {p : TimeDependentPressure} (hu0 : u 0 = u₀)
+    (hNS : NS_PDE u p ν) (hsm : ∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t))
+    (hphys : IsPhysicalNSSolution u) (T : ℝ) : IsLocalPhysicalSolution ν T u₀ u p :=
+  ⟨hu0, hNS.on T, fun t ht => hsm t ht.1, hphys.on T⟩
+
+/-- **Global regularity from the local finite-horizon bound** (conditional; NOT a regularity
+theorem). Inputs: the Kato witness `w` and `hcont` (b), and `hbound` (d). The conclusion is exactly what `hcont` returns
+on `hbound`: the whole content is in the two hypotheses. -/
+public theorem conditional_regularity_of_local_bound
     (u₀ : VelocityField) (ν : ℝ)
-    (h_divfree : ∀ x, div u₀ x = 0)
-    (h_smooth : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (h_finite_energy : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
-    (h_pos_ν : ν > 0)
     (w : KatoLocalWitness u₀ ν)
-    (hBKM : BKMIntegrability u₀ ν)
-    (hcrit : BKMContinuationCriterionFor u₀ ν)
-    (hbelow : SmoothBelowTstarFor u₀ ν) :
+    (hcont : BKMGlobalContinuation u₀ ν)
+    (hbound : LocalFiniteTimeVorticityBound u₀ ν) :
   ∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
     NS_PDE u p ν ∧
     u 0 = u₀ ∧
     (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
+    IsPhysicalNSSolution u ∧
     (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (u t)) ≥ 0) ∧
     (∀ t ≥ (0 : ℝ), ∀ x, div (u t) x = 0) := by
-  obtain ⟨_Tloc, _hTloc, u, _hloc, hu0, _hphys, p, hNS⟩ :=
-    local_existence u₀ ν h_smooth h_divfree h_finite_energy h_pos_ν w
-  refine ⟨u, p, hNS, hu0, ?smooth, ?nn, ?div0⟩
-  · exact beale_kato_majda u p ν h_pos_ν hNS (localExistenceTime_of_kato w u hu0)
-      (hcrit u p hNS hu0) (fun T => hBKM u p hNS hu0 T) (hbelow u p hNS hu0)
-  · intro t _ht
-    exact vorticity_sup_norm_nonneg _
-  · intro t ht x
-    exact (hNS t ht x).2
+  obtain ⟨u, p, hu0, hNS, hsm, hphys⟩ := hcont ⟨w⟩ hbound
+  exact ⟨u, p, hNS, hu0, hsm, hphys, fun _ _ => vorticity_sup_norm_nonneg _,
+    fun t ht x => (hNS t ht x).2⟩
 
-/-- **Global regularity from the finite-horizon vorticity bound**, through
-`bkmIntegrability_of_finiteTime` and `conditional_regularity_of_bkmIntegrability`.
-Open input: `FiniteTimeVorticityBound`. -/
+/-- **Global regularity from the local tether bound** (conditional): `LocalTetherBound` (d), the
+Kato witness and `BKMGlobalContinuation` (b). -/
 public theorem conditional_regularity
     (u₀ : VelocityField) (ν : ℝ)
-    (h_divfree : ∀ x, div u₀ x = 0)
-    (h_smooth : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (h_finite_energy : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
-    (h_pos_ν : ν > 0)
     (w : KatoLocalWitness u₀ ν)
-    (hRiccati : FiniteTimeVorticityBound u₀ ν)
-    (hcrit : BKMContinuationCriterionFor u₀ ν)
-    (hbelow : SmoothBelowTstarFor u₀ ν) :
+    (hcont : BKMGlobalContinuation u₀ ν)
+    (hRiccati : LocalTetherBound u₀ ν) :
   ∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
     NS_PDE u p ν ∧
     u 0 = u₀ ∧
     (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
+    IsPhysicalNSSolution u ∧
     (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (u t)) ≥ 0) ∧
     (∀ t ≥ (0 : ℝ), ∀ x, div (u t) x = 0) :=
-  conditional_regularity_of_bkmIntegrability u₀ ν h_divfree h_smooth h_finite_energy h_pos_ν w
-    (bkmIntegrability_of_finiteTime hRiccati) hcrit hbelow
+  conditional_regularity_of_local_bound u₀ ν w hcont
+    (localFiniteTimeVorticityBound_of_localTetherBound hRiccati)
 
-/-- Scaffolding: the earlier assembly taking `T* = ⊤` for every path as an input. -/
-public theorem conditional_regularity_scaffold
-    (u₀ : VelocityField) (ν : ℝ)
-    (h_divfree : ∀ x, div u₀ x = 0)
-    (h_smooth : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (h_finite_energy : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
-    (h_pos_ν : ν > 0)
-    (w : KatoLocalWitness u₀ ν)
-    (hRiccati : FiniteTimeVorticityBound u₀ ν)
-    (hTstar : ∀ u : ℝ → VelocityField, TstarIsTop u ν)
-    (hbelow : ∀ u : ℝ → VelocityField, SmoothBelowTstar u ν) :
-  ∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
-    NS_PDE u p ν ∧
-    u 0 = u₀ ∧
-    (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
-    (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (u t)) ≥ 0) ∧
-    (∀ t ≥ (0 : ℝ), ∀ x, div (u t) x = 0) := by
-  -- Complete, explicit logical structure — Two-Layer Architecture (updated per
-  -- Conversation Summary, 31 May 2026).
-
-  -- Layer 1 — Geometric Justification (SymplecticTether.lean)
-  -- The Frohmanian Symplectic Tether 𝔗_F is the *unique canonical minimal* bilinear
-  -- antisymmetric correction satisfying (C1)–(C3) / (A1)–(A5). This layer legitimizes
-  -- the specific quartic weight used in the Lyapunov functional. It does *not* prove
-  -- regularity by itself.
-
-  -- Layer 2 — Analytic Proof of No Blow-Up (this module)
-  -- Working *exclusively* on solutions of the **unmodified classical** 3D NS equations,
-  -- we derive a differential inequality for a mollified tethered Lyapunov functional.
-  -- We compare it against an **independent** autonomous scalar majorant ODE
-  --   y' = C y² − κ'' y³
-  -- whose global boundedness is proved by pure ODE phase-plane analysis **before**
-  -- any appeal to the Navier–Stokes solution. The majorant is deliberately constructed
-  -- with *no dependence whatsoever* on the Tether or on any particular NS solution.
-  -- This independence is a deliberate strength of the argument (see updated Section 3).
-  --
-  -- Non-circular continuation on compact intervals [0,T] < T* then transfers the
-  -- finite-horizon bound on each [0,T] to the vorticity, after which classical BKM +
-  -- parabolic regularity close the proof.
-
-  -- Step 2.1: Kato/Leray local existence on a short interval (classical).
-  -- Output type: `u`, `p`, `NS_PDE u p ν`, `u 0 = u₀`.
-  obtain ⟨_Tloc, _hTloc, u, _hloc, hu0, _hphys, p, hNS⟩ :=
-    local_existence u₀ ν h_smooth h_divfree h_finite_energy h_pos_ν w
-
-  refine ⟨u, p, hNS, hu0, ?smooth, ?nn, ?div0⟩
-  · exact beale_kato_majda_scaffold u p ν h_pos_ν hNS
-      (fun T _hT => bkmIntegrability_of_finiteTime hRiccati u p hNS hu0 T)
-      (hTstar u) (hbelow u)
-  · intro t _ht
-    exact vorticity_sup_norm_nonneg _
-  · intro t ht x
-    exact (hNS t ht x).2
+/-- Uniqueness clause: with `SmoothPhysicalUniqueness` (b), any two global smooth physical
+solutions from `u₀` coincide for `t ≥ 0`. -/
+public theorem global_solutions_eq_of_uniqueness {u₀ : VelocityField} {ν : ℝ}
+    (huniq : SmoothPhysicalUniqueness u₀ ν)
+    {u v : TimeDependentVelocity} {p q : TimeDependentPressure}
+    (hu0 : u 0 = u₀) (hNSu : NS_PDE u p ν) (hsmu : ∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (u t))
+    (hphu : IsPhysicalNSSolution u)
+    (hv0 : v 0 = u₀) (hNSv : NS_PDE v q ν) (hsmv : ∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (v t))
+    (hphv : IsPhysicalNSSolution v) :
+    ∀ t ≥ (0 : ℝ), u t = v t := fun t ht =>
+  huniq t u v p q (isLocalPhysicalSolution_of_global hu0 hNSu hsmu hphu t)
+    (isLocalPhysicalSolution_of_global hv0 hNSv hsmv hphv t) t ⟨ht, le_rfl⟩
 
 /-- Rest-state global regularity: the zero field is a globally smooth
 NS solution for any positive viscosity. No Kato, Riccati, `T*`, or
@@ -1994,67 +2059,6 @@ public theorem conditional_regularity_zero (ν : ℝ) (_hν : 0 < ν) :
   · intro _t _ht x
     exact div_zero_field x
 
-/-- Assembly with `T* = ⊤` and compact-interval smoothness *proved* from
-uniform Kato restart plus Cauchy identification of existence-time
-witnesses, rather than taken as extra hypotheses. -/
-public theorem conditional_regularity_of_restart
-    (u₀ : VelocityField) (ν : ℝ)
-    (_h_divfree : ∀ x, div u₀ x = 0)
-    (_h_smooth : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (_h_finite_energy : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
-    (h_pos_ν : ν > 0)
-    (w : KatoLocalWitness u₀ ν)
-    (hRiccati : PhysicalFiniteTimeVorticityBound u₀ ν)
-    (τ : ℝ) (hτ : 0 < τ)
-    (hrestart : KatoUniformRestart u₀ ν τ)
-    (huniq : KatoUniquenessOnExistenceTimes u₀ ν w) :
-    NS_PDE w.u w.p ν ∧
-      w.u 0 = u₀ ∧
-      (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (w.u t)) ∧
-      (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (w.u t)) ≥ 0) ∧
-      (∀ t ≥ (0 : ℝ), ∀ x, div (w.u t) x = 0) := by
-  have hu0 : w.u 0 = u₀ := w.init
-  have hTstar : Tstar u₀ ν = ⊤ :=
-    Tstar_eq_top_of_uniform_restart u₀ ν τ hτ
-      (Tstar_pos_of_kato_witness u₀ ν w) hrestart
-  have hbelow : ∀ T : ℝ, (T : EReal) < Tstar (w.u 0) ν →
-      ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (w.u t) := by
-    intro T hTlt t ht
-    by_cases hTnn : 0 ≤ T
-    · have huniq' :
-          ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
-            T' ∈ existenceTimes (w.u 0) ν →
-            v 0 = w.u 0 →
-            NS_PDE v q ν →
-            (∀ s ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v s)) →
-            IsPhysicalNSSolution v →
-            ∀ s ∈ Set.Icc (0 : ℝ) T', w.u s = v s := by
-        intro T' v q hmem hv0 hpde hsm hphys
-        have hmem' : T' ∈ existenceTimes u₀ ν := by
-          simpa [hu0] using hmem
-        have hv0' : v 0 = u₀ := hv0.trans hu0
-        exact huniq T' v q hmem' hv0' hpde hsm hphys
-      exact smoothness_below_Tstar_of_uniqueness w.u ν huniq' hTlt hTnn t ht
-    · have hempty : Set.Icc (0 : ℝ) T = (∅ : Set ℝ) := by
-        ext y
-        constructor
-        · intro hy
-          exact (hTnn (le_trans hy.1 hy.2)).elim
-        · intro hy
-          exact hy.elim
-      have : t ∈ (∅ : Set ℝ) := by
-        rwa [hempty] at ht
-      exact this.elim
-  refine ⟨w.pde, hu0, ?smooth, ?nn, ?div0⟩
-  · exact beale_kato_majda_scaffold w.u w.p ν h_pos_ν w.pde
-      (fun T _hT => physicalBKMIntegrability_of_finiteTime hRiccati w.u w.p w.pde hu0
-        w.phys T)
-      (by unfold TstarIsTop; rw [hu0]; exact hTstar) hbelow
-  · intro _t _ht
-    exact vorticity_sup_norm_nonneg _
-  · intro t ht x
-    exact (w.pde t ht x).2
-
 /-- Smoothness of the Kato witness below `T*` from `KatoUniquenessOnExistenceTimes`. -/
 public theorem smoothBelowTstar_of_katoUniqueness {u₀ : VelocityField} {ν : ℝ}
     (w : KatoLocalWitness u₀ ν) (huniq : KatoUniquenessOnExistenceTimes u₀ ν w) :
@@ -2066,9 +2070,9 @@ public theorem smoothBelowTstar_of_katoUniqueness {u₀ : VelocityField} {ν : �
         ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
           T' ∈ existenceTimes (w.u 0) ν →
           v 0 = w.u 0 →
-          NS_PDE v q ν →
+          NS_PDE_On v q ν T' →
           (∀ s ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v s)) →
-          IsPhysicalNSSolution v →
+          IsPhysicalNSSolutionOn v T' →
           ∀ s ∈ Set.Icc (0 : ℝ) T', w.u s = v s := by
       intro T' v q hmem hv0 hpde hsm hphys
       have hmem' : T' ∈ existenceTimes u₀ ν := by
@@ -2077,73 +2081,13 @@ public theorem smoothBelowTstar_of_katoUniqueness {u₀ : VelocityField} {ν : �
     exact smoothness_below_Tstar_of_uniqueness w.u ν huniq' hTlt hTnn t ht
   · exact absurd (le_trans ht.1 ht.2) hTnn
 
-/-- **Global regularity of the Kato witness through BKM.** `T* = ⊤` is derived from the
-Kato local existence time, `PhysicalBKMContinuationCriterionFor`, and the BKM integrability
-supplied by `PhysicalFiniteTimeVorticityBound`; smoothness below `T*` comes from
-`KatoUniquenessOnExistenceTimes`. No restart hypothesis.
-Open input: `PhysicalFiniteTimeVorticityBound`. -/
-public theorem conditional_regularity_of_bkm_uniqueness
-    (u₀ : VelocityField) (ν : ℝ)
-    (h_pos_ν : ν > 0)
-    (w : KatoLocalWitness u₀ ν)
-    (hRiccati : PhysicalFiniteTimeVorticityBound u₀ ν)
-    (hcrit : PhysicalBKMContinuationCriterionFor u₀ ν)
-    (huniq : KatoUniquenessOnExistenceTimes u₀ ν w) :
-    NS_PDE w.u w.p ν ∧
-      w.u 0 = u₀ ∧
-      (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (w.u t)) ∧
-      (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (w.u t)) ≥ 0) ∧
-      (∀ t ≥ (0 : ℝ), ∀ x, div (w.u t) x = 0) := by
-  refine ⟨w.pde, w.init, ?smooth, ?nn, ?div0⟩
-  · exact beale_kato_majda w.u w.p ν h_pos_ν w.pde (localExistenceTime_of_kato w w.u w.init)
-      (hcrit w.u w.p w.pde w.init w.phys)
-      (fun T => physicalBKMIntegrability_of_finiteTime hRiccati w.u w.p w.pde w.init w.phys T)
-      (smoothBelowTstar_of_katoUniqueness w huniq)
-  · intro _t _ht
-    exact vorticity_sup_norm_nonneg _
-  · intro t ht x
-    exact (w.pde t ht x).2
-
-/-- In `conditional_regularity_of_restart`, `T* = ⊤` follows from `KatoUniformRestart` and the
-Kato witness alone; the vorticity-bound argument is not used for it. -/
+/-- `T* = ⊤` follows from `KatoUniformRestart` and the Kato witness alone; no vorticity bound
+is used. -/
 public theorem Tstar_top_of_restart_without_vorticity_bound
     (u₀ : VelocityField) (ν : ℝ) (w : KatoLocalWitness u₀ ν)
     (τ : ℝ) (hτ : 0 < τ) (hrestart : KatoUniformRestart u₀ ν τ) :
     Tstar u₀ ν = ⊤ :=
   Tstar_eq_top_of_uniform_restart u₀ ν τ hτ (Tstar_pos_of_kato_witness u₀ ν w) hrestart
-
-/-- Same assembly, with the free restart length replaced by the paper Kato
-time `katoRestartTime C C₀ (max R 1)` from the log-Gronwall / quadratic
-comparison (Drive Steps 3.2–3.4). `C₀` is the finite-horizon vorticity bound on `[0, 0]`;
-`hrestart` is assumed for every ceiling value. `R` is the Sobolev proxy at time 0. -/
-public theorem conditional_regularity_of_kato_estimates
-    (u₀ : VelocityField) (ν : ℝ)
-    (h_divfree : ∀ x, div u₀ x = 0)
-    (h_smooth : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (h_finite_energy : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
-    (h_pos_ν : ν > 0)
-    (w : KatoLocalWitness u₀ ν)
-    (hRiccati : PhysicalFiniteTimeVorticityBound u₀ ν)
-    (C R : ℝ)
-    (hrestart : ∀ Y : ℝ,
-      ∀ t : ℝ, 0 ≤ t → (t : EReal) < Tstar u₀ ν →
-        ∃ T' ∈ existenceTimes u₀ ν, t + katoRestartTime C Y (max R 1) ≤ T')
-    (huniq : ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
-      T' ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T', w.u t = v t) :
-    NS_PDE w.u w.p ν ∧
-      w.u 0 = u₀ ∧
-      (∀ t ≥ (0 : ℝ), ContDiff ℝ (⊤ : ℕ∞) (w.u t)) ∧
-      (∀ t ≥ (0 : ℝ), vorticity_sup_norm (vorticity (w.u t)) ≥ 0) ∧
-      (∀ t ≥ (0 : ℝ), ∀ x, div (w.u t) x = 0) := by
-  obtain ⟨C₀, _hC₀⟩ := (hRiccati w.u w.p w.pde w.init w.phys).1 0 le_rfl
-  exact conditional_regularity_of_restart u₀ ν h_divfree h_smooth h_finite_energy
-    h_pos_ν w hRiccati (katoRestartTime C C₀ (max R 1))
-    (katoRestartTime_pos C C₀ (max R 1)) (hrestart C₀) huniq
 
 /-- Riccati construction: the vorticity-sup-norm differential inequality
 produces the uniform ceiling used by BKM. This discharges `hRiccati`. -/
@@ -2178,16 +2122,16 @@ public theorem riccati_ceiling_of_vorticity_di
 #print axioms hasDerivAt_lyapunov_density_unweighted
 #print axioms majorantField_factor
 #print axioms conditional_regularity_zero
-#print axioms conditional_regularity_of_restart
-#print axioms conditional_regularity_of_kato_estimates
 #print axioms finiteTimeVorticityBound_of_uniform
 #print axioms physicalFiniteTimeVorticityBound_of_uniform
 #print axioms bkmIntegrability_of_finiteTime
 #print axioms physicalBKMIntegrability_of_finiteTime
-#print axioms conditional_regularity_of_bkmIntegrability
-#print axioms conditional_regularity_of_bkm_uniqueness
 #print axioms Tstar_top_of_restart_without_vorticity_bound
 #print axioms conditional_regularity
+#print axioms conditional_regularity_of_local_bound
+#print axioms comparison_ode_stability_Icc
+#print axioms localTetherBound_of_localTetherRate
+#print axioms global_solutions_eq_of_uniqueness
 #print axioms riccati_ceiling_of_vorticity_di
 
 end   -- close noncomputable section

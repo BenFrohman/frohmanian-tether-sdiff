@@ -68,36 +68,32 @@ open NavierStokes3D MeasureTheory
 /-- High-level statement of the full theorem — **conditional**. NOT a proof of regularity.
 
 Hypotheses (each explicit; none is proved here):
-* `hKato` — for every smooth, divergence-free, finite-energy datum a `KatoLocalWitness`.
-  CAUTION: as encoded, a `KatoLocalWitness` carries a path solving the equations pointwise for
-  ALL `t ≥ 0` (smooth only on `[0, T]`), so `hKato` is stronger than Kato's local theorem; it
-  assumes existence of a (possibly non-smooth after `T`) physical solution for all time.
-* `hDI : ∀ u₀ ν, FrohmanianTetherRate u₀ ν` — the cubic rate `M' ≤ C M² − κ'' M³` for
-  `M(t) = ‖ω(t)‖_∞` along every physical solution. OPEN; at least as strong as a time-uniform
-  vorticity bound, hence (by BKM) as hard as the regularity problem itself.
-* `hcrit` — the Beale–Kato–Majda continuation criterion (classical, not formalized).
-* `huniq` — uniqueness of smooth physical solutions on existence intervals (classical, not
-  formalized).
+* `hKato` — for every admissible datum a `KatoLocalWitness`: a smooth physical solution on a
+  short interval `[0, T]` (equations demanded on `[0, T]` only). Category (b), Kato 1972, with
+  the same `H^s` data-class caveat.
+* `hcont : ∀ u₀ ν, BKMGlobalContinuation u₀ ν` — category (b), classical (Kato local existence +
+  uniqueness + Beale–Kato–Majda continuation), not formalized; CAVEAT: the library's data class
+  is wider than Kato's `H^s`.
+* `hDI : ∀ u₀ ν, LocalTetherRate u₀ ν` — category (d), OPEN: the cubic rate
+  `M' ≤ C M² − κ'' M³` for `M(t) = ‖ω(t)‖_∞`, with constants chosen before the interval, along
+  every smooth physical solution on every finite interval. It implies a time-uniform ceiling
+  (`localTetherBound_of_localTetherRate`, via the finite-interval comparison
+  `comparison_ode_stability_Icc`), hence by BKM it is as hard as regularity itself.
 
-Conclusion: (1) the density-form characterization of `TetherKernel` (substitution); (2) global
-smoothness of the witness path.
+Conclusion: (1) the density-form characterization of `TetherKernel` (substitution); (2) a global
+smooth physical solution for every admissible datum.
 
-**Changes (Nov 2026).** The former clause "every ANTISYMMETRIC `B` satisfying C1–C3,
-saturation and polarization equals `TetherKernel`" was removed: its hypotheses force
-`B = TetherKernel = 0` (`FrohmanianTether.antisymmetric_clause_forces_zero`). The former
-binders `τ`, `hTlb` (one Kato existence time `τ` for ALL data), `hInt`, `huniq_shift` (the
-quantitative-restart route) were removed; continuation now goes through `hcrit` (BKM) as in
-`conditional_regularity_of_open_hyps`. The former first clause ("the tethered bracket
-reproduces the classical one on `H`") was removed earlier: its hypothesis `δH/δω = u` is false
-(`KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity`). -/
+**Changes (Nov 2026).** `KatoLocalWitness` now demands the equations only on its interval, so it
+no longer supplies a global path; the binders `hcrit`, `huniq` were replaced by the explicit
+continuation hypothesis `hcont`, and the rate hypothesis `hDI` now ranges over local
+solutions (`LocalTetherRate`). The former antisymmetric clause was removed earlier (its
+hypotheses force `B = TetherKernel = 0`). -/
 public theorem frohmanian_tether_theorem
     (hKato : ∀ u₀ ν, ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) → 0 < ν →
       KatoLocalWitness u₀ ν)
-    (hDI : ∀ u₀ ν, FrohmanianTetherRate u₀ ν)
-    (hcrit : ∀ u₀ ν, TetheredLyapunov.PhysicalBKMContinuationCriterionFor u₀ ν)
-    (huniq : ∀ u₀ ν (w : KatoLocalWitness u₀ ν),
-      TetheredLyapunov.KatoUniquenessOnExistenceTimes u₀ ν w) :
+    (hcont : ∀ u₀ ν, TetheredLyapunov.BKMGlobalContinuation u₀ ν)
+    (hDI : ∀ u₀ ν, TetheredLyapunov.LocalTetherRate u₀ ν) :
   ∃ (𝔗_F : CoadjointOrbit → Functional → Functional → ℝ),
     (∀ (B : CoadjointOrbit → Functional → Functional → ℝ)
       (α : CoadjointOrbit → T3 → ℝ),
@@ -119,13 +115,10 @@ public theorem frohmanian_tether_theorem
   · intro B α hrepr hα ω F G
     exact uniqueness_of_kernel_density B α hrepr hα ω F G
   · intro u₀ ν hνpos hdiv hsm hE
-    let w := hKato u₀ ν hsm hdiv hE hνpos
-    have hceil : PhysicalUniformVorticityCeiling u₀ ν := by
-      intro u p hNS hu0 hphys
-      obtain ⟨C, κ'', hC, hκ, hd, hdd, hc, _⟩ := hDI u₀ ν u p hνpos hNS hu0 hphys
-      exact riccati_ceiling_of_vorticity_di u C κ'' hC hκ hd hdd hc
-    exact ⟨w.u, w.p, conditional_regularity_of_bkm_uniqueness u₀ ν hνpos w
-      (physicalFiniteTimeVorticityBound_of_uniform hceil) (hcrit u₀ ν) (huniq u₀ ν w)⟩
+    obtain ⟨u, p, hNS, hu0, hsm, -, hnn, hdiv⟩ :=
+      TetheredLyapunov.conditional_regularity u₀ ν (hKato u₀ ν hsm hdiv hE hνpos) (hcont u₀ ν)
+        (TetheredLyapunov.localTetherBound_of_localTetherRate (hDI u₀ ν))
+    exact ⟨u, p, hNS, hu0, hsm, hnn, hdiv⟩
 
 /-! ## Abstract (exact formulation supplied by the author) -/
 
@@ -153,25 +146,22 @@ public def satisfies_NavierStokes (u : TimeDependentVelocity) (ν : ℝ) : Prop 
 
 /-- Main theorem (Abstract, formalized) — **conditional on `hRiccati`**.
 
-`hRiccati : FrohmanianTetherBound (u0 0) ν` is a time-uniform bound on `‖ω‖_∞`.
-It is open; by BKM it is equivalent in difficulty to regularity itself
-(see `ClayStatements.lean`, `FrohmanianTetherClosingBound`). Given it, plus the
-classical local-theory binders `w`, `hcrit` (BKM continuation criterion), `huniq`, every smooth, divergence-free
-initial field generates a unique global smooth solution. Not an unconditional Clay solution.
-
-This is the top-level statement whose proof proceeds via the Frohmanian Symplectic Tether
-(the 5-step uniqueness + tethered Lyapunov + independent majorant + BKM upgrade).
--/
+`hRiccati : LocalTetherBound (u0 0) ν` is one `‖ω‖_∞` ceiling along every smooth physical
+solution on every finite interval (category (d), OPEN; by BKM as hard as regularity itself).
+the Kato witness `w`, `hcont : BKMGlobalContinuation (u0 0) ν` (BKM continuation) and
+`huniq : SmoothPhysicalUniqueness (u0 0) ν` are category (b): classical, not formalized.
+Given them, the datum generates a unique global smooth physical solution. Not an unconditional
+Clay solution. -/
 public theorem conditional_regularity_of_open_hyps
     (u0 : TimeDependentVelocity)
-    (h_div_free : ∀ t x, div (u0 t) x = 0)
-    (h_smooth : IsSmooth (u0 0))
-    (h_finite_energy : Integrable (fun x : T3 => ‖u0 0 x‖ ^ 2))
-    (ν : ℝ) (h_ν_pos : ν > 0)
+    (_h_div_free : ∀ t x, div (u0 t) x = 0)
+    (_h_smooth : IsSmooth (u0 0))
+    (_h_finite_energy : Integrable (fun x : T3 => ‖u0 0 x‖ ^ 2))
+    (ν : ℝ) (_h_ν_pos : ν > 0)
     (w : KatoLocalWitness (u0 0) ν)
-    (hRiccati : FrohmanianTetherBound (u0 0) ν)
-    (hcrit : TetheredLyapunov.PhysicalBKMContinuationCriterionFor (u0 0) ν)
-    (huniq : TetheredLyapunov.KatoUniquenessOnExistenceTimes (u0 0) ν w) :
+    (hcont : TetheredLyapunov.BKMGlobalContinuation (u0 0) ν)
+    (hRiccati : TetheredLyapunov.LocalTetherBound (u0 0) ν)
+    (huniq : TetheredLyapunov.SmoothPhysicalUniqueness (u0 0) ν) :
   ∃ (u : TimeDependentVelocity),
     (∀ t ≥ (0 : ℝ), IsSmooth (u t)) ∧
     (u 0 = u0 0) ∧
@@ -182,21 +172,13 @@ public theorem conditional_regularity_of_open_hyps
       v 0 = u0 0 →
       (∀ t ≥ (0 : ℝ), satisfies_NavierStokes v ν) →
       ∀ t ≥ (0 : ℝ), v t = u t) := by
-  obtain ⟨hNS, hu0, hsm, hnn, _hdiv⟩ :=
-    TetheredLyapunov.conditional_regularity_of_bkm_uniqueness (u0 0) ν h_ν_pos
-      w (TetheredLyapunov.physicalFiniteTimeVorticityBound_of_uniform
-          (TetheredLyapunov.physicalUniformVorticityCeiling_of_tetherBound hRiccati))
-      hcrit huniq
-  refine ⟨w.u, hsm, hu0, ?ns, hnn, ?uniq⟩
-  · intro _t _ht
-    exact ⟨w.phys, w.p, hNS⟩
-  · intro v hsmv hv0 hNSv t ht
-    obtain ⟨hphys_v, q, hq⟩ := hNSv 0 le_rfl
-    have ht1 : 0 < t + 1 := by linarith
-    have hmem : t + 1 ∈ existenceTimes (u0 0) ν :=
-      mem_existenceTimes (u0 0) ν ht1 v q hv0 hq (fun s hs => hsmv s hs.1) hphys_v
-    exact (huniq (t + 1) v q hmem hv0 hq (fun s hs => hsmv s hs.1) hphys_v
-      t ⟨ht, le_of_lt (lt_add_one t)⟩).symm
+  obtain ⟨u, p, hNS, hu0, hsm, hphys, hnn, _hdiv⟩ :=
+    TetheredLyapunov.conditional_regularity (u0 0) ν w hcont hRiccati
+  refine ⟨u, hsm, hu0, fun _ _ => ⟨hphys, p, hNS⟩, hnn, ?uniq⟩
+  intro v hsmv hv0 hNSv t ht
+  obtain ⟨hphys_v, q, hq⟩ := hNSv 0 le_rfl
+  exact TetheredLyapunov.global_solutions_eq_of_uniqueness huniq hv0 hq hsmv hphys_v
+    hu0 hNS hsm hphys t ht
 
 -- Finite kinetic energy of the initial field. Mathlib's `Integrable f` is
 -- `AEStronglyMeasurable f ∧ HasFiniteIntegral f`. An earlier encoding wrote

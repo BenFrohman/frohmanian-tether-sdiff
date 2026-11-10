@@ -2282,19 +2282,69 @@ public theorem isPhysicalNSSolution_zero :
    fun _ _ => le_rfl,
    ⟨0, fun _ _ => by simp⟩⟩
 
+/-! ### Local (finite-interval) solutions
+
+`NS_PDE_On u p ν T` and `IsPhysicalNSSolutionOn u T` demand the equations and the physical
+admissibility clauses only for `t ∈ [0, T]`. Kato's theorem gives exactly this; the former
+encoding of `KatoLocalWitness` demanded the equations for ALL `t ≥ 0`, i.e. it assumed a global
+(if possibly non-smooth) solution. -/
+
+/-- The Navier–Stokes system on the compact interval `[0, T]` only. -/
+@[expose] public def NS_PDE_On (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν T : ℝ) :
+    Prop :=
+  ∀ t ∈ Set.Icc (0 : ℝ) T, ∀ x : T3,
+    time_deriv u t x + convective (u t) (u t) x + pressureGradient (p t) x =
+        ν • laplacian (u t) x ∧
+      div (u t) x = 0
+
+/-- `IsPhysicalNSSolution` with its time-dependent clauses restricted to `[0, T]`
+(the affine extension to `t ≤ 0` is kept, it pins the two-sided derivative at `0`). -/
+@[expose] public def IsPhysicalNSSolutionOn (u : TimeDependentVelocity) (T : ℝ) : Prop :=
+  (∀ t ∈ Set.Icc (0 : ℝ) T, ∀ x : T3, DifferentiableAt ℝ (fun s => u s x) t) ∧
+  (∀ t ∈ Set.Icc (0 : ℝ) T, Continuous (u t)) ∧
+  (∀ t ∈ Set.Icc (0 : ℝ) T, Integrable (fun x : T3 => ‖u t x‖ ^ 2)) ∧
+  (∀ t ∈ Set.Icc (0 : ℝ) T, (∫ x, ‖u t x‖ ^ 2 ∂volume) ≤ ∫ x, ‖u 0 x‖ ^ 2 ∂volume) ∧
+  (∃ v₀ : VelocityField, ∀ t ≤ (0 : ℝ), u t = u 0 + t • v₀)
+
+public theorem NS_PDE.on {u : TimeDependentVelocity} {p : TimeDependentPressure} {ν : ℝ}
+    (h : NS_PDE u p ν) (T : ℝ) : NS_PDE_On u p ν T :=
+  fun t ht x => h t ht.1 x
+
+public theorem NS_PDE_On.mono {u : TimeDependentVelocity} {p : TimeDependentPressure} {ν T T' : ℝ}
+    (h : NS_PDE_On u p ν T) (hT : T' ≤ T) : NS_PDE_On u p ν T' :=
+  fun t ht x => h t ⟨ht.1, ht.2.trans hT⟩ x
+
+public theorem IsPhysicalNSSolution.on {u : TimeDependentVelocity}
+    (h : IsPhysicalNSSolution u) (T : ℝ) : IsPhysicalNSSolutionOn u T :=
+  ⟨fun t ht => h.1 t ht.1, fun t ht => h.2.1 t ht.1, fun t ht => h.2.2.1 t ht.1,
+    fun t ht => h.2.2.2.1 t ht.1, h.2.2.2.2⟩
+
+public theorem IsPhysicalNSSolutionOn.mono {u : TimeDependentVelocity} {T T' : ℝ}
+    (h : IsPhysicalNSSolutionOn u T) (hT : T' ≤ T) : IsPhysicalNSSolutionOn u T' :=
+  ⟨fun t ht => h.1 t ⟨ht.1, ht.2.trans hT⟩, fun t ht => h.2.1 t ⟨ht.1, ht.2.trans hT⟩,
+    fun t ht => h.2.2.1 t ⟨ht.1, ht.2.trans hT⟩, fun t ht => h.2.2.2.1 t ⟨ht.1, ht.2.trans hT⟩,
+    h.2.2.2.2⟩
+
+/-- A smooth physical solution on `[0, T]` from `u₀` (the local class). -/
+@[expose] public def IsLocalPhysicalSolution (ν T : ℝ) (u₀ : VelocityField)
+    (u : TimeDependentVelocity) (p : TimeDependentPressure) : Prop :=
+  u 0 = u₀ ∧ NS_PDE_On u p ν T ∧ (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
+    IsPhysicalNSSolutionOn u T
+
 /-- Finite existence times: a positive `T` such that a physically admissible smooth NS solution
-starting at `u₀` exists on the compact interval `[0, T]`. -/
+starting at `u₀` exists on the compact interval `[0, T]` (equations and admissibility demanded on
+`[0, T]` only). -/
 public def existenceTimes (u₀ : VelocityField) (ν : ℝ) : Set ℝ :=
   { T | 0 < T ∧ ∃ u : TimeDependentVelocity, ∃ p : TimeDependentPressure,
-      u 0 = u₀ ∧ NS_PDE u p ν ∧
+      u 0 = u₀ ∧ NS_PDE_On u p ν T ∧
       (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
-      IsPhysicalNSSolution u }
+      IsPhysicalNSSolutionOn u T }
 
 /-- Unpatched existence horizons omitting `IsPhysicalNSSolution`, retained for the audit module
 `ClayStatements.lean` to document why pointwise `deriv` alone is vulnerable to step jumps. -/
 public def existenceTimes_unpatched (u₀ : VelocityField) (ν : ℝ) : Set ℝ :=
   { T | 0 < T ∧ ∃ u : TimeDependentVelocity, ∃ p : TimeDependentPressure,
-      u 0 = u₀ ∧ NS_PDE u p ν ∧ ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t) }
+      u 0 = u₀ ∧ NS_PDE_On u p ν T ∧ ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t) }
 
 /-- Maximal existence time `T*` as an extended real: `sSup` of the existence times,
 or `0` if there are none (`insert 0`). Unbounded existence times give `T* = ⊤`.
@@ -2429,7 +2479,10 @@ public theorem Tstar_eq_top_of_katoRestartTime
     (katoRestartTime_pos C Y R) hpos hrestart
 
 /-- Kato 1972 / Leray 1934 witness: a short-time smooth NS solution.
-This is data (Type), not a `Prop` gate: the time, fields, smoothness, and PDE. -/
+This is data (Type), not a `Prop` gate: the time, fields, smoothness, and PDE.
+**Restricted (Nov 2026):** the equations (`pde`) and the physical admissibility (`phys`) are
+demanded only on the local interval `[0, T]`, which is what Kato's theorem provides. (The former
+`pde : NS_PDE u p ν` demanded the equations for all `t ≥ 0`.) -/
 public structure KatoLocalWitness (u₀ : VelocityField) (ν : ℝ) where
   T : ℝ
   Tpos : 0 < T
@@ -2437,8 +2490,8 @@ public structure KatoLocalWitness (u₀ : VelocityField) (ν : ℝ) where
   p : TimeDependentPressure
   smooth : ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t)
   init : u 0 = u₀
-  pde : NS_PDE u p ν
-  phys : IsPhysicalNSSolution u
+  pde : NS_PDE_On u p ν T
+  phys : IsPhysicalNSSolutionOn u T
 
 /-- Local existence of a smooth solution on a short interval (Kato 1972 / Leray 1934).
 The witness is the Kato/Leray construction; the implication is kernel-closed. -/
@@ -2452,8 +2505,8 @@ public theorem local_existence
     ∃ T > (0 : ℝ), ∃ u : ℝ → VelocityField,
       (∀ t ∈ Set.Icc 0 T, ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
       u 0 = u₀ ∧
-      IsPhysicalNSSolution u ∧
-      ∃ p : ℝ → PressureField, NS_PDE u p ν :=
+      IsPhysicalNSSolutionOn u T ∧
+      ∃ p : ℝ → PressureField, NS_PDE_On u p ν T :=
   ⟨w.T, w.Tpos, w.u, w.smooth, w.init, w.phys, w.p, w.pde⟩
 
 /-- Time derivative is linear. Difference of two C¹-in-time fields. -/
@@ -2575,7 +2628,7 @@ public theorem navier_stokes_eq_zero (ν : ℝ) :
   · exact div_zero_field x
 
 /-- Zero initial data: the rest state is a Kato/Leray witness of any positive length. -/
-public noncomputable def kato_witness_zero (ν : ℝ) :
+@[expose] public noncomputable def kato_witness_zero (ν : ℝ) :
     KatoLocalWitness (0 : VelocityField) ν where
   T := 1
   Tpos := one_pos
@@ -2583,8 +2636,8 @@ public noncomputable def kato_witness_zero (ν : ℝ) :
   p := fun _ => (0 : PressureField)
   smooth := fun _t _ht => contDiff_const
   init := rfl
-  pde := navier_stokes_eq_zero ν
-  phys := isPhysicalNSSolution_zero
+  pde := NS_PDE.on (navier_stokes_eq_zero ν) 1
+  phys := isPhysicalNSSolution_zero.on 1
 
 /-- Kato local existence for the rest state: 0-hyp construction, no `True`. -/
 public noncomputable def local_existence_zero (ν : ℝ) (_hν : 0 < ν) :
@@ -2609,8 +2662,8 @@ public noncomputable def kato_witness_restrict
   p := w.p
   smooth := fun s hs => w.smooth s ⟨hs.1, hs.2.trans ht.2⟩
   init := w.init
-  pde := w.pde
-  phys := w.phys
+  pde := w.pde.mono ht.2
+  phys := w.phys.mono ht.2
 
 /-- Time shift: `∂t u(· + t₀) = (∂t u)(· + t₀)`. Chain rule, not a
 `True` gate. -/
@@ -2671,16 +2724,11 @@ public theorem smoothness_on_restart_interval
     rw [heq]
     exact w'.smooth (t - w.T) ⟨hs0, hsT⟩
 
-/-- Concatenated existence time: original Kato window plus restart
-window, after Cauchy identification of the restart path. -/
-public theorem mem_existenceTimes_add_of_kato_restart
-    (u₀ : VelocityField) (ν : ℝ)
-    (w : KatoLocalWitness u₀ ν)
-    (w' : KatoLocalWitness (w.u w.T) ν)
-    (huniq : ∀ s ∈ Set.Icc (0 : ℝ) w'.T, w.u (w.T + s) = w'.u s) :
-    w.T + w'.T ∈ existenceTimes u₀ ν :=
-  ⟨add_pos w.Tpos w'.Tpos, w.u, w.p, w.init, w.pde,
-    smoothness_on_restart_interval u₀ ν w w' huniq, w.phys⟩
+/- `mem_existenceTimes_add_of_kato_restart` was REMOVED: it concatenated two Kato windows using
+the former global `w.pde`. With the equations demanded only on `[0, w.T]`, the concatenation
+would need a gluing statement (the shifted restart path solves the equations on
+`[w.T, w.T + w'.T]` and the time derivatives match at the junction), which is not formalized
+and is not assumed. `smoothness_on_restart_interval` (spatial smoothness only) is kept. -/
 
 /-- Constructor for `existenceTimes`, exposed across modules (the set
 predicate is otherwise opaque). -/
@@ -2689,9 +2737,9 @@ public theorem mem_existenceTimes
     (hT : 0 < T)
     (u : TimeDependentVelocity) (p : TimeDependentPressure)
     (hu0 : u 0 = u₀)
-    (hpde : NS_PDE u p ν)
+    (hpde : NS_PDE_On u p ν T)
     (hsm : ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t))
-    (hphys : IsPhysicalNSSolution u) :
+    (hphys : IsPhysicalNSSolutionOn u T) :
     T ∈ existenceTimes u₀ ν :=
   ⟨hT, u, p, hu0, hpde, hsm, hphys⟩
 
@@ -2702,8 +2750,8 @@ public theorem curl_zero (x : T3) : curl (0 : VelocityField) x = 0 := by
 /-- Every positive time is an existence time of the rest state. -/
 public theorem mem_existenceTimes_zero (ν : ℝ) {T : ℝ} (hT : 0 < T) :
     T ∈ existenceTimes (0 : VelocityField) ν :=
-  ⟨hT, fun _ => 0, fun _ => (0 : PressureField), rfl, navier_stokes_eq_zero ν,
-    fun _ _ => contDiff_const, isPhysicalNSSolution_zero⟩
+  ⟨hT, fun _ => 0, fun _ => (0 : PressureField), rfl, NS_PDE.on (navier_stokes_eq_zero ν) T,
+    fun _ _ => contDiff_const, isPhysicalNSSolution_zero.on T⟩
 
 /-- The rest state has unbounded existence times, hence `T* = ⊤`. -/
 public theorem Tstar_zero_eq_top (ν : ℝ) :
@@ -2720,8 +2768,8 @@ public theorem Tstar_pos_of_exists_smooth_solution
     (h : ∃ T > (0 : ℝ), ∃ u : ℝ → VelocityField,
       (∀ t ∈ Set.Icc 0 T, ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
       u 0 = u₀ ∧
-      IsPhysicalNSSolution u ∧
-      ∃ p : ℝ → PressureField, NS_PDE u p ν) :
+      IsPhysicalNSSolutionOn u T ∧
+      ∃ p : ℝ → PressureField, NS_PDE_On u p ν T) :
     (0 : EReal) < Tstar u₀ ν := by
   obtain ⟨T, hTpos, u, hsmooth, hu0, hphys, p, hpde⟩ := h
   have hmem : T ∈ existenceTimes u₀ ν := ⟨hTpos, u, p, hu0, hpde, hsmooth, hphys⟩
@@ -3231,6 +3279,18 @@ public theorem eq_zero_of_isPhysicalNSSolution_zero
   have heq0 : (∫ x, ‖u t x‖ ^ 2 ∂volume) = 0 := le_antisymm hle0 hge0
   exact eq_of_l2_energy_zero (u t) hint heq0 hcont
 
+/-- Local form: a physically admissible solution on `[0, T]` with `u 0 = 0` vanishes on `[0, T]`. -/
+public theorem eq_zero_of_isPhysicalNSSolutionOn_zero
+    (u : TimeDependentVelocity) (T : ℝ) (hu0 : u 0 = 0)
+    (hphys : IsPhysicalNSSolutionOn u T) (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) T) :
+    u t = 0 := by
+  have hcont : Continuous (u t) := hphys.2.1 t ht
+  have hint : Integrable (fun x : T3 => ‖u t x‖ ^ 2) := hphys.2.2.1 t ht
+  have hle : (∫ x, ‖u t x‖ ^ 2 ∂volume) ≤ ∫ x, ‖u 0 x‖ ^ 2 ∂volume := hphys.2.2.2.1 t ht
+  have h0 : (∫ x, ‖u 0 x‖ ^ 2 ∂volume) = 0 := by simp [hu0]
+  have hge0 : 0 ≤ ∫ x, ‖u t x‖ ^ 2 ∂volume := integral_nonneg (fun _ => sq_nonneg _)
+  exact eq_of_l2_energy_zero (u t) hint (le_antisymm (hle.trans_eq h0) hge0) hcont
+
 /-- Any physically admissible solution with `u 0 = 0` is identically zero on all of `ℝ`. -/
 public theorem eq_zero_of_isPhysicalNSSolution_zero_all
     (u : TimeDependentVelocity) (hu0 : u 0 = 0)
@@ -3390,9 +3450,9 @@ public theorem uniqueness_of_existence_times_of_energy_gronwall
     (hgron : ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
       T' ∈ existenceTimes u₀ ν →
       v 0 = u₀ →
-      NS_PDE v q ν →
+      NS_PDE_On v q ν T' →
       (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
+      IsPhysicalNSSolutionOn v T' →
       (∀ t ∈ Set.Icc (0 : ℝ) T', ContinuousAt
         (fun s => ∫ x, ‖w.u s x - v s x‖ ^ 2 ∂volume) t) ∧
       (∀ t ∈ Set.Icc (0 : ℝ) T', DifferentiableAt ℝ
@@ -3406,9 +3466,9 @@ public theorem uniqueness_of_existence_times_of_energy_gronwall
     ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
       T' ∈ existenceTimes u₀ ν →
       v 0 = u₀ →
-      NS_PDE v q ν →
+      NS_PDE_On v q ν T' →
       (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
+      IsPhysicalNSSolutionOn v T' →
       ∀ t ∈ Set.Icc (0 : ℝ) T', w.u t = v t := by
   intro T' v q hmem hv0 hpde hsm hphys
   obtain ⟨hcontE, hdiffE, hle, hInt, hcont⟩ := hgron T' v q hmem hv0 hpde hsm hphys
@@ -3425,9 +3485,9 @@ public theorem smoothness_below_Tstar_of_uniqueness
     (huniq : ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
       T' ∈ existenceTimes (u 0) ν →
       v 0 = u 0 →
-      NS_PDE v q ν →
+      NS_PDE_On v q ν T' →
       (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
+      IsPhysicalNSSolutionOn v T' →
       ∀ t ∈ Set.Icc (0 : ℝ) T', u t = v t)
     {T : ℝ} (hT : (T : EReal) < Tstar (u 0) ν) (hTnn : 0 ≤ T) :
     ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t) := by
@@ -3486,7 +3546,6 @@ public theorem parabolic_regularity_from_vorticity_bound
 #print axioms time_deriv_shift
 #print axioms ns_pde_shift
 #print axioms smoothness_on_restart_interval
-#print axioms mem_existenceTimes_add_of_kato_restart
 #print axioms smoothness_below_Tstar_of_uniqueness
 #print axioms curl_zero
 #print axioms mem_existenceTimes_zero
