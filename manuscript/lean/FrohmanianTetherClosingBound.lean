@@ -1,4 +1,4 @@
--- FrohmanianTether/ClayStatements.lean, line 47
+-- FrohmanianTether/ClayStatements.lean, line 48
 @[expose] public def FrohmanianTetherClosingBound (ν : ℝ) : Prop :=
   ∀ u₀ : VelocityField,
     (∀ x, div u₀ x = 0) → ContDiff ℝ (⊤ : ℕ∞) u₀ →

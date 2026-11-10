@@ -1,4 +1,4 @@
--- FrohmanianTether/ClayStatements.lean, line 568
+-- FrohmanianTether/ClayStatements.lean, line 545
 @[expose] public def PeriodicTetherClosingBound (ν : ℝ) : Prop :=
   ∀ u₀ : VelocityField,
     (∀ x, div u₀ x = 0) → ContDiff ℝ (⊤ : ℕ∞) u₀ → IsZ3Periodic u₀ →

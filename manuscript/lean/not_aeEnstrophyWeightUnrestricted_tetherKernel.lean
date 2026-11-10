@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherWeight.lean, line 223
+public theorem not_aeEnstrophyWeightUnrestricted_tetherKernel :
+    ¬ AEEnstrophyWeightUnrestricted TetherKernel := ...

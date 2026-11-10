@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 359
+-- FrohmanianTether/SymplecticTether.lean, line 205
 public noncomputable def TetheredBracket (F G : Functional) (ω : CoadjointOrbit) : ℝ :=
   -- The Frohmanian Symplectic Tether bracket: the classical Arnold Lie–Poisson bracket
   -- plus the minimal quadratic correction (the tether kernel) that satisfies (C1)–(C3).

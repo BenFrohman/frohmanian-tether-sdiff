@@ -1,0 +1,3 @@
+-- FrohmanianTether/Uniqueness.lean, line 394
+public theorem not_step1Hyp (B : CoadjointOrbit → Functional → Functional → ℝ) :
+    ¬ Step1Hyp B := ...

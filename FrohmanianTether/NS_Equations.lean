@@ -2255,13 +2255,24 @@ public theorem vorticity_transport_equation
 2. Spatial continuity and finite L² energy (`Integrable (fun x => ‖u t x‖ ^ 2)`) obeying the
    Leray energy inequality `∫ ‖u t x‖² ≤ ∫ ‖u 0 x‖²`, ruling out unbounded parasitic pressure
    waves on `ℝ³`.
-3. Causal extension `u t = u 0` for `t ≤ 0` on the total time line `ℝ`. -/
+3. First-order (affine) extension to negative times: there is a field `v₀` with
+   `u t = u 0 + t • v₀` for `t ≤ 0`. This pins the (unphysical) values at `t < 0` so that the
+   two-sided time derivative at `t = 0` is the genuine right derivative of the solution
+   (`v₀ = ∂ₜu(0⁺)`, see `PhysicalSolutionSanity.physical_time_deriv_at_zero`).
+
+**Repair (Nov 2026).** The previous clause 3 was the constant extension `u t = u 0` for `t ≤ 0`.
+Together with two-sided differentiability at `t = 0` it forced `∂ₜu(0) = 0`, so every
+`KatoLocalWitness` started from data solving the *steady* equations. The affine extension
+removes that restriction: `PhysicalSolutionSanity.exists_physical_time_deriv_ne_zero`
+exhibits a member of this class with `∂ₜu(0) ≠ 0`, and
+`PhysicalSolutionSanity.not_forall_physical_time_deriv_zero` records that the old consequence
+no longer follows. -/
 @[expose] public def IsPhysicalNSSolution (u : TimeDependentVelocity) : Prop :=
   (∀ t ≥ (0 : ℝ), ∀ x : T3, DifferentiableAt ℝ (fun s => u s x) t) ∧
   (∀ t ≥ (0 : ℝ), Continuous (u t)) ∧
   (∀ t ≥ (0 : ℝ), Integrable (fun x : T3 => ‖u t x‖ ^ 2)) ∧
   (∀ t ≥ (0 : ℝ), (∫ x, ‖u t x‖ ^ 2 ∂volume) ≤ ∫ x, ‖u 0 x‖ ^ 2 ∂volume) ∧
-  (∀ t ≤ (0 : ℝ), u t = u 0)
+  (∃ v₀ : VelocityField, ∀ t ≤ (0 : ℝ), u t = u 0 + t • v₀)
 
 public theorem isPhysicalNSSolution_zero :
     IsPhysicalNSSolution (fun _ => (0 : VelocityField)) :=
@@ -2269,21 +2280,71 @@ public theorem isPhysicalNSSolution_zero :
    fun _ _ => continuous_const,
    fun _ _ => by simp,
    fun _ _ => le_rfl,
-   fun _ _ => rfl⟩
+   ⟨0, fun _ _ => by simp⟩⟩
+
+/-! ### Local (finite-interval) solutions
+
+`NS_PDE_On u p ν T` and `IsPhysicalNSSolutionOn u T` demand the equations and the physical
+admissibility clauses only for `t ∈ [0, T]`. Kato's theorem gives exactly this; the former
+encoding of `KatoLocalWitness` demanded the equations for ALL `t ≥ 0`, i.e. it assumed a global
+(if possibly non-smooth) solution. -/
+
+/-- The Navier–Stokes system on the compact interval `[0, T]` only. -/
+@[expose] public def NS_PDE_On (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν T : ℝ) :
+    Prop :=
+  ∀ t ∈ Set.Icc (0 : ℝ) T, ∀ x : T3,
+    time_deriv u t x + convective (u t) (u t) x + pressureGradient (p t) x =
+        ν • laplacian (u t) x ∧
+      div (u t) x = 0
+
+/-- `IsPhysicalNSSolution` with its time-dependent clauses restricted to `[0, T]`
+(the affine extension to `t ≤ 0` is kept, it pins the two-sided derivative at `0`). -/
+@[expose] public def IsPhysicalNSSolutionOn (u : TimeDependentVelocity) (T : ℝ) : Prop :=
+  (∀ t ∈ Set.Icc (0 : ℝ) T, ∀ x : T3, DifferentiableAt ℝ (fun s => u s x) t) ∧
+  (∀ t ∈ Set.Icc (0 : ℝ) T, Continuous (u t)) ∧
+  (∀ t ∈ Set.Icc (0 : ℝ) T, Integrable (fun x : T3 => ‖u t x‖ ^ 2)) ∧
+  (∀ t ∈ Set.Icc (0 : ℝ) T, (∫ x, ‖u t x‖ ^ 2 ∂volume) ≤ ∫ x, ‖u 0 x‖ ^ 2 ∂volume) ∧
+  (∃ v₀ : VelocityField, ∀ t ≤ (0 : ℝ), u t = u 0 + t • v₀)
+
+public theorem NS_PDE.on {u : TimeDependentVelocity} {p : TimeDependentPressure} {ν : ℝ}
+    (h : NS_PDE u p ν) (T : ℝ) : NS_PDE_On u p ν T :=
+  fun t ht x => h t ht.1 x
+
+public theorem NS_PDE_On.mono {u : TimeDependentVelocity} {p : TimeDependentPressure} {ν T T' : ℝ}
+    (h : NS_PDE_On u p ν T) (hT : T' ≤ T) : NS_PDE_On u p ν T' :=
+  fun t ht x => h t ⟨ht.1, ht.2.trans hT⟩ x
+
+public theorem IsPhysicalNSSolution.on {u : TimeDependentVelocity}
+    (h : IsPhysicalNSSolution u) (T : ℝ) : IsPhysicalNSSolutionOn u T :=
+  ⟨fun t ht => h.1 t ht.1, fun t ht => h.2.1 t ht.1, fun t ht => h.2.2.1 t ht.1,
+    fun t ht => h.2.2.2.1 t ht.1, h.2.2.2.2⟩
+
+public theorem IsPhysicalNSSolutionOn.mono {u : TimeDependentVelocity} {T T' : ℝ}
+    (h : IsPhysicalNSSolutionOn u T) (hT : T' ≤ T) : IsPhysicalNSSolutionOn u T' :=
+  ⟨fun t ht => h.1 t ⟨ht.1, ht.2.trans hT⟩, fun t ht => h.2.1 t ⟨ht.1, ht.2.trans hT⟩,
+    fun t ht => h.2.2.1 t ⟨ht.1, ht.2.trans hT⟩, fun t ht => h.2.2.2.1 t ⟨ht.1, ht.2.trans hT⟩,
+    h.2.2.2.2⟩
+
+/-- A smooth physical solution on `[0, T]` from `u₀` (the local class). -/
+@[expose] public def IsLocalPhysicalSolution (ν T : ℝ) (u₀ : VelocityField)
+    (u : TimeDependentVelocity) (p : TimeDependentPressure) : Prop :=
+  u 0 = u₀ ∧ NS_PDE_On u p ν T ∧ (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
+    IsPhysicalNSSolutionOn u T
 
 /-- Finite existence times: a positive `T` such that a physically admissible smooth NS solution
-starting at `u₀` exists on the compact interval `[0, T]`. -/
+starting at `u₀` exists on the compact interval `[0, T]` (equations and admissibility demanded on
+`[0, T]` only). -/
 public def existenceTimes (u₀ : VelocityField) (ν : ℝ) : Set ℝ :=
   { T | 0 < T ∧ ∃ u : TimeDependentVelocity, ∃ p : TimeDependentPressure,
-      u 0 = u₀ ∧ NS_PDE u p ν ∧
+      u 0 = u₀ ∧ NS_PDE_On u p ν T ∧
       (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
-      IsPhysicalNSSolution u }
+      IsPhysicalNSSolutionOn u T }
 
 /-- Unpatched existence horizons omitting `IsPhysicalNSSolution`, retained for the audit module
 `ClayStatements.lean` to document why pointwise `deriv` alone is vulnerable to step jumps. -/
 public def existenceTimes_unpatched (u₀ : VelocityField) (ν : ℝ) : Set ℝ :=
   { T | 0 < T ∧ ∃ u : TimeDependentVelocity, ∃ p : TimeDependentPressure,
-      u 0 = u₀ ∧ NS_PDE u p ν ∧ ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t) }
+      u 0 = u₀ ∧ NS_PDE_On u p ν T ∧ ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t) }
 
 /-- Maximal existence time `T*` as an extended real: `sSup` of the existence times,
 or `0` if there are none (`insert 0`). Unbounded existence times give `T* = ⊤`.
@@ -2418,7 +2479,10 @@ public theorem Tstar_eq_top_of_katoRestartTime
     (katoRestartTime_pos C Y R) hpos hrestart
 
 /-- Kato 1972 / Leray 1934 witness: a short-time smooth NS solution.
-This is data (Type), not a `Prop` gate: the time, fields, smoothness, and PDE. -/
+This is data (Type), not a `Prop` gate: the time, fields, smoothness, and PDE.
+**Restricted (Nov 2026):** the equations (`pde`) and the physical admissibility (`phys`) are
+demanded only on the local interval `[0, T]`, which is what Kato's theorem provides. (The former
+`pde : NS_PDE u p ν` demanded the equations for all `t ≥ 0`.) -/
 public structure KatoLocalWitness (u₀ : VelocityField) (ν : ℝ) where
   T : ℝ
   Tpos : 0 < T
@@ -2426,8 +2490,8 @@ public structure KatoLocalWitness (u₀ : VelocityField) (ν : ℝ) where
   p : TimeDependentPressure
   smooth : ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t)
   init : u 0 = u₀
-  pde : NS_PDE u p ν
-  phys : IsPhysicalNSSolution u
+  pde : NS_PDE_On u p ν T
+  phys : IsPhysicalNSSolutionOn u T
 
 /-- Local existence of a smooth solution on a short interval (Kato 1972 / Leray 1934).
 The witness is the Kato/Leray construction; the implication is kernel-closed. -/
@@ -2441,8 +2505,8 @@ public theorem local_existence
     ∃ T > (0 : ℝ), ∃ u : ℝ → VelocityField,
       (∀ t ∈ Set.Icc 0 T, ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
       u 0 = u₀ ∧
-      IsPhysicalNSSolution u ∧
-      ∃ p : ℝ → PressureField, NS_PDE u p ν :=
+      IsPhysicalNSSolutionOn u T ∧
+      ∃ p : ℝ → PressureField, NS_PDE_On u p ν T :=
   ⟨w.T, w.Tpos, w.u, w.smooth, w.init, w.phys, w.p, w.pde⟩
 
 /-- Time derivative is linear. Difference of two C¹-in-time fields. -/
@@ -2564,7 +2628,7 @@ public theorem navier_stokes_eq_zero (ν : ℝ) :
   · exact div_zero_field x
 
 /-- Zero initial data: the rest state is a Kato/Leray witness of any positive length. -/
-public noncomputable def kato_witness_zero (ν : ℝ) :
+@[expose] public noncomputable def kato_witness_zero (ν : ℝ) :
     KatoLocalWitness (0 : VelocityField) ν where
   T := 1
   Tpos := one_pos
@@ -2572,8 +2636,8 @@ public noncomputable def kato_witness_zero (ν : ℝ) :
   p := fun _ => (0 : PressureField)
   smooth := fun _t _ht => contDiff_const
   init := rfl
-  pde := navier_stokes_eq_zero ν
-  phys := isPhysicalNSSolution_zero
+  pde := NS_PDE.on (navier_stokes_eq_zero ν) 1
+  phys := isPhysicalNSSolution_zero.on 1
 
 /-- Kato local existence for the rest state: 0-hyp construction, no `True`. -/
 public noncomputable def local_existence_zero (ν : ℝ) (_hν : 0 < ν) :
@@ -2598,8 +2662,8 @@ public noncomputable def kato_witness_restrict
   p := w.p
   smooth := fun s hs => w.smooth s ⟨hs.1, hs.2.trans ht.2⟩
   init := w.init
-  pde := w.pde
-  phys := w.phys
+  pde := w.pde.mono ht.2
+  phys := w.phys.mono ht.2
 
 /-- Time shift: `∂t u(· + t₀) = (∂t u)(· + t₀)`. Chain rule, not a
 `True` gate. -/
@@ -2660,90 +2724,11 @@ public theorem smoothness_on_restart_interval
     rw [heq]
     exact w'.smooth (t - w.T) ⟨hs0, hsT⟩
 
-/-- Concatenated existence time: original Kato window plus restart
-window, after Cauchy identification of the restart path. -/
-public theorem mem_existenceTimes_add_of_kato_restart
-    (u₀ : VelocityField) (ν : ℝ)
-    (w : KatoLocalWitness u₀ ν)
-    (w' : KatoLocalWitness (w.u w.T) ν)
-    (huniq : ∀ s ∈ Set.Icc (0 : ℝ) w'.T, w.u (w.T + s) = w'.u s) :
-    w.T + w'.T ∈ existenceTimes u₀ ν :=
-  ⟨add_pos w.Tpos w'.Tpos, w.u, w.p, w.init, w.pde,
-    smoothness_on_restart_interval u₀ ν w w' huniq, w.phys⟩
-
-/-- Quantitative Kato restart: a uniform lower bound `τ` on the Kato
-time of every smooth finite-energy slice, plus Cauchy identification
-of each restart path with the time-shifted solution, produces existence
-times `t + τ` below `T*`. Paper continuation construction. -/
-public theorem restart_of_kato_quantitative
-    (u₀ : VelocityField) (ν τ : ℝ)
-    (_hν : 0 < ν) (_hτ : 0 < τ)
-    (hKato : ∀ u₁, ContDiff ℝ (⊤ : ℕ∞) u₁ → (∀ x, div u₁ x = 0) →
-      Integrable (fun x : T3 => ‖u₁ x‖ ^ 2) →
-      KatoLocalWitness u₁ ν)
-    (hTlb : ∀ u₁ (hsm : ContDiff ℝ (⊤ : ℕ∞) u₁)
-      (hdiv : ∀ x, div u₁ x = 0)
-      (hE : Integrable (fun x : T3 => ‖u₁ x‖ ^ 2)),
-      τ ≤ (hKato u₁ hsm hdiv hE).T)
-    (hInt : ∀ (T : ℝ) (v : TimeDependentVelocity)
-      (q : TimeDependentPressure),
-      T ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T,
-        Integrable (fun x : T3 => ‖v t x‖ ^ 2))
-    (huniq_shift : ∀ (T : ℝ) (v : TimeDependentVelocity)
-      (q : TimeDependentPressure),
-      T ∈ existenceTimes u₀ ν →
-      v 0 = u₀ →
-      NS_PDE v q ν →
-      (∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
-      ∀ t ∈ Set.Icc (0 : ℝ) T,
-        ∀ (w' : KatoLocalWitness (v t) ν),
-          ∀ s ∈ Set.Icc (0 : ℝ) w'.T, v (t + s) = w'.u s) :
-    ∀ t : ℝ, 0 ≤ t → (t : EReal) < Tstar u₀ ν →
-      ∃ T' ∈ existenceTimes u₀ ν, t + τ ≤ T' := by
-  intro t ht0 htlt
-  obtain ⟨T', hmem, hlt⟩ :=
-    exists_mem_existenceTimes_gt_of_lt_Tstar u₀ ν htlt ht0
-  obtain ⟨v, q, hv0, hpde, hsm, hphys⟩ := hmem.2
-  have htI : t ∈ Set.Icc (0 : ℝ) T' := ⟨ht0, hlt.le⟩
-  have hvsm : ContDiff ℝ (⊤ : ℕ∞) (v t) := hsm t htI
-  have hvdiv : ∀ x, div (v t) x = 0 := fun x => (hpde t ht0 x).2
-  have hvE : Integrable (fun x : T3 => ‖v t x‖ ^ 2) :=
-    hInt T' v q hmem hv0 hpde hsm hphys t htI
-  let w' := hKato (v t) hvsm hvdiv hvE
-  have hτle : τ ≤ w'.T := hTlb (v t) hvsm hvdiv hvE
-  by_cases htpos : 0 < t
-  · have hsm' : ∀ s ∈ Set.Icc (0 : ℝ) (t + w'.T),
-        ContDiff ℝ (⊤ : ℕ∞) (v s) := by
-      intro s hs
-      by_cases hle : s ≤ t
-      · exact hsm s ⟨hs.1, hle.trans htI.2⟩
-      · have hs0 : 0 ≤ s - t := sub_nonneg.mpr (le_of_not_ge hle)
-        have hsT : s - t ≤ w'.T := by linarith [hs.2]
-        have heq := huniq_shift T' v q hmem hv0 hpde hsm hphys t htI w' (s - t) ⟨hs0, hsT⟩
-        have hst : t + (s - t) = s := by ring
-        rw [hst] at heq
-        rw [heq]
-        exact w'.smooth (s - t) ⟨hs0, hsT⟩
-    have hmemAdd : t + w'.T ∈ existenceTimes u₀ ν :=
-      ⟨add_pos htpos w'.Tpos, v, q, hv0, hpde, hsm', hphys⟩
-    refine ⟨t + w'.T, hmemAdd, ?_⟩
-    linarith [hτle]
-  · have ht00 : t = 0 := le_antisymm (not_lt.mp htpos) ht0
-    have hEq : v t = u₀ := by
-      rw [ht00, hv0]
-    have hmem' : w'.T ∈ existenceTimes u₀ ν := by
-      simpa [hEq] using mem_existenceTimes_of_kato_witness (v t) ν w'
-    refine ⟨w'.T, hmem', ?_⟩
-    calc
-      t + τ = 0 + τ := by rw [ht00]
-      _ = τ := zero_add τ
-      _ ≤ w'.T := hτle
+/- `mem_existenceTimes_add_of_kato_restart` was REMOVED: it concatenated two Kato windows using
+the former global `w.pde`. With the equations demanded only on `[0, w.T]`, the concatenation
+would need a gluing statement (the shifted restart path solves the equations on
+`[w.T, w.T + w'.T]` and the time derivatives match at the junction), which is not formalized
+and is not assumed. `smoothness_on_restart_interval` (spatial smoothness only) is kept. -/
 
 /-- Constructor for `existenceTimes`, exposed across modules (the set
 predicate is otherwise opaque). -/
@@ -2752,9 +2737,9 @@ public theorem mem_existenceTimes
     (hT : 0 < T)
     (u : TimeDependentVelocity) (p : TimeDependentPressure)
     (hu0 : u 0 = u₀)
-    (hpde : NS_PDE u p ν)
+    (hpde : NS_PDE_On u p ν T)
     (hsm : ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t))
-    (hphys : IsPhysicalNSSolution u) :
+    (hphys : IsPhysicalNSSolutionOn u T) :
     T ∈ existenceTimes u₀ ν :=
   ⟨hT, u, p, hu0, hpde, hsm, hphys⟩
 
@@ -2765,8 +2750,8 @@ public theorem curl_zero (x : T3) : curl (0 : VelocityField) x = 0 := by
 /-- Every positive time is an existence time of the rest state. -/
 public theorem mem_existenceTimes_zero (ν : ℝ) {T : ℝ} (hT : 0 < T) :
     T ∈ existenceTimes (0 : VelocityField) ν :=
-  ⟨hT, fun _ => 0, fun _ => (0 : PressureField), rfl, navier_stokes_eq_zero ν,
-    fun _ _ => contDiff_const, isPhysicalNSSolution_zero⟩
+  ⟨hT, fun _ => 0, fun _ => (0 : PressureField), rfl, NS_PDE.on (navier_stokes_eq_zero ν) T,
+    fun _ _ => contDiff_const, isPhysicalNSSolution_zero.on T⟩
 
 /-- The rest state has unbounded existence times, hence `T* = ⊤`. -/
 public theorem Tstar_zero_eq_top (ν : ℝ) :
@@ -2783,8 +2768,8 @@ public theorem Tstar_pos_of_exists_smooth_solution
     (h : ∃ T > (0 : ℝ), ∃ u : ℝ → VelocityField,
       (∀ t ∈ Set.Icc 0 T, ContDiff ℝ (⊤ : ℕ∞) (u t)) ∧
       u 0 = u₀ ∧
-      IsPhysicalNSSolution u ∧
-      ∃ p : ℝ → PressureField, NS_PDE u p ν) :
+      IsPhysicalNSSolutionOn u T ∧
+      ∃ p : ℝ → PressureField, NS_PDE_On u p ν T) :
     (0 : EReal) < Tstar u₀ ν := by
   obtain ⟨T, hTpos, u, hsmooth, hu0, hphys, p, hpde⟩ := h
   have hmem : T ∈ existenceTimes u₀ ν := ⟨hTpos, u, p, hu0, hpde, hsmooth, hphys⟩
@@ -2816,107 +2801,6 @@ public theorem le_vorticity_sup_norm (ω : VorticityField) (x : T3)
 @[expose] public noncomputable def strain_sup_norm (u : VelocityField) : ℝ :=
   ⨆ x, ‖fderiv ℝ u x‖
 
-/-- **Pointwise strain-by-sup-vorticity bound** `‖Du(x)‖ ≤ C · ‖ω‖_∞`.
-
-This is **false in general**: the Biot–Savart / Riesz operators recovering `∇u` from `ω`
-are Calderón–Zygmund operators, bounded on `Lᵖ` for `1 < p < ∞` but **not** on `L∞`
-(CZ fails at `p = ∞`; the true bound carries a logarithmic loss). Every theorem that takes
-this `Prop` as a hypothesis is therefore conditional on a bound that is false in general;
-such theorems are linear-algebra consequences, not estimates for Navier–Stokes solutions. -/
-@[expose] public def PointwiseStrainSupBound (u : VelocityField) (ω : VorticityField)
-    (C : ℝ) (x : T3) : Prop :=
-  ‖fderiv ℝ u x‖ ≤ C * vorticity_sup_norm ω
-
-/-- Pointwise CZ/Biot–Savart bound `‖Du(x)‖ ≤ C_CZ ‖ω‖_∞` upgrades to
-`‖Du‖_∞ ≤ C_CZ ‖ω‖_∞`. Linear algebra on the supremum, not the Riesz
-theorem itself. Conditional on `PointwiseStrainSupBound`, which is false in
-general at `L∞`. -/
-public theorem strain_sup_le_of_CZ
-    (u : VelocityField) (C_CZ : ℝ)
-    (hCZ : ∀ x, PointwiseStrainSupBound u (curl u) C_CZ x)
-    (_hbdd : BddAbove (Set.range fun x => ‖fderiv ℝ u x‖)) :
-    strain_sup_norm u ≤ C_CZ * vorticity_sup_norm (curl u) :=
-  ciSup_le fun x => hCZ x
-
-/-- Operator-norm stretching: `|(ω·∇)u| ≤ C_CZ ‖ω‖_∞ |ω|` once
-`‖Du‖ ≤ C_CZ ‖ω‖_∞`. Linear algebra, not the Riesz bound itself. -/
-public theorem convective_norm_le_of_CZ
-    (ω u : VelocityField) (x : T3) (C_CZ : ℝ)
-    (hu : DifferentiableAt ℝ u x)
-    (hCZ : PointwiseStrainSupBound u ω C_CZ x) :
-    ‖convective ω u x‖ ≤ C_CZ * vorticity_sup_norm ω * ‖ω x‖ := by
-  have hnorm := convective_norm_le ω u x hu
-  have hω : 0 ≤ ‖ω x‖ := norm_nonneg _
-  have hmul : ‖fderiv ℝ u x‖ * ‖ω x‖ ≤
-      C_CZ * vorticity_sup_norm ω * ‖ω x‖ :=
-    mul_le_mul_of_nonneg_right hCZ hω
-  exact hnorm.trans hmul
-
-/-- CZ stretching at a point: `⟨ω, (ω·∇)u⟩ ≤ C_CZ ‖ω‖_∞ |ω|²` once
-`‖Du‖ ≤ C_CZ ‖ω‖_∞` (Biot–Savart / Riesz bound on the strain). -/
-public theorem stretching_inner_le
-    (ω u : VelocityField) (x : T3) (C_CZ : ℝ)
-    (hu : DifferentiableAt ℝ u x)
-    (hCZ : PointwiseStrainSupBound u ω C_CZ x) :
-    inner ℝ (ω x) (convective ω u x) ≤
-      C_CZ * vorticity_sup_norm ω * ‖ω x‖ ^ 2 := by
-  have hnorm := convective_norm_le ω u x hu
-  have hω : 0 ≤ ‖ω x‖ := norm_nonneg _
-  calc
-    inner ℝ (ω x) (convective ω u x)
-        ≤ ‖ω x‖ * ‖convective ω u x‖ := real_inner_le_norm _ _
-    _ ≤ ‖ω x‖ * (‖fderiv ℝ u x‖ * ‖ω x‖) :=
-        mul_le_mul_of_nonneg_left hnorm hω
-    _ = ‖fderiv ℝ u x‖ * ‖ω x‖ ^ 2 := by ring
-    _ ≤ C_CZ * vorticity_sup_norm ω * ‖ω x‖ ^ 2 :=
-        mul_le_mul_of_nonneg_right hCZ (sq_nonneg _)
-
-/-- At a spatial maximum of `|ω|`, the stretching density is cubic in
-`M = ‖ω‖_∞`: `⟨ω,(ω·∇)u⟩ ≤ C_CZ M³`. May 21 (9) printed `C_CZ M²`;
-that is one power of `M` short for the density (it is the BKM ODE for
-`Ṁ` after dividing by `M`). -/
-public theorem stretching_inner_le_at_max
-    (ω u : VelocityField) (x : T3) (C_CZ : ℝ)
-    (hu : DifferentiableAt ℝ u x)
-    (hCZ : PointwiseStrainSupBound u ω C_CZ x)
-    (hmax : ‖ω x‖ = vorticity_sup_norm ω) :
-    inner ℝ (ω x) (convective ω u x) ≤
-      C_CZ * vorticity_sup_norm ω ^ 3 := by
-  have h := stretching_inner_le ω u x C_CZ hu hCZ
-  rw [hmax] at h
-  have hpow :
-      C_CZ * vorticity_sup_norm ω * vorticity_sup_norm ω ^ 2 =
-        C_CZ * vorticity_sup_norm ω ^ 3 := by ring
-  rw [hpow] at h
-  exact h
-
-/-- `___method.pdf` / living document stretching in `dQ/dt`:
-`4 |ω|² φ ⟨ω,(ω·∇)u⟩ ≤ 4 C_CZ M |ω|⁴ φ` when `φ ≥ 0`.
-The factor `4` is the product rule on `|ω|⁴`; CZ is `stretching_inner_le`. -/
-public theorem stretching_quartic_le
-    (ω u : VelocityField) (phi : T3 → ℝ) (x : T3) (C_CZ : ℝ)
-    (hu : DifferentiableAt ℝ u x)
-    (hCZ : PointwiseStrainSupBound u ω C_CZ x)
-    (hφ : 0 ≤ phi x) :
-    4 * ‖ω x‖ ^ 2 * inner ℝ (ω x) (convective ω u x) * phi x ≤
-      4 * C_CZ * vorticity_sup_norm ω * ‖ω x‖ ^ 4 * phi x := by
-  have hstr := stretching_inner_le ω u x C_CZ hu hCZ
-  have hnn : 0 ≤ 4 * ‖ω x‖ ^ 2 * phi x :=
-    mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) (sq_nonneg _)) hφ
-  have hmul :=
-    mul_le_mul_of_nonneg_right hstr hnn
-  -- `inner * (4 |ω|² φ) ≤ (C_CZ M |ω|²) * (4 |ω|² φ)`.
-  have hcomm :
-      inner ℝ (ω x) (convective ω u x) * (4 * ‖ω x‖ ^ 2 * phi x) =
-        4 * ‖ω x‖ ^ 2 * inner ℝ (ω x) (convective ω u x) * phi x := by
-    ring
-  have hcomm' :
-      C_CZ * vorticity_sup_norm ω * ‖ω x‖ ^ 2 * (4 * ‖ω x‖ ^ 2 * phi x) =
-        4 * C_CZ * vorticity_sup_norm ω * ‖ω x‖ ^ 4 * phi x := by
-    ring
-  rw [← hcomm, ← hcomm']
-  exact hmul
-
 /-- At a spatial critical point of `½|ω|²`, the transport pairing
 `⟨ω, (u·∇)ω⟩` vanishes. Paper §3 interior-maximum cancellation. -/
 public theorem transport_inner_vanishes_of_grad_zero
@@ -2943,75 +2827,6 @@ public theorem vorticity_transport_inner
   have hcong :=
     congrArg (inner ℝ (vorticity (u t) x)) hvt
   simpa [inner_add_right] using hcong
-
-/-- After transport vanish and non-positive viscosity, the vorticity
-pairing of paper §2.1 is CZ stretching:
-`⟨ω, ∂t ω⟩ ≤ C_CZ M |ω|²`. This is the inner identity used by the
-enstrophy DI; it does not need a time-derivative of `|ω|²`. -/
-public theorem stretching_pairing_le_at_spatial_max
-    (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν : ℝ)
-    (t : ℝ) (ht : 0 ≤ t) (x : T3)
-    (hNS : NS_PDE u p ν)
-    (hreg : VorticityTransportRegularity u p t x)
-    (hu : DifferentiableAt ℝ (u t) x) (C_CZ : ℝ)
-    (hCZ : ‖fderiv ℝ (u t) x‖ ≤ C_CZ *
-      vorticity_sup_norm (vorticity (u t)))
-    (htransp : inner ℝ (vorticity (u t) x)
-      (convective (u t) (vorticity (u t)) x) = 0)
-    (hvisc : inner ℝ (vorticity (u t) x)
-      (laplacian (vorticity (u t)) x) ≤ 0)
-    (hν : 0 ≤ ν) :
-    inner ℝ (vorticity (u t) x)
-        (time_deriv (fun s => vorticity (u s)) t x) ≤
-      C_CZ * vorticity_sup_norm (vorticity (u t)) *
-        ‖vorticity (u t) x‖ ^ 2 := by
-  have hinter := vorticity_transport_inner u p ν t ht x hNS hreg
-  have hleft :
-      inner ℝ (vorticity (u t) x)
-          (time_deriv (fun s => vorticity (u s)) t x) =
-        inner ℝ (vorticity (u t) x)
-            (convective (vorticity (u t)) (u t) x) +
-          inner ℝ (vorticity (u t) x)
-            (ν • laplacian (vorticity (u t)) x) := by
-    linarith [hinter, htransp]
-  rw [hleft]
-  have hstr :=
-    stretching_inner_le (vorticity (u t)) (u t) x C_CZ hu hCZ
-  have hviscν :
-      inner ℝ (vorticity (u t) x)
-          (ν • laplacian (vorticity (u t)) x) ≤ 0 := by
-    rw [inner_smul_right]
-    exact mul_nonpos_of_nonneg_of_nonpos hν hvisc
-  exact (add_le_add hstr hviscν).trans_eq (add_zero _)
-
-/-- Paper §3 at an interior spatial maximum of `|ω|²`: transport
-vanishes, viscosity is non-positive, stretching is CZ, hence
-`d/dt |ω|² ≤ 2 C_CZ M |ω|²`. -/
-public theorem stretching_enstrophy_di_at_spatial_max
-    (u : TimeDependentVelocity) (p : TimeDependentPressure) (ν : ℝ)
-    (t : ℝ) (ht : 0 ≤ t) (x : T3)
-    (hNS : NS_PDE u p ν)
-    (hreg : VorticityTransportRegularity u p t x)
-    (hu : DifferentiableAt ℝ (u t) x) (C_CZ : ℝ)
-    (hCZ : ‖fderiv ℝ (u t) x‖ ≤ C_CZ *
-      vorticity_sup_norm (vorticity (u t)))
-    (htransp : inner ℝ (vorticity (u t) x)
-      (convective (u t) (vorticity (u t)) x) = 0)
-    (hvisc : inner ℝ (vorticity (u t) x)
-      (laplacian (vorticity (u t)) x) ≤ 0)
-    (hν : 0 ≤ ν)
-    (hdt : HasDerivAt (fun s => vorticity (u s) x)
-      (time_deriv (fun s => vorticity (u s)) t x) t) :
-    deriv (fun s => ‖vorticity (u s) x‖ ^ 2) t ≤
-      2 * C_CZ *
-        vorticity_sup_norm (vorticity (u t)) *
-        ‖vorticity (u t) x‖ ^ 2 := by
-  have hder := hdt.norm_sq.deriv
-  rw [hder]
-  have hsum :=
-    stretching_pairing_le_at_spatial_max u p ν t ht x hNS hreg hu C_CZ
-      hCZ htransp hvisc hν
-  exact (mul_le_mul_of_nonneg_left hsum two_pos.le).trans_eq (by ring)
 
 /-- Strain pairing: `⟨w, (w·∇)v⟩ ≤ ‖Dv‖_∞ |w|²` once the strain
 operator-norm is bounded. Linear algebra, not Riesz. -/
@@ -3464,14 +3279,45 @@ public theorem eq_zero_of_isPhysicalNSSolution_zero
   have heq0 : (∫ x, ‖u t x‖ ^ 2 ∂volume) = 0 := le_antisymm hle0 hge0
   exact eq_of_l2_energy_zero (u t) hint heq0 hcont
 
+/-- Local form: a physically admissible solution on `[0, T]` with `u 0 = 0` vanishes on `[0, T]`. -/
+public theorem eq_zero_of_isPhysicalNSSolutionOn_zero
+    (u : TimeDependentVelocity) (T : ℝ) (hu0 : u 0 = 0)
+    (hphys : IsPhysicalNSSolutionOn u T) (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) T) :
+    u t = 0 := by
+  have hcont : Continuous (u t) := hphys.2.1 t ht
+  have hint : Integrable (fun x : T3 => ‖u t x‖ ^ 2) := hphys.2.2.1 t ht
+  have hle : (∫ x, ‖u t x‖ ^ 2 ∂volume) ≤ ∫ x, ‖u 0 x‖ ^ 2 ∂volume := hphys.2.2.2.1 t ht
+  have h0 : (∫ x, ‖u 0 x‖ ^ 2 ∂volume) = 0 := by simp [hu0]
+  have hge0 : 0 ≤ ∫ x, ‖u t x‖ ^ 2 ∂volume := integral_nonneg (fun _ => sq_nonneg _)
+  exact eq_of_l2_energy_zero (u t) hint (le_antisymm (hle.trans_eq h0) hge0) hcont
+
 /-- Any physically admissible solution with `u 0 = 0` is identically zero on all of `ℝ`. -/
 public theorem eq_zero_of_isPhysicalNSSolution_zero_all
     (u : TimeDependentVelocity) (hu0 : u 0 = 0)
     (hphys : IsPhysicalNSSolution u) (t : ℝ) :
     u t = 0 := by
+  obtain ⟨v₀, hv₀⟩ := hphys.2.2.2.2
+  -- The extension slope `v₀` vanishes: the right derivative at `0` is `0` (the solution is
+  -- identically zero on `[0, ∞)`), the left derivative is `v₀ x`, and `u` is differentiable at `0`.
+  have hv0 : v₀ = 0 := by
+    funext x
+    have hd := (hphys.1 0 le_rfl x).hasDerivAt
+    have hL : HasDerivWithinAt (fun s => u s x) (v₀ x) (Set.Iic 0) 0 := by
+      have hlin : HasDerivWithinAt (fun s : ℝ => u 0 x + s • v₀ x) (v₀ x) (Set.Iic 0) 0 := by
+        simpa using ((hasDerivAt_id (0 : ℝ)).smul_const (v₀ x)).const_add (u 0 x)
+          |>.hasDerivWithinAt
+      refine hlin.congr (fun s hs => ?_) (by simp)
+      rw [hv₀ s hs]; rfl
+    have hR : HasDerivWithinAt (fun s => u s x) 0 (Set.Ici 0) 0 := by
+      refine (hasDerivWithinAt_const (0 : ℝ) (Set.Ici 0) (0 : EuclideanSpace ℝ (Fin 3))).congr
+        (fun s hs => ?_) (by simp [hu0])
+      rw [eq_zero_of_isPhysicalNSSolution_zero u hu0 hphys s hs]; rfl
+    have e1 := (uniqueDiffOn_Iic (0:ℝ) 0 Set.self_mem_Iic).eq_deriv _ hd.hasDerivWithinAt hL
+    have e2 := (uniqueDiffOn_Ici (0:ℝ) 0 Set.self_mem_Ici).eq_deriv _ hd.hasDerivWithinAt hR
+    simpa using e1.symm.trans e2
   rcases le_or_gt 0 t with ht | ht
   · exact eq_zero_of_isPhysicalNSSolution_zero u hu0 hphys t ht
-  · rw [hphys.2.2.2.2 t ht.le, hu0]
+  · rw [hv₀ t ht.le, hu0, hv0]; simp
 
 /-- Cauchy uniqueness from the energy Grönwall: if the L² difference of two
 continuous fields obeys `E' ≤ K E` and `E 0 = 0`, then the fields coincide. -/
@@ -3604,9 +3450,9 @@ public theorem uniqueness_of_existence_times_of_energy_gronwall
     (hgron : ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
       T' ∈ existenceTimes u₀ ν →
       v 0 = u₀ →
-      NS_PDE v q ν →
+      NS_PDE_On v q ν T' →
       (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
+      IsPhysicalNSSolutionOn v T' →
       (∀ t ∈ Set.Icc (0 : ℝ) T', ContinuousAt
         (fun s => ∫ x, ‖w.u s x - v s x‖ ^ 2 ∂volume) t) ∧
       (∀ t ∈ Set.Icc (0 : ℝ) T', DifferentiableAt ℝ
@@ -3620,9 +3466,9 @@ public theorem uniqueness_of_existence_times_of_energy_gronwall
     ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
       T' ∈ existenceTimes u₀ ν →
       v 0 = u₀ →
-      NS_PDE v q ν →
+      NS_PDE_On v q ν T' →
       (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
+      IsPhysicalNSSolutionOn v T' →
       ∀ t ∈ Set.Icc (0 : ℝ) T', w.u t = v t := by
   intro T' v q hmem hv0 hpde hsm hphys
   obtain ⟨hcontE, hdiffE, hle, hInt, hcont⟩ := hgron T' v q hmem hv0 hpde hsm hphys
@@ -3639,9 +3485,9 @@ public theorem smoothness_below_Tstar_of_uniqueness
     (huniq : ∀ (T' : ℝ) (v : TimeDependentVelocity) (q : TimeDependentPressure),
       T' ∈ existenceTimes (u 0) ν →
       v 0 = u 0 →
-      NS_PDE v q ν →
+      NS_PDE_On v q ν T' →
       (∀ t ∈ Set.Icc (0 : ℝ) T', ContDiff ℝ (⊤ : ℕ∞) (v t)) →
-      IsPhysicalNSSolution v →
+      IsPhysicalNSSolutionOn v T' →
       ∀ t ∈ Set.Icc (0 : ℝ) T', u t = v t)
     {T : ℝ} (hT : (T : EReal) < Tstar (u 0) ν) (hTnn : 0 ≤ T) :
     ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t) := by
@@ -3682,7 +3528,6 @@ public theorem parabolic_regularity_from_vorticity_bound
 #print axioms Tstar_eq_top_of_katoRestartTime
 #print axioms katoRestartTime_pos
 #print axioms katoSobolevIndex_lt
-#print axioms strain_sup_le_of_CZ
 #print axioms one_add_log_le_self
 #print axioms kato_ponce_implies_quadratic
 #print axioms kato_ponce_of_uniform_vorticity
@@ -3701,8 +3546,6 @@ public theorem parabolic_regularity_from_vorticity_bound
 #print axioms time_deriv_shift
 #print axioms ns_pde_shift
 #print axioms smoothness_on_restart_interval
-#print axioms mem_existenceTimes_add_of_kato_restart
-#print axioms restart_of_kato_quantitative
 #print axioms smoothness_below_Tstar_of_uniqueness
 #print axioms curl_zero
 #print axioms mem_existenceTimes_zero
@@ -3714,14 +3557,8 @@ public theorem parabolic_regularity_from_vorticity_bound
 #print axioms convective_norm_le
 #print axioms inner_convective_product_rule
 #print axioms cyclicLiePairing_expand
-#print axioms convective_norm_le_of_CZ
-#print axioms stretching_inner_le
-#print axioms stretching_inner_le_at_max
-#print axioms stretching_quartic_le
 #print axioms transport_inner_vanishes_of_grad_zero
 #print axioms vorticity_transport_inner
-#print axioms stretching_pairing_le_at_spatial_max
-#print axioms stretching_enstrophy_di_at_spatial_max
 #print axioms pressureGradient_sub
 #print axioms ns_momentum_difference
 #print axioms inner_convective_eq_inner_grad_half_norm_sq

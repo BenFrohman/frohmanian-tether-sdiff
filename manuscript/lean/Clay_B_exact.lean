@@ -1,4 +1,4 @@
--- FrohmanianTether/ClayStatements.lean, line 250
+-- FrohmanianTether/ClayStatements.lean, line 257
 @[expose] public def Clay_B_exact : Prop :=
   ∀ (ν : ℝ) (u₀ : VelocityField),
     0 < ν →

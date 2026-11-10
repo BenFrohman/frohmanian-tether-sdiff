@@ -1,0 +1,3 @@
+-- FrohmanianTether/TestFieldFamily.lean, line 130
+public theorem concField_ne_zero (x : T3) {r : ℝ} (hr : 0 < r) :
+    ∃ y, (concField x hr).val y ≠ 0 := ...

@@ -5,3 +5,4 @@ manuscript/*.aux
 manuscript/*.log
 manuscript/*.out
 manuscript/*.toc
+print_axioms.txt

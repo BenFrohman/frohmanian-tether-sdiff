@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherEquivariantC1.lean, line 70
+public theorem translate_smul_val (h : T3) (ω : CoadjointOrbit) :
+    (translate h • ω).val = fun y => ω.val (y - h) := ...

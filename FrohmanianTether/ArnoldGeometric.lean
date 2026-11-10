@@ -17,8 +17,8 @@ blog post, the Analysis I companion, and the PFR project):
   (`have`, `calc`, `suffices`).
 - Use granular Mathlib imports when possible (avoiding a single monolithic
   `import Mathlib` except in short tutorial-style explorations).
-- Treat classical results as black boxes with documented citations (Tao routinely
-  uses `sorry` placeholders during development while the logical skeleton is built).
+- Treat classical results not in Mathlib as explicit hypotheses with documented citations
+  (the repository contains no `sorry` and declares no axioms).
 - Avoid ansatz and ad-hoc choices: every object (here the tether strength κ)
   is forced by necessary conditions derived earlier in the blueprint.
 
@@ -41,12 +41,8 @@ public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 public import Mathlib.MeasureTheory.Measure.MeasureSpace
 public import Mathlib.Tactic.Ring
 public import Mathlib.Analysis.Calculus.ParametricIntegral
+public import Mathlib.MeasureTheory.Function.L2Space
 public import FrohmanianTether.NS_Equations
-
--- NOTE (post-bumper-rails phase): All silencing options removed. Every `declaration uses 'sorry'`
--- warning is now visible. The great majority here are classical black-boxes (coadjoint orbit
--- structure, functional derivatives, classical Lie-Poisson bracket properties). See the detailed
--- explanation in TetheredLyapunov.lean for the full convention.
 
 -- Error Explanations (Lean Language Reference) — Foundation Layer
 -- The full table was integrated in this session. Relevant rows for this classical foundation file:
@@ -96,9 +92,8 @@ curl, as in Section 2.1) and `ClassicalBracket` (the clean geometric version)
 are retained.
 
 All operators here are treated as standard classical objects. Their concrete
-realizations and mapping properties are taken from the literature and are
-independent of the global regularity result proved later via the Frohmanian
-Symplectic Tether.
+realizations and mapping properties are taken from the literature. Nothing in this
+repository proves global regularity; the later analytic statements are conditional.
 
 See the authoritative source documents for the precise classical justifications.
 -/
@@ -212,17 +207,19 @@ end SDiffAbstract
 @[expose] public noncomputable def Enstrophy (ω : CoadjointOrbit) : ℝ :=
   Casimir (fun r => r ^ 2) ω
 
-/-- **Hypothesis structure for the SDiff action (fields OPEN; passed as arguments, never
-`axiom`s).** `casimir_invariant` is expected for the real pushforward;
-`transitive_on_casimir_levels` is the author's reading of "only |ω|² is invariant" and is NOT
-expected to hold for the real SDiff action (orbits are finer than Casimir level sets).
-Enstrophy invariance is the `f = (·)^2` case, derived as `SDiffActionHyp.enstrophy_invariant`. -/
+/-- **Hypothesis structure for the SDiff action (passed as an argument, never an `axiom`).**
+`casimir_invariant`: every Casimir `∫ f(|ω|)` is invariant under the action. It is PROVED for
+the concrete measure-preserving action (`ConcreteSDiff.sdiffActionHyp`).
+
+**Removed field (Nov 2026).** The former field `transitive_on_casimir_levels` (fields with equal
+Casimirs lie in one orbit) is false for the concrete action:
+`ConcreteSDiff.not_transitive_on_casimir_levels` (two constant fields `e₀`, `e₁` have the same
+Casimirs, but composition with a bijection never changes the value of a constant field). It and
+the theorem `orbit_eq_casimir_level` that used it were deleted. -/
 public structure SDiffActionHyp (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit] :
     Prop where
   casimir_invariant : ∀ (f : ℝ → ℝ) (g : SDiff) (ω : CoadjointOrbit),
     (∫ x, f ‖(g • ω).val x‖ ∂volume) = ∫ x, f ‖ω.val x‖ ∂volume
-  transitive_on_casimir_levels : ∀ ω₁ ω₂ : CoadjointOrbit,
-    (∀ f : ℝ → ℝ, Casimir f ω₁ = Casimir f ω₂) → ∃ g : SDiff, g • ω₁ = ω₂
 
 /-- Proved: enstrophy invariance from `casimir_invariant` with `f = (·)^2`. -/
 public theorem SDiffActionHyp.enstrophy_invariant {SDiff : Type*} [Group SDiff]
@@ -236,14 +233,6 @@ public theorem casimir_const_on_orbit {SDiff : Type*} [Group SDiff]
     (h : ω' ∈ MulAction.orbit SDiff ω) : Casimir f ω' = Casimir f ω := by
   obtain ⟨g, rfl⟩ := h
   exact H.casimir_invariant f g ω
-
-/-- Proved from `SDiffActionHyp`: orbits = Casimir level sets (uses `transitive_on_levels`). -/
-public theorem orbit_eq_casimir_level {SDiff : Type*} [Group SDiff]
-    [MulAction SDiff CoadjointOrbit] (H : SDiffActionHyp SDiff) (ω ω' : CoadjointOrbit) :
-    ω' ∈ MulAction.orbit SDiff ω ↔ ∀ f, Casimir f ω = Casimir f ω' := by
-  constructor
-  · intro h f; exact (casimir_const_on_orbit H f ω ω' h).symm
-  · intro h; obtain ⟨g, hg⟩ := H.transitive_on_casimir_levels ω ω' h; exact ⟨g, hg⟩
 
 /-- Vector cross product on the model `ℝ³`, via mathlib `crossProduct`. -/
 @[expose] public noncomputable def cross (u v : EuclideanSpace ℝ (Fin 3)) : EuclideanSpace ℝ (Fin 3) :=
@@ -308,26 +297,131 @@ public def IsGateauxRepresentative (F : CoadjointOrbit → ℝ) (ω : CoadjointO
         fun x => orbit_add_smul_div_free ω ε t hω hε x⟩)
       (∫ x, pairing (δ x) (ε.val x) ∂volume) 0
 
-/-- Functional derivative as the Gâteaux representative when one exists, else `0`.
-Choice, not `sorry`. The kinetic-energy case is `functional_derivative_of_kinetic_energy`. -/
-public noncomputable def FunctionalDerivative (F : CoadjointOrbit → ℝ)
-    (ω : CoadjointOrbit) : T3 → EuclideanSpace ℝ (Fin 3) :=
-  if h : ∃ δ, IsGateauxRepresentative F ω δ then Classical.choose h else 0
+/-- Square-integrable vector fields on `ℝ³` (classes modulo null sets). -/
+@[expose] public abbrev L2Field : Type := Lp (EuclideanSpace ℝ (Fin 3)) 2 (MeasureTheory.volume : Measure T3)
 
-/-- If no Gâteaux representative exists, the encoding returns the zero field.
-Binder is ASCII `dH` so the later notation `δ F /δω` cannot capture it. -/
-public theorem FunctionalDerivative_eq_zero_of_not
-    {F : CoadjointOrbit → ℝ} {ω : CoadjointOrbit}
-    (h : ¬ ∃ dH, IsGateauxRepresentative F ω dH) :
-    FunctionalDerivative F ω = 0 :=
-  dif_neg h
+/-- A vorticity is *regular* when every component is differentiable everywhere. Only at
+regular vorticities is the orbit line `ω + t ε` defined, so only there can a derivative exist. -/
+@[expose] public def IsRegularVorticity (ω : CoadjointOrbit) : Prop :=
+  ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x
 
-/-- If a Gâteaux representative exists, `FunctionalDerivative` is that choice. -/
-public theorem FunctionalDerivative_eq_choose
-    {F : CoadjointOrbit → ℝ} {ω : CoadjointOrbit}
-    (h : ∃ dH, IsGateauxRepresentative F ω dH) :
-    FunctionalDerivative F ω = Classical.choose h :=
-  dif_pos h
+/-- Test directions: smooth (`C^∞`), compactly supported, divergence-free fields. -/
+@[expose] public def IsTestDirection (ε : CoadjointOrbit) : Prop :=
+  ContDiff ℝ (⊤ : ℕ∞) ε.val ∧ HasCompactSupport ε.val
+
+public theorem IsTestDirection.memLp {ε : CoadjointOrbit} (h : IsTestDirection ε) :
+    MemLp ε.val 2 MeasureTheory.volume :=
+  h.1.continuous.memLp_of_hasCompactSupport h.2
+
+public theorem IsTestDirection.regular {ε : CoadjointOrbit} (h : IsTestDirection ε) :
+    IsRegularVorticity ε := by
+  intro i x
+  have hd : Differentiable ℝ ε.val := h.1.differentiable (by simp)
+  exact ((EuclideanSpace.proj i : EuclideanSpace ℝ (Fin 3) →L[ℝ] ℝ).differentiableAt).comp x (hd x)
+
+/-- The `L²` class of a test direction. -/
+@[expose] public noncomputable def testToL2 (ε : CoadjointOrbit) (h : IsTestDirection ε) : L2Field := h.memLp.toLp ε.val
+
+@[expose] public def testFields : Set L2Field := {f | ∃ ε h, testToL2 ε h = f}
+
+/-- Divergence-free `L²` fields: the closure of the span of the test directions. -/
+@[expose] public noncomputable def DivFreeL2 : Submodule ℝ L2Field := (Submodule.span ℝ testFields).topologicalClosure
+
+/-- The orbit line `t ↦ ω + t ε` (divergence-free since both are regular). -/
+@[expose] public noncomputable def orbitLine (ω ε : CoadjointOrbit) (hω : IsRegularVorticity ω) (hε : IsRegularVorticity ε)
+    (t : ℝ) : CoadjointOrbit :=
+  ⟨fun x => ω.val x + t • ε.val x, fun x => orbit_add_smul_div_free ω ε t hω hε x⟩
+
+/-- `g` is the functional gradient of `F` at `ω`: `g` lies in the divergence-free `L²` closure,
+`ω` is regular, and along every test direction `ε`, `d/dt|₀ F(ω + t ε) = ⟪g, ε⟫_{L²}`. -/
+@[expose] public def IsFunctionalGradient (F : CoadjointOrbit → ℝ) (ω : CoadjointOrbit) (g : L2Field) : Prop :=
+  g ∈ DivFreeL2 ∧ ∃ hω : IsRegularVorticity ω, ∀ ε (hε : IsTestDirection ε),
+    HasDerivAt (fun t => F (orbitLine ω ε hω hε.regular t)) (inner ℝ g (testToL2 ε hε)) 0
+
+public theorem inner_eq_zero_of_forall_test {d : L2Field} (hd : d ∈ DivFreeL2)
+    (h : ∀ ε (hε : IsTestDirection ε), inner ℝ d (testToL2 ε hε) = 0) : d = 0 := by
+  let K : Submodule ℝ L2Field := LinearMap.ker (innerSL ℝ d).toLinearMap
+  have hK : IsClosed (K : Set L2Field) := (innerSL ℝ d).isClosed_ker
+  have hS : testFields ⊆ K := by
+    rintro f ⟨ε, hε, rfl⟩
+    simp [K, h ε hε]
+  have hspan : Submodule.span ℝ testFields ≤ K := Submodule.span_le.mpr hS
+  have hcl : DivFreeL2 ≤ K := Submodule.topologicalClosure_minimal _ hspan hK
+  have : inner ℝ d d = (0:ℝ) := by simpa [K] using hcl hd
+  exact inner_self_eq_zero.mp this
+
+public theorem isFunctionalGradient_unique {F : CoadjointOrbit → ℝ} {ω : CoadjointOrbit} {g₁ g₂ : L2Field}
+    (h₁ : IsFunctionalGradient F ω g₁) (h₂ : IsFunctionalGradient F ω g₂) : g₁ = g₂ := by
+  obtain ⟨m₁, hω, d₁⟩ := h₁
+  obtain ⟨m₂, hω', d₂⟩ := h₂
+  have : g₁ - g₂ = 0 := by
+    apply inner_eq_zero_of_forall_test (DivFreeL2.sub_mem m₁ m₂)
+    intro ε hε
+    have := (d₁ ε hε).unique (d₂ ε hε)
+    rw [inner_sub_left, this, sub_self]
+  exact sub_eq_zero.mp this
+
+/-- **Functional derivative** (rebuilt). The unique functional gradient when one exists
+(`isFunctionalGradient_unique`), otherwise `0`. In particular it is `0` at every non-regular
+vorticity (`functionalDerivative_eq_zero_of_not_regular`): no arbitrary choice is made. -/
+@[expose] public noncomputable def FunctionalDerivative (F : CoadjointOrbit → ℝ) (ω : CoadjointOrbit) : T3 → EuclideanSpace ℝ (Fin 3) :=
+  if h : ∃ g, IsFunctionalGradient F ω g then ⇑(Classical.choose h) else 0
+
+public theorem functionalDerivative_eq {F ω g} (h : IsFunctionalGradient F ω g) :
+    FunctionalDerivative F ω = ⇑g := by
+  have hex : ∃ g, IsFunctionalGradient F ω g := ⟨g, h⟩
+  rw [FunctionalDerivative, dif_pos hex, isFunctionalGradient_unique (Classical.choose_spec hex) h]
+
+
+public theorem functionalDerivative_eq_zero_of_not_regular {F ω} (h : ¬ IsRegularVorticity ω) :
+    FunctionalDerivative F ω = 0 := by
+  rw [FunctionalDerivative, dif_neg]
+  rintro ⟨g, -, hω, -⟩
+  exact h hω
+
+public theorem FunctionalDerivative_eq_zero_of_not {F ω} (h : ¬ ∃ g, IsFunctionalGradient F ω g) :
+    FunctionalDerivative F ω = 0 := by
+  rw [FunctionalDerivative, dif_neg h]
+
+public theorem IsFunctionalGradient.add {F G : CoadjointOrbit → ℝ} {ω a b}
+    (hF : IsFunctionalGradient F ω a) (hG : IsFunctionalGradient G ω b) :
+    IsFunctionalGradient (fun η => F η + G η) ω (a + b) := by
+  obtain ⟨ma, hω, da⟩ := hF
+  obtain ⟨mb, hω', db⟩ := hG
+  refine ⟨DivFreeL2.add_mem ma mb, hω, fun ε hε => ?_⟩
+  rw [inner_add_left]
+  exact (da ε hε).add (db ε hε)
+
+public theorem IsFunctionalGradient.sub {F G : CoadjointOrbit → ℝ} {ω a b}
+    (hF : IsFunctionalGradient F ω a) (hG : IsFunctionalGradient G ω b) :
+    IsFunctionalGradient (fun η => F η - G η) ω (a - b) := by
+  obtain ⟨ma, hω, da⟩ := hF
+  obtain ⟨mb, hω', db⟩ := hG
+  refine ⟨DivFreeL2.sub_mem ma mb, hω, fun ε hε => ?_⟩
+  rw [inner_sub_left]
+  exact (da ε hε).sub (db ε hε)
+
+/-- At a non-regular vorticity every functional has derivative `0`, so the encoding is
+independent of the functional. (Under the old `Classical.choose` encoding the common value was
+an unspecified field; now it is `0`.) -/
+public theorem functionalDerivative_indep_of_not_differentiable
+    {ω : CoadjointOrbit} (hω : ¬ ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x)
+    (F G : CoadjointOrbit → ℝ) :
+    FunctionalDerivative F ω = FunctionalDerivative G ω := by
+  rw [functionalDerivative_eq_zero_of_not_regular hω, functionalDerivative_eq_zero_of_not_regular hω]
+
+/-- Unfolding lemma for `IsGateauxRepresentative` (its body is not exposed to importers). -/
+public theorem isGateauxRepresentative_iff (F : CoadjointOrbit → ℝ) (ω : CoadjointOrbit)
+    (d : T3 → EuclideanSpace ℝ (Fin 3)) :
+    IsGateauxRepresentative F ω d ↔
+      ∀ (ε : CoadjointOrbit)
+        (hω : ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x)
+        (hε : ∀ i x, DifferentiableAt ℝ (fun y => ε.val y i) x),
+        HasDerivAt (fun t : ℝ =>
+          F ⟨fun x => ω.val x + t • ε.val x,
+            fun x => orbit_add_smul_div_free ω ε t hω hε x⟩)
+          (∫ x, pairing (d x) (ε.val x) ∂volume) 0 := by
+  unfold IsGateauxRepresentative; exact Iff.rfl
 
 /-- Two continuous finite-energy divergence-free Gâteaux representatives
 coincide: the orbit variation in the difference direction forces vanishing
@@ -599,6 +693,11 @@ Mapping properties (`div = 0`, `curl ∘ BiotSavart = id` on the orbit) are theo
 public noncomputable def BiotSavart (ω : T3 → EuclideanSpace ℝ (Fin 3)) :
     T3 → EuclideanSpace ℝ (Fin 3) :=
   fun x => ∫ y, biotSavartKernel x y • cross (ω y) (x - y) ∂volume
+
+/-- Unfolding lemma for `BiotSavart` (its body is not exposed to importers). -/
+public theorem BiotSavart_apply (ω : T3 → EuclideanSpace ℝ (Fin 3)) (x : T3) :
+    BiotSavart ω x = ∫ y, biotSavartKernel x y • cross (ω y) (x - y) ∂volume := by
+  unfold BiotSavart; rfl
 
 /-- The kernel applied to the zero field is the zero field. -/
 public theorem BiotSavart_zero :
@@ -930,22 +1029,6 @@ public theorem velocity_from_zero_orbit (ω : CoadjointOrbit)
     velocity_from_vorticity ω = 0 := by
   simp [velocity_from_vorticity, hω, BiotSavart_zero]
 
-/-- If `u` is the unique Gâteaux representative of kinetic energy, the
-encoding's `Classical.choose` returns `u`. Existence/uniqueness of that
-representative remain the Biot–Savart identification. -/
-public theorem functional_derivative_eq_velocity_of_unique_repr
-    (ω : CoadjointOrbit)
-    (h : IsGateauxRepresentative KineticEnergyHamiltonian ω
-      (velocity_from_vorticity ω))
-    (huniq : ∀ dH, IsGateauxRepresentative KineticEnergyHamiltonian ω dH →
-      dH = velocity_from_vorticity ω) :
-    FunctionalDerivative KineticEnergyHamiltonian ω =
-      velocity_from_vorticity ω := by
-  have hex : ∃ dH, IsGateauxRepresentative KineticEnergyHamiltonian ω dH :=
-    ⟨velocity_from_vorticity ω, h⟩
-  rw [FunctionalDerivative_eq_choose hex]
-  exact huniq _ (Classical.choose_spec hex)
-
 /-- Paper `δH = u` in the Lie-algebra pairing: the Gâteaux derivative of
 kinetic energy along `ω + t ε` is `∫ ⟨Kω, Kε⟩`, not the vorticity pairing
 `∫ ⟨Kω, ε⟩`. Dominated integrability of the affine Biot–Savart line is
@@ -1105,7 +1188,7 @@ public theorem classical_bracket_reproduces_Euler
 #print axioms pairing_cross_self_right
 #print axioms cross_smul_left
 #print axioms FunctionalDerivative_eq_zero_of_not
-#print axioms FunctionalDerivative_eq_choose
+#print axioms functionalDerivative_indep_of_not_differentiable
 #print axioms kineticEnergy_hasDerivAt_velocity_pairing
 #print axioms biotSavartKernel_of_ne
 #print axioms cross_coord
@@ -1118,8 +1201,9 @@ public theorem classical_bracket_reproduces_Euler
 #print axioms div_biotSavart_integrand
 #print axioms div_biotSavart_integrand_ae
 #print axioms div_BiotSavart_of_interchange
-#print axioms functional_derivative_eq_velocity_of_unique_repr
 #print axioms gateaux_representative_unique
+#print axioms isGateauxRepresentative_iff
+#print axioms BiotSavart_apply
 #print axioms kineticEnergyHamiltonian_hasDerivAt_velocity_pairing
 #print axioms isVelocityGateauxRepresentative_kineticEnergy_at
 

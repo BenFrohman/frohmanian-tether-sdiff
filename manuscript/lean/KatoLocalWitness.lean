@@ -1,4 +1,4 @@
--- FrohmanianTether/NS_Equations.lean, line 2422
+-- FrohmanianTether/NS_Equations.lean, line 2486
 public structure KatoLocalWitness (u₀ : VelocityField) (ν : ℝ) where
   T : ℝ
   Tpos : 0 < T
@@ -6,5 +6,5 @@ public structure KatoLocalWitness (u₀ : VelocityField) (ν : ℝ) where
   p : TimeDependentPressure
   smooth : ∀ t ∈ Set.Icc (0 : ℝ) T, ContDiff ℝ (⊤ : ℕ∞) (u t)
   init : u 0 = u₀
-  pde : NS_PDE u p ν
-  phys : IsPhysicalNSSolution u
+  pde : NS_PDE_On u p ν T
+  phys : IsPhysicalNSSolutionOn u T

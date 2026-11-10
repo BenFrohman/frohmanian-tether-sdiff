@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherEquivariantC1.lean, line 272
+public theorem tetherKernel_transported_invariant :
+    InvariantUnderTransportedCoadjointAction transSubgroup TetherKernel := ...

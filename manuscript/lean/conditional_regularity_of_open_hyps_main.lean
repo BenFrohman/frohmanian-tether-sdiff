@@ -1,14 +1,14 @@
--- FrohmanianTether/ConditionalRegularity.lean, line 207
+-- FrohmanianTether/ConditionalRegularity.lean, line 124
 public theorem conditional_regularity_of_open_hyps
     (u0 : TimeDependentVelocity)
-    (h_div_free : ∀ t x, div (u0 t) x = 0)
-    (h_smooth : IsSmooth (u0 0))
-    (h_finite_energy : Integrable (fun x : T3 => ‖u0 0 x‖ ^ 2))
-    (ν : ℝ) (h_ν_pos : ν > 0)
+    (_h_div_free : ∀ t x, div (u0 t) x = 0)
+    (_h_smooth : IsSmooth (u0 0))
+    (_h_finite_energy : Integrable (fun x : T3 => ‖u0 0 x‖ ^ 2))
+    (ν : ℝ) (_h_ν_pos : ν > 0)
     (w : KatoLocalWitness (u0 0) ν)
-    (hRiccati : FrohmanianTetherBound (u0 0) ν)
-    (hcrit : TetheredLyapunov.PhysicalBKMContinuationCriterionFor (u0 0) ν)
-    (huniq : TetheredLyapunov.KatoUniquenessOnExistenceTimes (u0 0) ν w) :
+    (hcont : TetheredLyapunov.BKMGlobalContinuation (u0 0) ν)
+    (hRiccati : TetheredLyapunov.LocalTetherBound (u0 0) ν)
+    (huniq : TetheredLyapunov.SmoothPhysicalUniqueness (u0 0) ν) :
   ∃ (u : TimeDependentVelocity),
     (∀ t ≥ (0 : ℝ), IsSmooth (u t)) ∧
     (u 0 = u0 0) ∧

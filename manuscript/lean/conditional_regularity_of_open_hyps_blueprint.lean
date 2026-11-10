@@ -1,14 +1,9 @@
--- FrohmanianTether/ClosureBlueprint.lean, line 262
+-- FrohmanianTether/ClosureBlueprint.lean, line 201
 public theorem conditional_regularity_of_open_hyps
     (u₀ : VelocityField) (ν : ℝ)
-    (h_divfree : ∀ x, div u₀ x = 0)
-    (h_smooth : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (h_finite_energy : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
-    (h_pos_ν : ν > 0)
     (w : KatoLocalWitness u₀ ν)
-    (hRiccati : FrohmanianTetherBound u₀ ν)
-    (hcrit : TetheredLyapunov.PhysicalBKMContinuationCriterionFor u₀ ν)
-    (huniq : TetheredLyapunov.KatoUniquenessOnExistenceTimes u₀ ν w) :
+    (hcont : TetheredLyapunov.BKMGlobalContinuation u₀ ν)
+    (hRiccati : TetheredLyapunov.LocalTetherBound u₀ ν) :
     ∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
       NS_PDE u p ν ∧
       u 0 = u₀ ∧

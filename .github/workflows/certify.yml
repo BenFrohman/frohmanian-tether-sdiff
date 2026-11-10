@@ -29,9 +29,13 @@ jobs:
           grep -q "^AUDIT PASS" axioms.txt
           if grep -v "^AUDIT PASS" axioms.txt | grep -qE "AUDIT FAIL|sorryAx|ofReduceBool|error"; then cat axioms.txt; exit 1; fi
           grep "^AUDIT SUMMARY" axioms.txt
+      - name: One-command verification (scripts/verify.sh, as documented in README and paper)
+        run: bash scripts/verify.sh
       - name: Upload axiom report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: axioms
-          path: axioms.txt
+          path: |
+            axioms.txt
+            print_axioms.txt

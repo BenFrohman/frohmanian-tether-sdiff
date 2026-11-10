@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherWeightProof.lean, line 259
+public theorem bad_finite {β : T3 → ℝ} {lam : (T3 → EuclideanSpace ℝ (Fin 3)) → ℝ}
+    (HV : KillsOrth β lam) (Hlin : CoefAdditive lam) : {x | ¬ GoodPt β x}.Finite := ...

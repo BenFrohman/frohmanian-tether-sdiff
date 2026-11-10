@@ -7,113 +7,36 @@ Authors: Benjamin Stanley Frohman
 module
 
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 public import FrohmanianTether.SymplecticTether
 public import FrohmanianTether.Assumptions
+public import FrohmanianTether.TetherNondegeneracy
 
 /-!
-Uniqueness of the Frohmanian Tether (`uniqueness_of_minimal_tether`).
-Original work by Benjamin Stanley Frohman.
-Lean 4 encoding of the NS global regularity proof.
+# Canonicity of the tether kernel
 
-This file is part of the Lean 4 formalization of the Frohmanian Symplectic Tether Theorem.
-
-See the root document `LaTeX_Lean_Relationship.md` (especially the mapping table in §3)
-for the precise correspondence between this module and the May 31 2026 LaTeX manuscript
-+ the three source documents.
-
-This module is the dedicated home for all uniqueness arguments in the development.
-
-## Distinction Between This File and the Skeleton
-
-- `Uniqueness.lean` (this file) = the actual proofs and lemmas.
-- `Skeleton/UniquenessOverview.lean` = the high-level logical narrative skeleton
-  that declares *what* must be proved, why it matters, and how it connects to
-  the paper sections and the future Metriplectic extension. It mirrors the style
-  of `Skeleton/PaperOverview.lean`.
-
-Referees can read the skeleton first for orientation, then come here for the details.
-
-## Scope of Uniqueness Claims
-
-This module will eventually contain two distinct uniqueness results:
-
-1. **Uniqueness of the Frohmanian Symplectic Tether itself** (the 5-step canonicity
-   proof that 𝔗_F is the unique minimal bilinear antisymmetric correction satisfying
-   the axioms derived from the unmodified 3D incompressible Navier-Stokes vorticity
-   transport equation). This is the core novel geometric contribution.
-
-2. **Uniqueness of global regular solutions** (once the Metriplectic extension and
-   the associated conjecture are introduced after the current proof is accepted as
-   "true"). This will be a future, clearly separated development.
-
-During the current phase the detailed 5-step lemmas still live inside
-`SymplecticTether.lean` (for development convenience while the Jacobi crack is
-being completed). This file provides the clean public interface and will become
-the permanent home once the proofs are fully polished.
+Uniqueness ("canonicity") statements for `TetherKernel` inside a restricted class of kernels,
+the kernel conditions proved or refuted for `TetherKernel` itself (nondegeneracy, polarization on
+functionals with gradients, saturation, `h_proj`, the canonical density; refutations of
+unrestricted polarization, of `Step1Hyp` and of the pointwise weight hypothesis), and the
+vacuity of the former antisymmetric clause. These are statements about kernels; they say nothing
+about regularity of Navier–Stokes solutions.
 -/
+
 
 namespace FrohmanianTether
 
 open FrohmanianTether
 open ArnoldGeometric
 open NavierStokes3D
-open MeasureTheory ForMathlib
+open MeasureTheory ForMathlib TetherNondegeneracy
 open scoped InnerProductSpace
 
-/-!
-## Tether Uniqueness (5-Step Canonicity)
-
-The following block imports and re-exports the core uniqueness statements
-from the geometric layer. In the final polished state these will be defined
-here directly, with `SymplecticTether` containing only the construction details.
-
-For now we provide the public names that referees and downstream modules
-should cite.
--/
-
--- The central uniqueness theorem lives natively inside `namespace FrohmanianTether`
--- below. The root re-exports it via `export FrohmanianTether (...)` (no local self-export
--- to avoid "invalid 'export', self export" during module init).
-
--- ============================================================================
--- 5-STEP CANONICITY (moved from SymplecticTether.lean)
--- This implements the changes from the clean low-sorry folder (ns_lean_local_clean)
--- that drastically reduced sorrys and kernel issues in the core geometric file.
--- SymplecticTether is now focused (like the clean snapshot), with the 5-step here.
--- The detailed proofs (case analyses) are preserved with their source citations.
--- ============================================================================
-
-/-- Step 1: coadjoint invariance of an admissible correction is a locality / support condition. -/
-lemma step1_locality
-    (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (_h_antisym : ∀ ω F G, B ω F G = -B ω G F)
-    (h_inv : InvariantUnderCoadjointAction SDiff B) :
-    InvariantUnderCoadjointAction SDiff B :=
-  h_inv
 
 -- Step 2 is not a theorem from antisymmetry of an arbitrary `B`. The honest
 -- statements are `step2_degree` / `step2_degree_of_canonical_density` below
 -- (`TetherKernel` or a canonical density, with frozen Gâteaux / `Π_u`).
 -- `uniqueness_of_minimal_tether` does not use either; it polarizes.
-
-/-- Step 3: C2 forces vanishing on the kinetic-energy Hamiltonian, hence `Π_u`. -/
-lemma step3_projection
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (_h_antisym : ∀ ω F G, B ω F G = -B ω G F)
-    (h_deg : DegenerateWRTKineticEnergy B) :
-    ∀ (F : Functional) (ω : CoadjointOrbit),
-      B ω F KineticEnergyHamiltonian = 0 := by
-  intro F ω
-  simpa [DegenerateWRTKineticEnergy] using h_deg F ω
-
-/-- Step 4: C3 forces the tether strength `κ = C_CZ(3)`. -/
-lemma step4_coefficient
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (_h_antisym : ∀ ω F G, B ω F G = -B ω G F)
-    (_h_feedback : ProducesControllableNegativeFeedback B) :
-    kappa = CalderonZygmundConstant3D :=
-  rfl
 
 -- Step 5 for an arbitrary antisymmetric `B` is not a theorem from C2–C3
 -- alone. See `step5_higher_order` (`TetherKernel` via `step2_degree`).
@@ -121,7 +44,7 @@ lemma step4_coefficient
 /-- The correction is given by a scalar kernel density against the projected
 pairing. The Frohmanian kernel `-κ ‖ω‖² ∫ ⟨Π_u δF, Π_u δG⟩` is the case of the
 spatially constant density `α ω x = -κ ‖ω‖²` (global enstrophy). -/
-public def HasTetherKernelDensity
+@[expose] public def HasTetherKernelDensity
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (α : CoadjointOrbit → T3 → ℝ) : Prop :=
   ∀ (ω : CoadjointOrbit) (F G : Functional),
@@ -312,44 +235,28 @@ public def Polarizes
       B ω (fun ω' => F ω' + G ω') (fun ω' => F ω' + G ω') -
         B ω F F - B ω G G
 
-/-- Inner-product polarization on the tether kernel, once Gâteaux derivatives
-are additive. This is the classification step: a bilinear form is determined
-by its quadratic form. -/
-public theorem tetherKernel_polarizes
-    (ω : CoadjointOrbit) (F G : Functional)
-    (_hδ : FunctionalDerivative (fun ω' => F ω' + G ω') ω =
-      FunctionalDerivative F ω + FunctionalDerivative G ω) :
-    Polarizes TetherKernel →
-      2 * TetherKernel ω F G =
-        TetherKernel ω (fun ω' => F ω' + G ω') (fun ω' => F ω' + G ω') -
-          TetherKernel ω F F - TetherKernel ω G G := by
-  intro hP
-  simpa using hP ω F G
+/-- Polarization restricted to functionals that HAVE functional gradients at `ω`
+(`IsFunctionalGradient`). This is the form a bilinear form in `(δF, δG)` can satisfy: at a
+functional with no gradient, `FunctionalDerivative` is `0` and carries no information. -/
+@[expose] public def PolarizesOnDifferentiable
+    (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
+  ∀ (ω : CoadjointOrbit) (F G : Functional),
+    (∃ g, IsFunctionalGradient F ω g) → (∃ g, IsFunctionalGradient G ω g) →
+    2 * B ω F G =
+      B ω (fun ω' => F ω' + G ω') (fun ω' => F ω' + G ω') - B ω F F - B ω G G
 
-/-- Unique minimal bilinear correction: C1–C3 plus saturation of the
-quadratic form plus polarization. This is the paper's "minimal" uniqueness,
-not the false claim that every antisymmetric map equals `TetherKernel`. -/
-public theorem uniqueness_of_minimal_tether_antisymmetric
-    (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (h_antisym : ∀ ω F G, B ω F G = -B ω G F)
-    (hC1 : InvariantUnderCoadjointAction SDiff B)
-    (hC2 : DegenerateWRTKineticEnergy B)
-    (hC3 : ProducesControllableNegativeFeedback B)
-    (h_sat : SaturatesTetherQuadratic B)
-    (h_polarB : Polarizes B)
-    (h_polarT : Polarizes TetherKernel) :
-    ∀ (ω : CoadjointOrbit) (F G : Functional), B ω F G = TetherKernel ω F G := by
-  intro ω F G
-  have _h1 := step1_locality SDiff B h_antisym hC1
-  have _h3 := step3_projection B h_antisym hC2
-  have _h4 := step4_coefficient B h_antisym hC3
-  have hB := h_polarB ω F G
-  have hT := h_polarT ω F G
-  have hFF := h_sat F ω
-  have hGG := h_sat G ω
-  have hFG := h_sat (fun ω' => F ω' + G ω') ω
-  linarith
+/-- **PROVED** (formerly the hypothesis `Polarizes TetherKernel`, now in its true form):
+the tether polarizes on every pair of functionals with functional gradients. -/
+public theorem tetherKernel_polarizesOnDifferentiable :
+    PolarizesOnDifferentiable TetherKernel := by
+  rintro ω F G ⟨a, ha⟩ ⟨b, hb⟩
+  exact tetherKernel_polarizes_of_gradient ha hb
+
+/-- **REFUTED**: unrestricted polarization of the tether is false
+(`TetherNondegeneracy.not_tetherKernel_polarizes`). The former hypothesis
+`h_polarT : Polarizes TetherKernel` could never be supplied. -/
+public theorem not_polarizes_tetherKernel : ¬ Polarizes TetherKernel :=
+  not_tetherKernel_polarizes
 
 /-- `TetherKernel` is symmetric in `F` and `G` because the real inner product
 `⟨Π_u δF, Π_u δG⟩` is symmetric. -/
@@ -360,7 +267,9 @@ public theorem tetherKernel_symmetric (ω : CoadjointOrbit) (F G : Functional) :
 /-- Symmetric polarization uniqueness of `TetherKernel`: because `TetherKernel` is a
 symmetric negative-semidefinite bilinear pairing (the dissipative/metric component of a
 metriplectic bracket), replacing `h_antisym` with symmetry `B ω F G = B ω G F` yields
-a non-vacuous characterization satisfied by `B = TetherKernel`. -/
+a non-vacuous characterization satisfied by `B = TetherKernel`. Polarization of the tether is
+now PROVED (`tetherKernel_polarizesOnDifferentiable`), not assumed; the conclusion is stated for
+functionals with functional gradients at `ω`, the only ones a derivative-based kernel can see. -/
 public theorem uniqueness_of_minimal_symmetric_tether
     (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
     (B : CoadjointOrbit → Functional → Functional → ℝ)
@@ -369,12 +278,12 @@ public theorem uniqueness_of_minimal_symmetric_tether
     (_hC2 : DegenerateWRTKineticEnergy B)
     (_hC3 : ProducesControllableNegativeFeedback B)
     (h_sat : SaturatesTetherQuadratic B)
-    (h_polarB : Polarizes B)
-    (h_polarT : Polarizes TetherKernel) :
-    ∀ (ω : CoadjointOrbit) (F G : Functional), B ω F G = TetherKernel ω F G := by
-  intro ω F G
-  have hB := h_polarB ω F G
-  have hT := h_polarT ω F G
+    (h_polarB : PolarizesOnDifferentiable B) :
+    ∀ (ω : CoadjointOrbit) (F G : Functional), (∃ g, IsFunctionalGradient F ω g) →
+      (∃ g, IsFunctionalGradient G ω g) → B ω F G = TetherKernel ω F G := by
+  intro ω F G hF hG
+  have hB := h_polarB ω F G hF hG
+  have hT := tetherKernel_polarizesOnDifferentiable ω F G hF hG
   have hFF := h_sat F ω
   have hGG := h_sat G ω
   have hFG := h_sat (fun ω' => F ω' + G ω') ω
@@ -384,8 +293,11 @@ public theorem uniqueness_of_minimal_symmetric_tether
 /-! ## Theorem 2.3 over the abstract SDiff action — SYMMETRIC (author's choice)
 
 The antisymmetric reading is vacuous: with saturation, antisymmetry forces
-`TetherKernel ω F F = 0` for every `F` (`antisym_sat_forces_zero_diag`), so it holds only
-where the tether quadratic form vanishes. -/
+`TetherKernel ω F F = 0` for every `F` (`antisym_sat_forces_zero_diag`), and with polarization
+it forces `B = TetherKernel = 0` (`antisymmetric_clause_forces_zero`). The antisymmetric
+theorem `uniqueness_of_minimal_tether_antisymmetric` and the vacuous step lemmas
+`step1_locality`, `step3_projection`, `step4_coefficient` (which carried an unused
+antisymmetry hypothesis and returned their input or `rfl`) were removed. -/
 
 /-- Proved: antisymmetry + saturation kill the tether diagonal (vacuity of the
 antisymmetric version). -/
@@ -395,6 +307,52 @@ public theorem antisym_sat_forces_zero_diag
     (ω : CoadjointOrbit) (F : Functional) : TetherKernel ω F F = 0 := by
   have h := h_antisym ω F F
   rw [← h_sat F ω]; linarith
+
+/-- **What `Polarizes TetherKernel` costs.** The polarization hypothesis on the tether (used by
+`uniqueness_of_minimal_symmetric_tether`) forces `TetherKernel ω F G = 0` at every vorticity
+with a non-differentiable component, because there the kernel is independent of `F, G`
+(`tetherKernel_indep_of_not_differentiable`) and `2K = K - K - K` gives `K = 0`. Neither this
+hypothesis is now REFUTED outright (`not_polarizes_tetherKernel`); nondegeneracy is PROVED
+(`TetherNondegeneracy.tetherKernel_nondegenerate`). Kept as a record. -/
+public theorem polarizes_tetherKernel_zero_of_not_differentiable
+    (hP : Polarizes TetherKernel)
+    {ω : CoadjointOrbit} (hω : ¬ ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x)
+    (F G : Functional) : TetherKernel ω F G = 0 := by
+  have h := hP ω F G
+  have e1 := tetherKernel_indep_of_not_differentiable hω
+    (fun ω' => F ω' + G ω') (fun ω' => F ω' + G ω') F G
+  have e2 := tetherKernel_indep_of_not_differentiable hω F F F G
+  have e3 := tetherKernel_indep_of_not_differentiable hω G G F G
+  rw [e1, e2, e3] at h
+  linarith
+
+/-- **Vacuity of the removed antisymmetric clause.** The former
+`uniqueness_of_minimal_tether_antisymmetric` (and clause 1 of `frohmanian_tether_theorem`)
+took an antisymmetric `B` with `SaturatesTetherQuadratic B`, `Polarizes B` and
+`Polarizes TetherKernel`. Those hypotheses force BOTH `B` and `TetherKernel` to vanish
+identically (`TetherKernel` is symmetric), so the clause could only ever apply when the tether
+is the zero form; it said nothing about the tether. The clause and the theorem were removed. -/
+public theorem antisymmetric_clause_forces_zero
+    (B : CoadjointOrbit → Functional → Functional → ℝ)
+    (h_antisym : ∀ ω F G, B ω F G = -B ω G F)
+    (h_sat : SaturatesTetherQuadratic B)
+    (h_polarB : Polarizes B)
+    (h_polarT : Polarizes TetherKernel) :
+    ∀ (ω : CoadjointOrbit) (F G : Functional), B ω F G = 0 ∧ TetherKernel ω F G = 0 := by
+  have hBT : ∀ ω F G, B ω F G = TetherKernel ω F G := by
+    intro ω F G
+    have hB := h_polarB ω F G
+    have hT := h_polarT ω F G
+    have hFF := h_sat F ω
+    have hGG := h_sat G ω
+    have hFG := h_sat (fun ω' => F ω' + G ω') ω
+    linarith
+  intro ω F G
+  have h1 := h_antisym ω F G
+  have h2 := tetherKernel_comm ω F G
+  rw [hBT ω F G, hBT ω G F] at h1
+  have hT0 : TetherKernel ω F G = 0 := by linarith
+  exact ⟨(hBT ω F G).trans hT0, hT0⟩
 
 /-- `B` pairs every zero-derivative functional to zero. -/
 @[expose] public def PairsToZeroIfDerivativeVanishes
@@ -428,21 +386,13 @@ public theorem pairsToZero_of_C2
   obtain ⟨c, hc⟩ := hE ω H hH
   rw [hc G, h_sym, hC2 G ω, mul_zero]
 
-/-- **[fallback / superseded] Step 1 (locality in the derivatives), fallback form**: `B ω F G` depends only on
-`δF ω`, `δG ω`. Proved from symmetry + `Step1Hyp`. Step 1 is conditional on an assumption of
-nearly the same strength as its conclusion; C1 and C2 are unused here. -/
-public theorem step1_locality_sym
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (h_sym : ∀ ω F G, B ω F G = B ω G F) (H1 : Step1Hyp B) :
-    ∀ ω (F G F' G' : Functional), FunctionalDerivative F ω = FunctionalDerivative F' ω →
-      FunctionalDerivative G ω = FunctionalDerivative G' ω → B ω F G = B ω F' G' := by
-  have key : ∀ ω (F F' G : Functional), FunctionalDerivative F ω = FunctionalDerivative F' ω →
-      B ω F G = B ω F' G := by
-    intro ω F F' G h
-    have h0 := H1.zero_deriv ω (fun η => F η - F' η) G (by rw [H1.deriv_sub, h, sub_self])
-    rw [H1.sub_left] at h0; linarith
-  intro ω F G F' G' hF hG
-  rw [key ω F F' G hF, h_sym, key ω G G' F' hG, h_sym]
+/-- **REFUTED**: `Step1Hyp` is unsatisfiable for every `B`, because its field `deriv_sub`
+(linearity of the derivative encoding on ALL functionals) is false
+(`TetherNondegeneracy.not_forall_functionalDerivative_sub`). The former
+`step1_locality_sym` / `step1_locality_route1`, which took it (or `deriv_sub`) as input, were
+vacuous and have been removed; Step 1 is the corollary `step1_of_factorization`. -/
+public theorem not_step1Hyp (B : CoadjointOrbit → Functional → Functional → ℝ) :
+    ¬ Step1Hyp B := fun H => not_forall_functionalDerivative_sub H.deriv_sub
 
 /-- `B ω` factors through the projected derivatives via one symmetric `Q`, independent
 of `F, G`. -/
@@ -453,19 +403,6 @@ of `F, G`. -/
     ∀ F G : Functional, B ω F G =
       Q (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω))
         (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative G ω))
-
-/-- **[fallback / superseded] Step 1, route 1 (NOT primary: collapsed to a near-equivalent assumption)**: locality from symmetry, bilinearity, derivative
-linearity, C2 and `ZeroDerivAlongEnergy`. -/
-public theorem step1_locality_route1
-    (B : CoadjointOrbit → Functional → Functional → ℝ)
-    (h_sym : ∀ ω F G, B ω F G = B ω G F) (hC2 : DegenerateWRTKineticEnergy B)
-    (h_sub : ∀ ω F F' G, B ω (fun η => F η - F' η) G = B ω F G - B ω F' G)
-    (h_dsub : ∀ ω (F F' : Functional), FunctionalDerivative (fun η => F η - F' η) ω =
-      FunctionalDerivative F ω - FunctionalDerivative F' ω)
-    (hE : ZeroDerivAlongEnergy B) :
-    ∀ ω (F G F' G' : Functional), FunctionalDerivative F ω = FunctionalDerivative F' ω →
-      FunctionalDerivative G ω = FunctionalDerivative G' ω → B ω F G = B ω F' G' :=
-  step1_locality_sym B h_sym ⟨h_sub, h_dsub, pairsToZero_of_C2 B h_sym hC2 hE⟩
 
 /-- **Step 2 (quadratic in `Π_u δF`, `Π_u δG`)**: PROVED from symmetry and the named
 hypothesis `h_proj` (OPEN: `B` sees `δF` only through `Π_u δF`, a strengthening of Step 1's
@@ -530,21 +467,98 @@ public theorem step2_quadratic_and_locality
   have h2 := step2_quadratic B h_sym h_proj
   ⟨h2, step1_of_factorization B h2⟩
 
-/-- **Step 3 (scalar multiple of the canonical density)**: from Step 2, the named
-density hypothesis `h_density` (OPEN: the pointwise kernel `Q = ∫ α ⟨·,·⟩`, a
-Schwartz-kernel / isotropy statement) and the named weight hypothesis `h_weight` (OPEN: the "only |ω|² is invariant" step; would follow from
-`SDiffActionHyp.transitive_on_casimir_levels` plus a Casimir-classification theorem that
-is not formalized). -/
+/-- The weight hypothesis in its POINTWISE form (the former `h_weight`): every density of `B`
+is `-c ‖ω‖²` at every point. -/
+@[expose] public def PointwiseEnstrophyWeight
+    (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
+  ∀ α, HasTetherKernelDensity B α → ∃ c : ℝ, ∀ ω x, α ω x = -c * Enstrophy ω
+
+/-- **REFUTED: the pointwise weight hypothesis contradicts the existence of any density.**
+A density can be changed at the single point `x = 0` (a null set) without changing any
+integral, so it cannot be pinned down pointwise. Hence for EVERY `B`, `h_density`'s output and
+the pointwise `h_weight` are jointly inconsistent, and the former core theorem (which assumed
+`h_sym`, `h_proj`, `h_density` and the pointwise `h_weight`) was vacuous. -/
+public theorem not_pointwiseEnstrophyWeight_of_density
+    (B : CoadjointOrbit → Functional → Functional → ℝ)
+    (hex : ∃ α, HasTetherKernelDensity B α) : ¬ PointwiseEnstrophyWeight B := by
+  obtain ⟨α, hα⟩ := hex
+  intro hW
+  classical
+  let α' : CoadjointOrbit → T3 → ℝ := fun ω x => if x = 0 then α ω x + 1 else α ω x
+  have hα' : HasTetherKernelDensity B α' := by
+    intro ω F G
+    rw [hα ω F G]
+    apply integral_congr_ae
+    filter_upwards [Measure.ae_ne (MeasureTheory.volume : Measure T3) 0] with x hx
+    simp [α', hx]
+  obtain ⟨c, hc⟩ := hW α hα
+  obtain ⟨c', hc'⟩ := hW α' hα'
+  let ω := rotOrbit 0
+  have h1 : α ω (eb 0) = α' ω (eb 0) := by
+    have : (eb 0 : T3) ≠ 0 := by
+      intro h; have := congrArg (fun v : T3 => v 0) h; simp [eb] at this
+    simp [α', this]
+  have h2 : α' ω 0 = α ω 0 + 1 := by simp [α']
+  rw [hc, hc'] at h1
+  rw [hc, hc'] at h2
+  linarith
+
+/-- In particular the pointwise weight hypothesis fails for the tether itself. -/
+public theorem not_pointwiseEnstrophyWeight_tetherKernel :
+    ¬ PointwiseEnstrophyWeight TetherKernel :=
+  not_pointwiseEnstrophyWeight_of_density TetherKernel
+    ⟨_, tetherKernel_has_canonical_density⟩
+
+/-- The weight hypothesis as first stated: EVERY density of `B` (no measurability or integrability
+condition) equals `-c ‖ω‖²` almost everywhere at regular vorticities. REFUTED for `TetherKernel`
+(`TetherWeight.not_aeEnstrophyWeightUnrestricted_tetherKernel`): at `ω = 0` the tether vanishes,
+and the indicator of a Vitali-type set is a density there (its products with any function have
+Bochner integral `0`) without vanishing a.e. -/
+@[expose] public def AEEnstrophyWeightUnrestricted
+    (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
+  ∀ α, HasTetherKernelDensity B α → ∃ c : ℝ, ∀ ω, IsRegularVorticity ω →
+    ∀ᵐ x ∂(MeasureTheory.volume : Measure T3), α ω x = -c * Enstrophy ω
+
+/-- The weight hypothesis `h_weight` in its corrected form (PROVED for `TetherKernel`:
+`TetherWeightProof.tetherKernel_aeEnstrophyWeight`; open for a general `B`): every
+density of `B` that is LOCALLY INTEGRABLE at each regular vorticity equals `-c ‖ω‖²` almost
+everywhere, at regular vorticities only (at non-regular ones every derivative is `0`, so the
+density is invisible). The integrability condition excludes the non-measurable densities that
+refute `AEEnstrophyWeightUnrestricted`. -/
+@[expose] public def AEEnstrophyWeight
+    (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
+  ∀ α, HasTetherKernelDensity B α →
+    (∀ ω, IsRegularVorticity ω → LocallyIntegrable (α ω) (MeasureTheory.volume : Measure T3)) →
+    ∃ c : ℝ, ∀ ω, IsRegularVorticity ω →
+      ∀ᵐ x ∂(MeasureTheory.volume : Measure T3), α ω x = -c * Enstrophy ω
+
+/-- The canonical density of the tether is spatially constant, hence locally integrable. -/
+public theorem canonicalTetherDensity_locallyIntegrable (ω : CoadjointOrbit) :
+    LocallyIntegrable (canonicalTetherDensity ω) (MeasureTheory.volume : Measure T3) :=
+  locallyIntegrable_const _
+
+/-- **Step 3 (scalar multiple of the canonical density)**: from Step 2, the named density
+hypothesis `h_density` (OPEN for a general `B`: `Q = ∫ α ⟨·,·⟩` with `α ω` locally integrable at
+regular `ω`, a Schwartz-kernel / isotropy statement) and the weight hypothesis
+`h_weight : AEEnstrophyWeight B` (OPEN for a general `B`, PROVED for `B = TetherKernel`; the pointwise form
+and the unrestricted a.e. form are refuted). At non-regular `ω` both sides vanish because
+`FunctionalDerivative` is `0` there. -/
 public theorem step3_scalar
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (h2' : FactorsThroughProjection B)
-    (h_density : FactorsThroughProjection B → ∃ α, HasTetherKernelDensity B α)
-    (h_weight : ∀ α, HasTetherKernelDensity B α → ∃ c : ℝ, ∀ ω x, α ω x = -c * Enstrophy ω) :
+    (h_density : FactorsThroughProjection B → ∃ α, HasTetherKernelDensity B α ∧
+      ∀ ω, IsRegularVorticity ω → LocallyIntegrable (α ω) (MeasureTheory.volume : Measure T3))
+    (h_weight : AEEnstrophyWeight B) :
     ∃ c : ℝ, HasTetherKernelDensity B (fun ω _x => -c * Enstrophy ω) := by
-  obtain ⟨α, hα⟩ := h_density h2'
-  obtain ⟨c, hc⟩ := h_weight α hα
+  obtain ⟨α, hα, hloc⟩ := h_density h2'
+  obtain ⟨c, hc⟩ := h_weight α hα hloc
   refine ⟨c, fun ω F G => ?_⟩
-  rw [hα ω F G]; simp only [hc]
+  rw [hα ω F G]
+  by_cases hω : IsRegularVorticity ω
+  · apply integral_congr_ae
+    filter_upwards [hc ω hω] with x hx
+    rw [hx]
+  · simp [functionalDerivative_eq_zero_of_not_regular hω, Pi_u_zero]
 
 /-- **Step 4 (scalar = κ)**: PROVED from Step 3, saturation, and one nondegenerate witness. -/
 public theorem step4_scalar_eq_kappa
@@ -571,6 +585,40 @@ public theorem step4_scalar_eq_kappa
   intro ω F G
   rw [hc ω F G]; simp [canonicalTetherDensity, hck]
 
+/-- **PROVED** (formerly the hypothesis `h_nondeg`): the tether pairing is not identically
+zero, witnessed by a linear test functional at the smooth rotation field `rotOrbit 0`. -/
+public theorem tether_nondeg_witness :
+    ∃ (ω : CoadjointOrbit) (F : Functional), Enstrophy ω * (∫ x,
+        inner ℝ (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) x)
+          (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) x) ∂NavierStokes3D.volume) ≠ 0 := by
+  obtain ⟨ω, φ, -, -, hne⟩ := tetherKernel_nondegenerate
+  refine ⟨ω, linFun φ, fun h => hne ?_⟩
+  have e : TetherKernel ω (linFun φ) (linFun φ) = -kappa * (Enstrophy ω * (∫ x,
+        inner ℝ (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative (linFun φ) ω) x)
+          (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative (linFun φ) ω) x)
+            ∂NavierStokes3D.volume)) := by
+    rw [← mul_assoc]; rfl
+  rw [e, h, mul_zero]
+
+/-- The kernel conditions that the tether itself satisfies, all PROVED: saturation, `h_proj`,
+the canonical density, restricted polarization and nondegeneracy. -/
+public theorem tetherKernel_kernel_conditions :
+    SaturatesTetherQuadratic TetherKernel ∧
+    (∀ ω (F F' G : Functional),
+      Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) =
+        Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F' ω) →
+        TetherKernel ω F G = TetherKernel ω F' G) ∧
+    HasTetherKernelDensity TetherKernel canonicalTetherDensity ∧
+    PolarizesOnDifferentiable TetherKernel ∧
+    (∃ ω F, TetherKernel ω F F ≠ 0) := by
+  refine ⟨fun _ _ => rfl, ?_, tetherKernel_has_canonical_density,
+    tetherKernel_polarizesOnDifferentiable, ?_⟩
+  · intro ω F F' G h
+    unfold TetherKernel
+    rw [h]
+  · obtain ⟨ω, φ, -, -, hne⟩ := tetherKernel_nondegenerate
+    exact ⟨ω, linFun φ, hne⟩
+
 /-- **Step 5 (equality with `TetherKernel`)**: PROVED from Step 4. -/
 public theorem step5_eq_tether
     (B : CoadjointOrbit → Functional → Functional → ℝ)
@@ -579,29 +627,29 @@ public theorem step5_eq_tether
   uniqueness_of_kernel_density B canonicalTetherDensity h4 (fun _ _ => rfl)
 
 /-- **Five-step core** (symmetric). Each step consumes the previous step's conclusion.
-Open inputs: `Step1Hyp`, `h_proj`, `h_density`, `h_weight`; `h_nondeg` is a nondegeneracy witness. -/
+Open inputs (properties of the arbitrary `B`): `h_proj`, `h_density` (a density, locally
+integrable at regular `ω`), `h_weight` (a.e., regular `ω`, locally integrable densities). Nondegeneracy is no longer an input: it is PROVED
+(`tether_nondeg_witness`). -/
 public theorem uniqueness_of_minimal_tether_core
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (h_sym : ∀ ω F G, B ω F G = B ω G F)
     (h_proj : ∀ ω (F F' G : Functional),
       Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) =
         Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F' ω) → B ω F G = B ω F' G)
-    (h_density : FactorsThroughProjection B → ∃ α, HasTetherKernelDensity B α)
-    (h_weight : ∀ α, HasTetherKernelDensity B α → ∃ c : ℝ, ∀ ω x, α ω x = -c * Enstrophy ω)
-    (h_sat : SaturatesTetherQuadratic B)
-    (h_nondeg : ∃ (ω : CoadjointOrbit) (F : Functional), Enstrophy ω * (∫ x,
-        inner ℝ (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) x)
-          (Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) x) ∂NavierStokes3D.volume) ≠ 0) :
+    (h_density : FactorsThroughProjection B → ∃ α, HasTetherKernelDensity B α ∧
+      ∀ ω, IsRegularVorticity ω → LocallyIntegrable (α ω) (MeasureTheory.volume : Measure T3))
+    (h_weight : AEEnstrophyWeight B)
+    (h_sat : SaturatesTetherQuadratic B) :
     ∀ ω F G, B ω F G = TetherKernel ω F G :=
   have h2 := (step2_quadratic_and_locality B h_sym h_proj).1
   have h3 := step3_scalar B h2 h_density h_weight
-  have h4 := step4_scalar_eq_kappa B h3 h_sat h_nondeg
+  have h4 := step4_scalar_eq_kappa B h3 h_sat tether_nondeg_witness
   step5_eq_tether B h4
 
 /-- **Theorem 2.3 (symmetric) over the abstract SDiff action**, user interface: takes
-`SDiffActionHyp`, C1–C3, saturation and polarization. Proved by polarization;
-`hyp`, C1, C2, C3 are carried but NOT used by the proof (the conclusion follows from
-`h_sat` + polarization alone). -/
+`SDiffActionHyp`, C1–C3, saturation and polarization of `B` on differentiable functionals.
+Proved by polarization; the tether's own polarization is PROVED. `hyp`, C1, C2, C3 are carried
+but NOT used by the proof (the conclusion follows from `h_sat` + polarization alone). -/
 public theorem uniqueness_of_minimal_tether
     (SDiff : Type*) [Group SDiff] [MulAction SDiff CoadjointOrbit]
     (_hyp : SDiffActionHyp SDiff)
@@ -611,10 +659,10 @@ public theorem uniqueness_of_minimal_tether
     (hC2 : DegenerateWRTKineticEnergy B)
     (hC3 : ProducesControllableNegativeFeedback B)
     (h_sat : SaturatesTetherQuadratic B)
-    (h_polarB : Polarizes B)
-    (h_polarT : Polarizes TetherKernel) :
-    ∀ (ω : CoadjointOrbit) (F G : Functional), B ω F G = TetherKernel ω F G :=
-  uniqueness_of_minimal_symmetric_tether SDiff B h_sym hC1 hC2 hC3 h_sat h_polarB h_polarT
+    (h_polarB : PolarizesOnDifferentiable B) :
+    ∀ (ω : CoadjointOrbit) (F G : Functional), (∃ g, IsFunctionalGradient F ω g) →
+      (∃ g, IsFunctionalGradient G ω g) → B ω F G = TetherKernel ω F G :=
+  uniqueness_of_minimal_symmetric_tether SDiff B h_sym hC1 hC2 hC3 h_sat h_polarB
 
 /-!
 ## Later paper: uniqueness of global regular solutions
@@ -646,22 +694,10 @@ Non-Circularity" section.
 -/
 
 -- =============================================================================
--- VALIDATION RITUAL (run these after any edit to this file)
--- =============================================================================
+-- AXIOM CHECKS
 
-/-!
-Recommended daily validation commands (copy-paste into the Lean InfoView or
-a terminal with `lake env`):
-
-  #print axioms uniqueness_of_minimal_tether
-#print axioms uniqueness_of_minimal_tether_core
-
-  lake build NS_Millennium_Proof.Modules.Uniqueness
-
-When the proofs become real, also run:
-
-  lean4checker --fresh .lake/build/lib/lean/NS_Millennium_Proof/Modules/Uniqueness.olean
--/
+/-! Axiom checks for the declarations of this module (the strict repository-wide audit is
+`scripts/AxiomAudit.lean`). -/
 
 #print axioms uniqueness_of_kernel_density
 #print axioms uniqueness_of_kernel_density_fun

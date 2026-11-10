@@ -1,0 +1,3 @@
+-- FrohmanianTether/TestFieldFamily.lean, line 123
+public theorem tsupport_concField_subset (x : T3) {r : ℝ} (hr : 0 < r) :
+    tsupport (concField x hr).val ⊆ Metric.ball x r := ...

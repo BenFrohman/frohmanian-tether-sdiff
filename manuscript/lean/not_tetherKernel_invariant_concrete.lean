@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherC1.lean, line 191
+public theorem not_tetherKernel_invariant_concrete :
+    ¬ InvariantUnderCoadjointAction ConcreteSDiff.G TetherKernel := ...
