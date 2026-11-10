@@ -40,7 +40,7 @@
 
 \title{The Frohmanian Tether on $\mathrm{SDiff}(\mathbb{T}^3)$: A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping\\[0.4em]\large Conditional statements verified in Lean~4}
 \author{Benjamin Stanley Frohman\\[0.2em]
-\small Independent researcher\\
+\small Independent Researcher, Texas, United States\\
 \small \href{mailto:frohmanbenjamin@gmail.com}{\texttt{frohmanbenjamin@gmail.com}}\quad
 ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}\\[0.3em]
 \small Companion repository: \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} (version 0.1.2, draft)}
@@ -57,7 +57,9 @@ away from the velocity $u$ and $\kappa=3/2$. The library proves: the negative-fe
 unconditionally; a uniqueness (``canonicity'') statement inside a restricted kernel class; and an
 \emph{obstruction to damping}: every symmetric kernel $B$ satisfying the kinetic-energy degeneracy (C2) has
 $B(H,M)=B(M,H)=0$ for every functional $M$, so such a kernel contributes no damping to any functional, in
-particular not to $\|\omega\|_{L^\infty}$. Neither (C1) nor (C2) is proved for $T$. Version 0.1.2 removes
+particular not to $\|\omega\|_{L^\infty}$. (C2) is not proved for $T$, and (C1) as formalized (the
+functionals are not transported by the action) is refuted for $T$ under a concrete group of
+measure-preserving maps, using a translation; the equivariant form of (C1) is open. Version 0.1.2 removes
 every hypothesis of earlier versions that turned out to be false or vacuous, with Lean refutations where
 possible: $\delta H/\delta\omega=u$, transitivity of the action on Casimir levels, the pointwise strain bound
 $\|\nabla u(x)\|\le C\|\omega\|_{L^\infty}$, the invariance hypothesis \texttt{TetherIntegralPreserved}, a
@@ -66,7 +68,9 @@ lower bound on local existence times; it also repairs the definition of a physic
 earlier versions admitted only solutions constant in time. A further pass rebuilds the functional
 derivative as the unique divergence-free $L^2$ gradient along smooth compactly supported test fields
 (so it is a genuine, choice-free derivative), proves that $T$ is nondegenerate, refutes the unrestricted
-polarization identity for $T$ and the pointwise weight hypothesis of the canonicity theorem, and restricts
+polarization identity for $T$ and the pointwise weight hypothesis of the canonicity theorem, refutes for $T$
+the almost-everywhere weight hypothesis over all (possibly non-measurable) densities and restricts it to
+locally integrable densities, and restricts
 the Kato local-existence witness to its own time interval, which makes the continuation from local to
 global solutions an explicit hypothesis. On the analytic side the library proves a scalar comparison lemma for
 $y'\le Cy^2-\kappa''y^3$ and several conditional implications of the form ``(cubic rate or uniform vorticity
@@ -75,9 +79,9 @@ global smooth solution'', in which every analytic input is an explicit hypothesi
 closing-bound hypotheses are open, are not supplied by the tether (its damping coefficient is $0$), and are
 of the same strength as the global regularity problem. \textbf{This work does not prove global regularity of
 the three-dimensional Navier--Stokes equations and makes no claim toward the Clay Millennium Problem.}
-The build (Lean \texttt{v4.30.0-rc1}, Mathlib \texttt{v4.30.0-rc1}, 2726 jobs) contains 569 theorem
-constants (514 stated in the sources and 55 auto-generated equation, congruence and injectivity lemmas) and
-840 declarations in 26 modules, with no \texttt{sorry}, no \texttt{native\_decide}, no axiom
+The build (Lean \texttt{v4.30.0-rc1}, Mathlib \texttt{v4.30.0-rc1}, 2728 jobs) contains 599 theorem
+constants (539 stated in the sources and 60 auto-generated equation, congruence and injectivity lemmas) and
+878 declarations in 28 modules, with no \texttt{sorry}, no \texttt{native\_decide}, no axiom
 declarations, and every declaration depending only on \texttt{propext}, \texttt{Classical.choice} and
 \texttt{Quot.sound}; this is enforced in continuous integration.
 \end{abstract}
@@ -224,13 +228,27 @@ derivative is then $0$). At regular $\omega$, (C2) would need $\delta H/\delta\o
 part of the stream function; the Biot--Savart operator is unbounded on $L^2(\R^3)$, this is not in Mathlib, and
 (C2) is expected to fail there (see below). Section~\ref{sec:ke} explains why the former route to (C2) was removed.
 
-\paragraph{(C1) is not proved.} Earlier versions derived (C1) for $T$ from two hypotheses,
+\paragraph{(C1) is refuted for $T$ under the concrete action.} Earlier versions derived (C1) for $T$ from two hypotheses,
 \lean{SDiffActionHyp} with a transitivity field and \lean{TetherIntegralPreserved}; both are removed
 (Section~\ref{sec:removed}) and no (C1) theorem for $T$ remains. \lean{SDiffActionHyp} now has the single
 field \lean{casimir_invariant} (every Casimir $\int f(|\omega|)$ is invariant under the action). For the
 concrete group \lean{ConcreteSDiff.SDiffConcrete} of measure-preserving, measurable, divergence-preserving
 permutations of $\R^3$ acting by $g\cdot\omega=\omega\circ g^{-1}$ (scalar composition, not the geometric
 push-forward $(Dg\,\omega)\circ g^{-1}$), the structure is proved outright (\lean{ConcreteSDiff.sdiffActionHyp}).
+
+\begin{theorem}[\lean{not_tetherKernel_invariant_concrete}]\label{thm:c1ref}
+$T$ does not satisfy (C1) for the concrete group: \lean{¬ InvariantUnderCoadjointAction ConcreteSDiff.G TetherKernel}.
+\end{theorem}
+The translations $x\mapsto x+h$ belong to the concrete group (\lean{ConcreteSDiff.translate}). Take $g$ the
+translation by $3e_0$, $\omega=\rho_0$ and $g\cdot\omega=\rho_{3e_0}$ (rotation fields, see
+Section~\ref{sec:canon}), and a rotation field $\varphi\in\{\rho_0,\rho_{3e_0}\}$ with
+$T(\omega;F_\varphi,F_\varphi)\neq0$ (\lean{tetherKernel_rot_nondegenerate}). The functional
+$F(\eta)=|F_\varphi(\eta)-F_\varphi(g\cdot\omega)|$ has no gradient at $g\cdot\omega$, so $T(g\cdot\omega;F,F)=0$; since
+$F_\varphi(\omega)\neq F_\varphi(g\cdot\omega)$, at $\omega$ it has gradient $\pm\varphi$ and
+$T(\omega;F,F)=T(\omega;F_\varphi,F_\varphi)\neq0$. The predicate \lean{InvariantUnderCoadjointAction} keeps $F,G$
+fixed; the equivariant form, with $F,G$ composed with the action, is not formalized and remains open. For
+translations it would reduce to translation equivariance of Biot--Savart; for a general measure-preserving
+permutation acting by composition, Biot--Savart is not equivariant.
 
 \subsection{The identification \texorpdfstring{$\delta H/\delta\omega=u$}{dH/dw = u} is false (removed)}\label{sec:ke}
 
@@ -322,6 +340,19 @@ linear $G$ has one; the identity fails. It is replaced by \lean{PolarizesOnDiffe
 (\lean{not_pointwiseEnstrophyWeight_of_density}): changing a density at $x=0$ gives another density, since
 densities enter only through integrals. The former core theorem that assumed it was therefore vacuous. It
 is replaced by the almost-everywhere form \lean{AEEnstrophyWeight} (on regular $\omega$).
+\item \textbf{Almost-everywhere weight hypothesis over all densities}
+(\lean{AEEnstrophyWeightUnrestricted}: every density, measurable or not, equals $-c\,\mathcal E(\omega)$ a.e.\ at
+regular $\omega$). \emph{Refuted} for $T$: \lean{TetherWeight.not_aeEnstrophyWeightUnrestricted_tetherKernel}.
+Let $V\subset B(0,1)$ contain one point of each class of $\R^3/\mathbb Q e_0$ meeting the unit ball
+(\lean{vitaliSet}). Its disjoint rational translates show that every null-measurable subset of $V$ is null,
+and they cover $B(0,1)$, so $V$ is not null. Hence $\int 1_V f=0$ for every $f$
+(\lean{integral_indicator_vitaliSet_mul}): either $1_V f$ is not integrable, or its support is a
+null-measurable subset of $V$. At the regular vorticity $\omega=0$ we have $\mathcal E(0)=0$, so $T(0;\cdot,\cdot)=0$ and
+$1_V$ is a density of $T$ there, but $1_V\neq0$ on a non-null set. Every kernel equal to $T$ therefore fails this
+hypothesis (\lean{not_aeEnstrophyWeightUnrestricted_of_eq_tether}), so the core theorem stated with it had jointly
+unsatisfiable hypotheses. \lean{AEEnstrophyWeight} now quantifies only over densities that are locally
+integrable at every regular $\omega$, and \texttt{h\_density} asks for such a density; $T$ has one
+(\lean{tetherKernel_has_locallyIntegrable_density}).
 \item \textbf{\lean{Step1Hyp}} (derivative of a difference is the difference of derivatives, for all
 functionals). \emph{Refuted}: \lean{not_step1Hyp}, via \lean{TetherNondegeneracy.not_forall_functionalDerivative_sub}.
 Deleted with it: \lean{step1_locality_sym}, \lean{step1_locality_route1}, \lean{tetherKernel_polarizes}.
@@ -394,7 +425,8 @@ on the diagonal, not a derivation of $T$ from (C1)--(C3). Unrestricted polarizat
 \begin{theorem}[\lean{uniqueness_of_minimal_tether_core}]\label{thm:canoncore}
 Let $B$ be symmetric and assume: $B(\omega;F,G)$ depends on $F$ only through $\Pi_u\,\delta F/\delta\omega$
 (\texttt{h\_proj}); if $B$ factors through the projection then it has a density $\alpha$
-(\lean{HasTetherKernelDensity}) (\texttt{h\_density}); every such density satisfies, for some $c$ and every
+(\lean{HasTetherKernelDensity}) with $\alpha(\omega,\cdot)$ locally integrable at every regular $\omega$
+(\texttt{h\_density}); every such locally integrable density satisfies, for some $c$ and every
 regular $\omega$, $\alpha(\omega,x)=-c\,\mathcal E(\omega)$ for almost every $x$
 (\texttt{h\_weight : AEEnstrophyWeight B}); and $B$ saturates $T$ on the diagonal (\texttt{h\_sat}). Then $B=T$.
 \end{theorem}
@@ -418,12 +450,14 @@ nondegeneracy (\texttt{h\_nondeg}) & proved & \lean{tetherKernel_nondegenerate}\
 \lean{PolarizesOnDifferentiable TetherKernel} & proved & \lean{tetherKernel_polarizesOnDifferentiable}\\
 \lean{SaturatesTetherQuadratic TetherKernel} & proved & \lean{tetherKernel_kernel_conditions}\\
 \texttt{h\_proj} for $T$ & proved & \lean{tetherKernel_kernel_conditions}\\
-\texttt{h\_density} for $T$ & proved & canonical density, \lean{tetherKernel_kernel_conditions}\\
+\texttt{h\_density} for $T$ & proved & canonical density (locally integrable), \lean{tetherKernel_kernel_conditions}, \texttt{tetherKernel\_has\_}\allowbreak\texttt{locallyIntegrable\_density}\\
 pointwise \texttt{h\_weight} & refuted & for every kernel with a density, \lean{not_pointwiseEnstrophyWeight_of_density}\\
-\lean{AEEnstrophyWeight TetherKernel} & open & needs a.e.\ uniqueness of densities (Lebesgue differentiation for products of projected test fields) and a convention for non-measurable densities\\
+a.e.\ \texttt{h\_weight} over all densities & refuted & Vitali-set density at $\omega=0$, \texttt{not\_aeEnstrophyWeight}\allowbreak\texttt{Unrestricted\_tetherKernel}\\
+\lean{AEEnstrophyWeight TetherKernel} (locally integrable densities) & open & needs divergence-free test fields $L^2$-orthogonal to $u$ that localize at every point ($\Pi_u$ adds the non-compactly supported term $\lambda(a)u$), Lebesgue differentiation along them, and control of non-integrable products\\
 \lean{Step1Hyp} & refuted & \lean{not_step1Hyp}\\
 (C2) for $T$ & open & needs $\delta H/\delta\omega$ at regular $\omega$; expected to fail\\
-(C1) for $T$ (concrete action) & open & needs Biot--Savart translation analysis\\
+(C1) for $T$ (concrete action, $F,G$ fixed) & refuted & \lean{not_tetherKernel_invariant_concrete} (translation)\\
+equivariant (C1) for $T$ & open & not formalized\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -592,8 +626,8 @@ Millennium Problem.
 (under (C2) its damping coefficient would be $0$).
 \item (C2) for $T$. The identification $\delta H/\delta\omega=u$ is refuted (Theorem~\ref{thm:keref}); the
 classical identification $\delta H/\delta\omega=\psi$ (stream function) is not formalized.
-\item \lean{AEEnstrophyWeight TetherKernel}.
-\item (C1) for $T$. That the Euler flow is a coadjoint motion.
+\item \lean{AEEnstrophyWeight TetherKernel} (locally integrable densities).
+\item The equivariant form of (C1) for $T$ ((C1) as formalized is refuted, Theorem~\ref{thm:c1ref}). That the Euler flow is a coadjoint motion.
 \item A Jacobi identity for $\{\cdot,\cdot\}_{\Tf}$ (the former conditional lemma was circular and is deleted), or a Poisson structure; the Jacobi identity for
 $\{\cdot,\cdot\}_{\mathrm{cl}}$ (cited only).
 \item Kato local existence \cite{Kato1984}, Beale--Kato--Majda \cite{BKM1984}, gluing of local solutions,
@@ -625,10 +659,11 @@ bounds on local solutions); \lean{ClayStatements.PeriodicTetherClosingBound} and
 lemmas only). The tether does not supply any of these.
 \item[(c) Kernel-class conditions on a competitor $B$.] In the canonicity theorems: symmetry,
 \lean{PolarizesOnDifferentiable B}, \lean{SaturatesTetherQuadratic B}, \texttt{h\_proj}, \texttt{h\_density},
-\texttt{h\_weight : AEEnstrophyWeight B} (and (C1)--(C3) for $B$, unused). They define the class compared
-with $T$.
-\item[Open for $T$ itself.] \lean{AEEnstrophyWeight TetherKernel}; (C2) at regular $\omega$, assumed in
-Corollary~\ref{cor:obstr} and expected to fail; (C1) under the concrete action.
+\texttt{h\_weight : AEEnstrophyWeight B} (both for locally integrable densities; and (C1)--(C3) for $B$,
+unused). They define the class compared with $T$.
+\item[Open for $T$ itself.] \lean{AEEnstrophyWeight TetherKernel} (locally integrable densities); (C2) at
+regular $\omega$, assumed in Corollary~\ref{cor:obstr} and expected to fail; the equivariant form of (C1). (C1)
+as formalized is refuted under the concrete action (Theorem~\ref{thm:c1ref}).
 \end{description}
 
 %=====================================================================
@@ -680,7 +715,9 @@ Quoted verbatim from the repository by \texttt{scripts/extract\_statements.py}; 
 \leanstmt{tetherKernel_polarizesOnDifferentiable}
 \leanstmt{tetherKernel_nondegenerate}
 \leanstmt{tetherKernel_kernel_conditions}
+\leanstmt{AEEnstrophyWeightUnrestricted}
 \leanstmt{AEEnstrophyWeight}
+\leanstmt{tetherKernel_has_locallyIntegrable_density}
 \leanstmt{FactorsThroughProjection}
 \leanstmt{HasTetherKernelDensity}
 \leanstmt{uniqueness_of_minimal_tether}
@@ -698,6 +735,11 @@ Quoted verbatim from the repository by \texttt{scripts/extract\_statements.py}; 
 \leanstmt{not_tetherKernel_polarizes}
 \leanstmt{not_pointwiseEnstrophyWeight_of_density}
 \leanstmt{not_step1Hyp}
+\leanstmt{integral_indicator_vitaliSet_mul}
+\leanstmt{not_aeEnstrophyWeightUnrestricted_tetherKernel}
+\leanstmt{not_aeEnstrophyWeightUnrestricted_of_eq_tether}
+\leanstmt{translate}
+\leanstmt{not_tetherKernel_invariant_concrete}
 \leanstmt{not_forall_functionalDerivative_sub}
 
 \subsection{Analytic layer}\label{app:lean:analytic}
@@ -735,10 +777,10 @@ Quoted verbatim from the repository by \texttt{scripts/extract\_statements.py}; 
 Repository & \url{https://github.com/BenFrohman/frohmanian-tether-sdiff}, branch \texttt{remove-kinetic-energy-hypothesis} (version 0.1.2 draft, unreleased)\\
 Lean toolchain & \texttt{leanprover/lean4:v4.30.0-rc1}\\
 Mathlib & \texttt{v4.30.0-rc1}, rev \texttt{0c154d67103f74be3a0f2c509f72ccbf5be9f2a7}\\
-Build & \texttt{lake build}: 2726 jobs, success\\
-Modules & 26 (\texttt{FrohmanianTether} and 25 submodules)\\
-Theorems audited & 569 (514 stated in the sources, 55 auto-generated)\\
-Declarations audited & 840 (theorems, definitions, structures, instances)\\
+Build & \texttt{lake build}: 2728 jobs, success\\
+Modules & 28 (\texttt{FrohmanianTether} and 27 submodules)\\
+Theorems audited & 599 (539 stated in the sources, 60 auto-generated)\\
+Declarations audited & 878 (theorems, definitions, structures, instances)\\
 Axioms & only \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\\
 \texttt{sorry} / \texttt{admit} / \texttt{native\_decide} & none\\
 Axiom declarations & none\\
@@ -768,17 +810,19 @@ and \texttt{axiom} declarations outside comments and strings. Output for the hea
 'ConcreteSDiff.sdiffActionHyp' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConditionalRegularity.frohmanian_tether_theorem' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.antisymmetric_clause_forces_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.not_tetherKernel_invariant_concrete' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.not_pointwiseEnstrophyWeight_of_density' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_kernel_conditions' depends on axioms: [propext, Classical.choice, Quot.sound]
 'KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity' depends on axioms: [propext, Classical.choice, Quot.sound]
 'PhysicalSolutionSanity.exists_physical_time_deriv_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'StrainBoundRefutation.not_forall_strain_le_sup_vorticity' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherWeight.not_aeEnstrophyWeightUnrestricted_tetherKernel' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetherNondegeneracy.not_tetherKernel_polarizes' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetherNondegeneracy.tetherKernel_nondegenerate' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.comparison_ode_stability_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity' depends on axioms: [propext, Classical.choice, Quot.sound]
-AUDIT SUMMARY: theorems audited: 569 (514 stated in the sources, 55 auto-generated
-  equation/congruence/injectivity lemmas); declarations audited: 840; violations: 0
+AUDIT SUMMARY: theorems audited: 599 (539 stated in the sources, 60 auto-generated
+  equation/congruence/injectivity lemmas); declarations audited: 878; violations: 0
 AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations
 \end{Verbatim}
 
