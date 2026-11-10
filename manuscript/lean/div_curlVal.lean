@@ -1,0 +1,3 @@
+-- FrohmanianTether/TestFieldFamily.lean, line 76
+public theorem div_curlVal {H : T3 → ℝ} (hH : ContDiff ℝ ∞ H) (x : T3) :
+    NavierStokes3D.div (curlVal H) x = 0 := ...

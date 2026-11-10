@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherEquivariantC1.lean, line 136
+public theorem l2Translate_mem_divFreeL2 (h : T3) {v : L2Field} (hv : v ∈ DivFreeL2) :
+    l2Translate h v ∈ DivFreeL2 := ...

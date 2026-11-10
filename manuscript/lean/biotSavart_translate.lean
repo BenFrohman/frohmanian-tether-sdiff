@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherEquivariantC1.lean, line 211
+public theorem biotSavart_translate (h : T3) (ω : CoadjointOrbit) :
+    velocity_from_vorticity (translate h • ω) = fun x => velocity_from_vorticity ω (x - h) := ...

@@ -1,0 +1,3 @@
+-- FrohmanianTether/TestFieldFamily.lean, line 108
+public theorem curlOrbit_test {H : T3 → ℝ} (hH : ContDiff ℝ ∞ H) (hc : HasCompactSupport H) :
+    IsTestDirection (curlOrbit H hH) := ...

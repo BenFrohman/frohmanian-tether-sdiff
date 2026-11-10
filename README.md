@@ -15,14 +15,36 @@ Correction, Its Canonicity, and an Obstruction to Damping* (Benjamin Stanley Fro
 
 **This repository does not prove global regularity of the 3D Navier–Stokes equations and makes no
 claim toward the Clay Millennium Problem.** All results about the full program are *conditional
-implications*: every open assumption is an explicit Lean hypothesis.
+implications*: every open assumption is an explicit Lean hypothesis (full list by Lean name under
+"Remaining assumptions" below).
+
+## Reproduce (one command)
+
+From a fresh clone:
+
+```
+git clone https://github.com/BenFrohman/frohmanian-tether-sdiff
+cd frohmanian-tether-sdiff
+bash scripts/verify.sh        # or: make verify
+```
+
+`scripts/verify.sh` installs `elan` if missing (it then installs the toolchain pinned in
+`lean-toolchain`, `leanprover/lean4:v4.30.0-rc1`), fetches the Mathlib cache for the revision pinned in
+`lake-manifest.json` (Mathlib `v4.30.0-rc1`, rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7`), runs
+`lake build`, `python3 scripts/check_no_sorry.py`, the strict audit `scripts/AxiomAudit.lean`, and
+`scripts/PrintAxioms.lean` (`#print axioms` for the headline theorems), and ends with `VERIFY OK`.
+It exits non-zero on any failure. The *Lean certificate* CI workflow runs the same script. Verified
+commit and outputs: [`CERTIFICATE.md`](CERTIFICATE.md).
 
 What is formalized:
 
 * The tether kernel `TetherKernel` (a symmetric quadratic metric correction to the Arnold
   Lie–Poisson bracket) and the conditions (C1)–(C3).
-* C1 (coadjoint invariance): **refuted** for the tether under the concrete action
-  (`not_tetherKernel_invariant_concrete`, see below); the equivariant form is open. The two
+* C1 (coadjoint invariance) with the functionals held fixed: **refuted** for the tether under the
+  concrete action (`not_tetherKernel_invariant_concrete`, see below). The transported (equivariant)
+  form `InvariantUnderTransportedCoadjointAction`, `B(g•ω; F∘g⁻¹, G∘g⁻¹) = B(ω; F, G)`, is **proved**
+  for the tether under all translations (`tetherKernel_transported_invariant`, module
+  `TetherEquivariantC1`); for rotations and general diffeomorphisms it is open. The two
   hypotheses earlier versions used for it (`SDiffActionHyp.transitive_on_casimir_levels`, refuted,
   and `TetherIntegralPreserved`) were removed together with the C1 theorems (see below).
 * `FunctionalDerivative` is a genuine derivative. `FunctionalDerivative F ω` is the unique
@@ -50,10 +72,13 @@ What is formalized:
     (possibly non-measurable) densities (`TetherWeight.not_aeEnstrophyWeightUnrestricted_tetherKernel`:
     at `ω = 0` the indicator of a Vitali-type set is a density of the tether; so the core theorem
     stated with that form was also vacuous) and `Step1Hyp` (`not_step1Hyp`);
-  * open: the corrected a.e. weight condition `AEEnstrophyWeight TetherKernel`, which only
-    quantifies over densities that are locally integrable at regular vorticities. Proving it needs
-    divergence-free test fields orthogonal to the velocity `u` that localize at every point, and
-    Lebesgue differentiation; this is not formalized.
+  * proved: the corrected a.e. weight condition `AEEnstrophyWeight TetherKernel` (densities locally
+    integrable at regular vorticities): `TetherWeightProof.tetherKernel_aeEnstrophyWeight`. It uses
+    the concentrated divergence-free test fields `curl(χ e₂)` of `TestFieldFamily` (`concField x hr`,
+    support in `B(x, r)`, any point, any radius), correctors that make test pairs orthogonal to `u`
+    without changing `⟨a, b⟩`, and Mathlib's
+    `IsOpen.ae_eq_zero_of_integral_contDiff_smul_eq_zero`. Hence the density and weight inputs of
+    `uniqueness_of_minimal_tether_core` hold for `B = T` (`tetherKernel_core_inputs`).
 * **Obstruction to damping (proved, conditional on C2):** for every symmetric kernel, C2 forces
   `B(H,M) = B(M,H) = 0` for every functional `M` (`Combined.left_H_zero_of_C2_symm`,
   `Combined.tetherKernel_left_H_zero`). So a symmetric tether that preserved the Euler vector field
@@ -65,8 +90,12 @@ What is formalized:
 * C1 for `TetherKernel` under this concrete action is **refuted**
   (`not_tetherKernel_invariant_concrete`): `InvariantUnderCoadjointAction` keeps the functionals
   fixed, and for the translation by `3e₀` a functional with a kink at `g • ω` has tether `0` at
-  `g • ω` but a nonzero tether at `ω`. The equivariant form (functionals transported by the action)
-  is not formalized and remains open.
+  `g • ω` but a nonzero tether at `ω`. The transported form holds for translations
+  (`tetherKernel_transported_invariant`): the functional gradient is transported by the `L²`
+  translation (`functionalDerivative_translate`, via Mathlib's `Lp.compMeasurePreservingₗᵢ`) and
+  Biot–Savart commutes with translations (`biotSavart_translate`). Sanity: a point-evaluation kernel
+  fails the transported form (`not_transported_invariant_pointEval`), and the fixed form fails on the
+  same subgroup (`not_tetherKernel_invariant_transSubgroup`).
 * Classical bracket antisymmetry and `{H,H}_cl = 0` (`ArnoldGeometric`), vorticity scaling
   (`ScalingIdentities.vorticity_rescale`). The full tethered bracket is **not** antisymmetric, and no
   Jacobi identity is claimed for it.
@@ -146,22 +175,41 @@ its interval `[0, T]`. `frohmanian_tether_theorem` now takes `hKato` (local exis
   `PolarizesOnDifferentiable B`, `SaturatesTetherQuadratic B`, `h_proj`, `h_density` (a density
   locally integrable at regular vorticities) and `AEEnstrophyWeight B` (locally integrable
   densities), plus C1–C3 for `B` in `uniqueness_of_minimal_tether`.
-* **Open for `TetherKernel`:** `AEEnstrophyWeight TetherKernel` (locally integrable densities), C2 at
-  regular vorticities (assumed in `tetherKernel_left_H_zero`; expected to fail), and the equivariant
-  form of C1 (not formalized). C1 as formalized (`InvariantUnderCoadjointAction`) is refuted for the
-  concrete action.
+* **Open for `TetherKernel`:** C2 at regular vorticities (`DegenerateWRTKineticEnergy TetherKernel`,
+  assumed in `tetherKernel_left_H_zero`; expected to fail) and transport-invariance under rotations or
+  general volume-preserving diffeomorphisms (the geometric push-forward action is not formalized).
+  Settled: `AEEnstrophyWeight TetherKernel` proved; fixed-functional C1 refuted; transported C1 for
+  translations proved.
+
+## Mathlib names
+
+New modules use Mathlib declarations directly (`ContDiffBump`, `fderiv`, `ContDiff`, `tsupport`,
+`HasCompactSupport`, `LocallyIntegrable`, `IsOpen.ae_eq_zero_of_integral_contDiff_smul_eq_zero`,
+`EuclideanSpace.single`/`PiLp` API, `Lp.compMeasurePreservingₗᵢ`, `integral_add_right_eq_self`,
+`Equiv.addRight`, `Subgroup`). `FrohmanianTether/MathlibAgreement.lean` proves (by `rfl`) that the
+project-local names `NavierStokes3D.volume`, `pairing`, `eb`, `pd`, `NavierStokes3D.div`, `cross`,
+`translate`, `l2Translate`, `Enstrophy` agree with the Mathlib declarations they abbreviate.
+Project-local because Mathlib lacks them: curl (`curlVal`), divergence-free fields (`CoadjointOrbit`,
+`DivFreeL2`), test directions, the functional gradient, Biot–Savart, `Pi_u`, the tether and (C1)–(C3).
+Remaining duplicates, not refactored: `NavierStokes3D.div` (could use the trace of `fderiv`), `Pi_u`
+(pointwise formula rather than `Submodule.orthogonalProjection` on `L²`), `IsZ3Periodic` (not stated via
+`Function.Periodic`).
 
 ## Build
 
+`bash scripts/verify.sh` (above) does everything. Step by step:
+
 ```
-lake exe cache get   # Mathlib v4.30.0-rc1
+lake exe cache get   # Mathlib v4.30.0-rc1, rev pinned in lake-manifest.json
 lake build
+python3 scripts/check_no_sorry.py
 lake env lean scripts/AxiomAudit.lean
+lake env lean scripts/PrintAxioms.lean
 ```
 
-Build: 2728 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
-`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 878 declarations in the 28
-`FrohmanianTether.*` modules, including 599 theorem constants (539 stated in the sources, 60
+Build: 2794 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
+`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 968 declarations in the 32
+`FrohmanianTether.*` modules, including 673 theorem constants (600 stated in the sources, 73
 auto-generated equation/congruence/injectivity lemmas), and **fails** if any depends on an axiom other
 than `propext`, `Classical.choice`, `Quot.sound` (so `sorryAx` and `native_decide` are rejected). Both
 checks run in CI (`.github/workflows/certify.yml`). See [`CERTIFICATE.md`](CERTIFICATE.md).
@@ -174,10 +222,12 @@ hypothesis.
 
 * `FrohmanianTether/` — Lean modules (originally extracted from the author's NS_Millennium_Proof
   project, branch `sdiff-abstract-action`, commit `0c9cfdb`; this repository is now standalone).
-* `manuscript/main.tex`, `manuscript/main.pdf` — the paper (v0.1.2 draft, unreleased). It quotes the Lean statements
+* `manuscript/main.tex`, `manuscript/main.pdf` — the paper (version 0.1.2 preprint; conditional results). It quotes the Lean statements
   verbatim from `manuscript/lean/`, generated by `python3 scripts/extract_statements.py`; build with
   `cd manuscript && tectonic main.tex`.
-* `scripts/AxiomAudit.lean`, `scripts/check_no_sorry.py` — the strict audit and source scan.
+* `scripts/verify.sh` (`make verify`) — one-command verification; `scripts/AxiomAudit.lean`,
+  `scripts/check_no_sorry.py`, `scripts/PrintAxioms.lean` — the strict audit, source scan and headline
+  `#print axioms`.
 * `CERTIFICATE.md` — verified commit, toolchain, Mathlib revision and the full axiom report.
 
 ## License

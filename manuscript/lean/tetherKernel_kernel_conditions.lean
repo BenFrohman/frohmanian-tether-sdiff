@@ -1,4 +1,4 @@
--- FrohmanianTether/Uniqueness.lean, line 604
+-- FrohmanianTether/Uniqueness.lean, line 605
 public theorem tetherKernel_kernel_conditions :
     SaturatesTetherQuadratic TetherKernel ∧
     (∀ ω (F F' G : Functional),
