@@ -24,7 +24,13 @@ What is formalized:
 * C1 (coadjoint invariance): **not proved**. The two hypotheses earlier versions used for it
   (`SDiffActionHyp.transitive_on_casimir_levels`, refuted, and `TetherIntegralPreserved`) were removed
   together with the C1 theorems (see below).
-* C2 (degeneracy w.r.t. kinetic energy): **not proved** for `TetherKernel`. The hypothesis
+* `FunctionalDerivative` is a genuine derivative. `FunctionalDerivative F ω` is the unique
+  divergence-free `L²` field `g` with `d/dt|₀ F(ω + tε) = ⟪g, ε⟫_{L²}` for every smooth, compactly
+  supported, divergence-free test field `ε`, at a vorticity whose components are differentiable.
+  When no such `g` exists, it is `0`. Uniqueness is proved (`ArnoldGeometric.isFunctionalGradient_unique`),
+  so no arbitrary choice is made.
+* C2 (degeneracy w.r.t. kinetic energy): **not proved** for `TetherKernel` at regular vorticities
+  (proved only where `H` has no gradient, `tetherKernel_C2_of_no_gateaux`). The hypothesis
   `KineticEnergyDerivIsVelocity` (δH/δω = u) that earlier versions used for it is **false** with the
   repository's definitions; the refutation is proved in Lean
   (`KineticEnergyDerivative.not_forall_functionalDerivative_kineticEnergy_eq_velocity`), and the
@@ -32,9 +38,15 @@ What is formalized:
 * C3 (controllable negative feedback): unconditional (`tetherKernel_C3`).
 * Canonicity: uniqueness only within the restricted kernel class and under the explicit
   hypotheses of `uniqueness_of_minimal_tether` — not an unconditional uniqueness theorem. The proof
-  uses only diagonal saturation (`B(F,F) = T(F,F)`) and polarization; C1–C3 are not used. The
-  hypothesis `Polarizes TetherKernel` is not proved and forces `T = 0` at every non-differentiable
-  vorticity (`polarizes_tetherKernel_zero_of_not_differentiable`).
+  uses only diagonal saturation (`B(F,F) = T(F,F)`) and polarization restricted to functionals that
+  have gradients (`PolarizesOnDifferentiable`), and concludes `B = T` on such functionals; C1–C3 are
+  not used. For `TetherKernel` itself:
+  * proved: nondegeneracy (`TetherNondegeneracy.tetherKernel_nondegenerate`), restricted polarization,
+    saturation, `h_proj` and the canonical density (`tetherKernel_kernel_conditions`);
+  * refuted: unrestricted polarization (`TetherNondegeneracy.not_tetherKernel_polarizes`), the
+    pointwise weight condition for any kernel with a density (`not_pointwiseEnstrophyWeight_of_density`;
+    the earlier core theorem that assumed it was vacuous) and `Step1Hyp` (`not_step1Hyp`);
+  * open: the a.e. weight condition `AEEnstrophyWeight TetherKernel`.
 * **Obstruction to damping (proved, conditional on C2):** for every symmetric kernel, C2 forces
   `B(H,M) = B(M,H) = 0` for every functional `M` (`Combined.left_H_zero_of_C2_symm`,
   `Combined.tetherKernel_left_H_zero`). So a symmetric tether that preserved the Euler vector field
@@ -56,9 +68,10 @@ What is formalized:
 `PlanSteps.KineticEnergyDerivIsVelocity` stated
 `∀ ω, FunctionalDerivative KineticEnergyHamiltonian ω = velocity_from_vorticity ω`.
 `FrohmanianTether/KineticEnergyDerivative.lean` proves its negation: for `ω = 1_B e₁` (`B` the unit
-ball at `(0,2,0)`) and `2ω`, both are in `CoadjointOrbit` (their `fderiv`-based divergence is 0) and
-not differentiable, so `FunctionalDerivative` returns the same choice value at both, while
-`BiotSavart (2ω) = 2 BiotSavart ω ≠ BiotSavart ω` (its third component at the origin is negative).
+ball at `(0,2,0)`) it is in `CoadjointOrbit` (its `fderiv`-based divergence is 0) and
+not differentiable, so `FunctionalDerivative` is `0` there, while its Biot–Savart velocity is
+nonzero at the origin. (Under the former choice-based encoding the counterexample compared `ω`
+with `2ω`.)
 It also proves that Gâteaux representatives are never unique, so the old "unique representative ⇒
 δH = u" lemmas could never apply. The counterexample is non-smooth; the classical value of δH/δω in
 the vorticity pairing (the stream function `ψ`, `curl ψ = u`) is not formalized.
@@ -80,37 +93,47 @@ Each was deleted together with every theorem that used it. No statement was sile
 | Removed hypothesis | Status | Lean evidence |
 |---|---|---|
 | `SDiffActionHyp.transitive_on_casimir_levels` | false | `ConcreteSDiff.not_transitive_on_casimir_levels` |
-| `TetherIntegralPreserved` (and the `tether_integrand_pullback` field) | unprovable: concerns an unspecified `Classical.choose` | `ArnoldGeometric.functionalDerivative_indep_of_not_differentiable` |
+| `TetherIntegralPreserved` (and the `tether_integrand_pullback` field) | unprovable under the former choice-based `FunctionalDerivative`; not reinstated after the rebuild | — |
 | `PointwiseStrainSupBound` (`‖Du(x)‖ ≤ C‖ω‖∞`) | false | `StrainBoundRefutation.not_forall_strain_le_sup_vorticity` |
 | `hident`/`hvanish` of `tethered_jacobi_identity` | circular (assumed the conclusion) | — |
 | antisymmetric uniqueness clause | vacuous unless `T ≡ 0` | `antisymmetric_clause_forces_zero` |
 | `hTlb` (uniform lower bound on Kato times), with `hInt`, `huniq_shift` | as strong as the open problem; not refuted | — |
+| `Polarizes TetherKernel` | false | `TetherNondegeneracy.not_tetherKernel_polarizes` |
+| pointwise `h_weight` | false for every kernel with a density | `not_pointwiseEnstrophyWeight_of_density` |
+| `Step1Hyp` | false | `not_step1Hyp` |
+| global `pde` field of `KatoLocalWitness`, `hcrit`, global-path `hDI` | stronger than Kato's theorem; replaced by the local witness and explicit continuation hypotheses | — |
 
 The main theorems deleted were `tether_coadjoint_invariance`, `Combined.tetherKernel_C1_of_casimir`,
 `Combined.tetherKernel_C1_of_volumePreserving`, `Combined.combined_conditional_capstone`,
 `tethered_jacobi_identity`, `orbit_eq_casimir_level`, `uniqueness_of_minimal_tether_antisymmetric`,
 the stretching estimates at a spatial maximum, and the bridges built on the strain bound. Full list:
 `CERTIFICATE.md`. `ConditionalRegularity.frohmanian_tether_theorem` lost its antisymmetric clause and the
-hypotheses `hTlb`, `hInt` and `huniq_shift`. It now takes `hKato`, `hDI`, `hcrit` and `huniq`.
+hypotheses `hTlb`, `hInt` and `huniq_shift`. `KatoLocalWitness` now asks for the equations only on
+its interval `[0, T]`. `frohmanian_tether_theorem` now takes `hKato` (local existence),
+`hcont : ∀ u₀ ν, BKMGlobalContinuation u₀ ν` and `hDI : ∀ u₀ ν, LocalTetherRate u₀ ν`.
 
 ## Remaining assumptions (explicit hypotheses; no axioms)
 
 * **(b) Classical results not in Mathlib:**
-  * `KatoLocalWitness` (Kato local existence). As encoded it is stronger than Kato's theorem: its `pde`
-    field asks for `NS_PDE` at every `t ≥ 0`.
-  * `PhysicalBKMContinuationCriterionFor` and `PeriodicBKMContinuation` (Beale–Kato–Majda).
-  * `KatoUniquenessOnExistenceTimes` (uniqueness).
-  * `IsCoadjointMotion` for the Euler flow (Arnold).
+  * `hKato`: a `KatoLocalWitness` (Kato local existence, equations on `[0, T]` only).
+  * `BKMGlobalContinuation` (Kato plus Beale–Kato–Majda continuation; the classical theorem uses
+    `H^s` data, the library `C^∞ ∩ L²` data on ℝ³).
+  * `SmoothPhysicalUniqueness` (uniqueness of smooth solutions; only for uniqueness clauses).
+  * `PeriodicBKMContinuation`, `KatoUniquenessOnExistenceTimes` (auxiliary lemmas) and
+    `IsCoadjointMotion` for the Euler flow (Arnold).
 * **(d) Equivalent in strength to the open problem:**
-  * `FrohmanianTetherRate`, which also requires time-differentiability of `‖ω(t)‖∞`.
-  * `FrohmanianTetherBound` and `FrohmanianTetherClosingBound`.
-  * `PeriodicTetherClosingBound`.
+  * `LocalTetherRate` (cubic rate for `‖ω‖∞`, also requiring its time-differentiability).
+  * `LocalTetherBound` and `LocalTetherClosingBound`.
+  * `PeriodicTetherClosingBound` and `PeriodicDirectionDepletionBound`.
+  * The global-path forms `FrohmanianTetherRate`, `FrohmanianTetherBound`,
+    `FrohmanianTetherClosingBound` and `RiccatiMajorantExists` (auxiliary lemmas only).
 
   The tether does not supply any of them.
-* **(c) Kernel-class conditions, not provable in the current encoding:**
-  * `SaturatesTetherQuadratic B`, `Polarizes B` and `Polarizes TetherKernel`.
-  * `h_proj`, `h_density`, `h_weight` and `h_nondeg` (T not identically zero).
-  * C2 for `TetherKernel` (assumed in `tetherKernel_left_H_zero`).
+* **(c) Kernel-class conditions on a competitor `B`** (they define the class): `h_sym`,
+  `PolarizesOnDifferentiable B`, `SaturatesTetherQuadratic B`, `h_proj`, `h_density` and
+  `AEEnstrophyWeight B`, plus C1–C3 for `B` in `uniqueness_of_minimal_tether`.
+* **Open for `TetherKernel`:** `AEEnstrophyWeight TetherKernel`, C2 at regular vorticities (assumed in
+  `tetherKernel_left_H_zero`; expected to fail), and C1 under the concrete action.
 
 ## Build
 
@@ -120,9 +143,9 @@ lake build
 lake env lean scripts/AxiomAudit.lean
 ```
 
-Build: 2715 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
-`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 750 declarations in the 25
-`FrohmanianTether.*` modules, including 507 theorem constants (466 stated in the sources, 41
+Build: 2726 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
+`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 840 declarations in the 26
+`FrohmanianTether.*` modules, including 569 theorem constants (514 stated in the sources, 55
 auto-generated equation/congruence/injectivity lemmas), and **fails** if any depends on an axiom other
 than `propext`, `Classical.choice`, `Quot.sound` (so `sorryAx` and `native_decide` are rejected). Both
 checks run in CI (`.github/workflows/certify.yml`). See [`CERTIFICATE.md`](CERTIFICATE.md).
