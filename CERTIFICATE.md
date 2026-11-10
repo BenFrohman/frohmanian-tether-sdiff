@@ -1,6 +1,6 @@
 # Verification certificate
 
-**Paper:** *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping — Conditional statements verified in Lean 4*, version 0.1.2 (preprint, work in progress; not yet archived on Zenodo)
+**Paper:** *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping — Conditional statements verified in Lean 4*, version 0.1.2 (preprint, work in progress; Zenodo DOI 10.5281/zenodo.24102345)
 **Author:** Benjamin Stanley Frohman (Independent Researcher, Texas, United States; frohmanbenjamin@gmail.com, ORCID 0009-0006-7068-3718)
 **PDF:** `manuscript/main.pdf` (source `manuscript/main.tex`)
 
@@ -18,7 +18,7 @@ theorems are implications from hypotheses that are not proved; the complete list
 | CI run, Lean certificate (build + source scan + strict axiom audit + `scripts/verify.sh`) | passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42783533141 |
 | CI run, Lean 4 (lean-action build) | passed (workflow_dispatch on the branch, verified commit): https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42784032747 |
 | CI runs on the documentation tip `12d731e` | Lean certificate https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42784258241, Lean 4 https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42784309658 (both passed) |
-| Zenodo archive | none for 0.1.2 yet (`.zenodo.json` prepared). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
+| Zenodo archive | 0.1.2: [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) (record https://zenodo.org/records/24102345, published 2026-11-10 from main at `2c424a8`; concept DOI `10.5281/zenodo.24081999`). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
 | Modules | 32 (`FrohmanianTether` and 31 submodules) |
 | Declarations audited | 968 |
 | Theorem constants audited | 673 (600 stated in the sources, 73 auto-generated equation/congruence/injectivity lemmas) |

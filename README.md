@@ -6,7 +6,7 @@
 [![Mathlib](https://img.shields.io/badge/Mathlib-v4.30.0--rc1-blue.svg)](https://github.com/leanprover-community/mathlib4)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0006--7068--3718-brightgreen.svg)](https://orcid.org/0009-0006-7068-3718)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24082000.svg)](https://doi.org/10.5281/zenodo.24082000)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24102345.svg)](https://doi.org/10.5281/zenodo.24102345)
 
 Lean 4 formalization and manuscript for *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic
 Correction, Its Canonicity, and an Obstruction to Damping* (Benjamin Stanley Frohman).
@@ -233,4 +233,4 @@ hypothesis.
 
 ## License
 
-Apache 2.0 (see `LICENSE`). Cite via `CITATION.cff`. The Zenodo archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)) is version 0.1.1, which still contains the removed hypothesis `KineticEnergyDerivIsVelocity`. Do not cite the older-project DOI `10.5281/zenodo.23717084` (NS_Millennium_Proof) as identifying this repository.
+Apache 2.0 (see `LICENSE`). Cite via `CITATION.cff` or the Zenodo record of version 0.1.2, [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) ([record](https://zenodo.org/records/24102345); all versions: concept DOI [`10.5281/zenodo.24081999`](https://doi.org/10.5281/zenodo.24081999)). The previous archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)) is version 0.1.1, which still contains the removed hypothesis `KineticEnergyDerivIsVelocity`. Do not cite the older-project DOI `10.5281/zenodo.23717084` (NS_Millennium_Proof) as identifying this repository.
