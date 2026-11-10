@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 158
+public theorem laplacian_trigField (k : ℝ) (α β : Fin 3 → ℝ) (j l : Fin 3 → Fin 3) (x : T3) :
+    laplacian (trigField k α β j l) x = (-k ^ 2) • trigField k α β j l x := ...

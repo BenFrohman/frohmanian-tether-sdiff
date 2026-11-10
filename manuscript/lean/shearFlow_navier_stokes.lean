@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 347
+public theorem shearFlow_navier_stokes (ν k a : ℝ) :
+    navier_stokes_eq (shearFlow ν k a) shearPressure ν := ...

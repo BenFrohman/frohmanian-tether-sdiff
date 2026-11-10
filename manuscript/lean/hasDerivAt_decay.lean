@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 208
+public theorem hasDerivAt_decay (c : ℝ) {t : ℝ} (ht : 0 ≤ t) :
+    HasDerivAt (decay c) (c * decay c t) t := ...

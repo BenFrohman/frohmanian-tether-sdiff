@@ -9,6 +9,7 @@ import FrohmanianTether.Combined
 import FrohmanianTether.ConcreteSDiff
 import FrohmanianTether.ConditionalRegularity
 import FrohmanianTether.CubicSourceCertificate
+import FrohmanianTether.ExplicitFlows
 import FrohmanianTether.ForMathlib.Projection
 import FrohmanianTether.HighSetDepletionAndBKM
 import FrohmanianTether.IndependentMajorant

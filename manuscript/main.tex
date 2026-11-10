@@ -20,6 +20,7 @@
 \newcommand{\leanstmt}[1]{\VerbatimInput{lean/#1.lean}}
 \usepackage{seqsplit}
 \newcommand{\lean}[1]{\texttt{\detokenize{#1}}}
+\DeclareUrlCommand\leanl{\def\UrlBreaks{\do\_\do\.}\urlstyle{tt}}
 \sloppy\setlength{\emergencystretch}{3em}
 
 \theoremstyle{plain}
@@ -33,6 +34,7 @@
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 
+\newcommand{\VERSIONDOI}{(to be assigned on publication)}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\T}{\mathbb{T}^3}
 \newcommand{\Tf}{\mathfrak{T}}
@@ -43,7 +45,7 @@
 \small Independent Researcher, Texas, United States\\
 \small \href{mailto:frohmanbenjamin@gmail.com}{\texttt{frohmanbenjamin@gmail.com}}\quad
 ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}\\[0.3em]
-\small Companion repository: \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} \\[0.2em]\small Version 0.1.3; this version's DOI: \href{https://doi.org/10.5281/zenodo.24102715}{10.5281/zenodo.24102715}\\[0.3em]\small\textbf{Preprint. Work in progress. All main results are conditional; see Section~\ref{sec:conditional}.}}
+\small Companion repository: \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} \\[0.2em]\small Version 0.1.4; this version's DOI: \VERSIONDOI\\[0.3em]\small\textbf{Preprint. Work in progress. All main results are conditional; see Section~\ref{sec:conditional}.}}
 \date{10 November 2026}
 
 \begin{document}
@@ -83,7 +85,13 @@ $y'\le Cy^2-\kappa''y^3$ and several conditional implications of the form ``(cub
 bound on local solutions) $+$ (Kato local existence) $+$ (Kato--Beale--Kato--Majda continuation) $+$ (uniqueness) $\Rightarrow$
 global smooth solution'', in which every analytic input is an explicit hypothesis. The rate and
 closing-bound hypotheses are open, are not supplied by the tether (its damping coefficient is $0$), and are
-of the same strength as the global regularity problem. \textbf{Every main result is conditional.} The open
+of the same strength as the global regularity problem. Version 0.1.4 adds two explicit moving exact
+solutions, the decaying shear flow $e^{-\nu k^2t}(a\sin kx_2,0,0)$ and the decaying ABC (Beltrami) flow with
+pressure $-|u|^2/2$, proved nonzero and to satisfy the library's Navier--Stokes equations for all $t\ge0$, and,
+for $k=2\pi m$, to be global smooth periodic solutions in the class of the periodic Clay statement for these
+particular data; it also proves that no continuous nonzero $\mathbb{Z}^3$-periodic field has finite energy on
+$\R^3$, so these flows are \emph{not} Kato witnesses (\lean{KatoLocalWitness} is empty for all nonzero periodic
+data) and the $\R^3$-class hypotheses hold only vacuously there. \textbf{Every main result is conditional.} The open
 hypotheses, by Lean name, are: \lean{KatoLocalWitness} (hKato), \lean{BKMGlobalContinuation},
 \lean{SmoothPhysicalUniqueness}, \lean{PeriodicBKMContinuation}, \lean{KatoUniquenessOnExistenceTimes},
 \lean{IsCoadjointMotion} (classical results not in Mathlib); \lean{LocalTetherRate}, \lean{LocalTetherBound},
@@ -93,9 +101,9 @@ global-path forms \lean{FrohmanianTetherRate}, \lean{FrohmanianTetherBound}, \le
 in the canonicity theorems; and, for $T$ itself, \lean{DegenerateWRTKineticEnergy} (C2) at regular vorticities.
 \textbf{This work does not prove global regularity of
 the three-dimensional Navier--Stokes equations and makes no claim toward the Clay Millennium Problem.}
-The build (Lean \texttt{v4.30.0-rc1}, Mathlib \texttt{v4.30.0-rc1}, 2794 jobs) contains 673 theorem
-constants (600 stated in the sources and 73 auto-generated equation, congruence and injectivity lemmas) and
-968 declarations in 32 modules, with no \texttt{sorry}, no \texttt{native\_decide}, no axiom
+The build (Lean \texttt{v4.30.0-rc1}, Mathlib \texttt{v4.30.0-rc1}, 2795 jobs) contains 760 theorem
+constants (670 stated in the sources and 90 auto-generated equation, congruence and injectivity lemmas) and
+1074 declarations in 33 modules, with no \texttt{sorry}, no \texttt{native\_decide}, no axiom
 declarations, and every declaration depending only on \texttt{propext}, \texttt{Classical.choice} and
 \texttt{Quot.sound}; this is enforced in continuous integration and reproduced from a fresh clone by
 the single command \texttt{bash scripts/verify.sh} (or \texttt{make verify}).
@@ -138,6 +146,10 @@ Their remaining hypotheses are of two kinds (Section~\ref{sec:assumptions}): cla
 not in Mathlib (Kato local existence, Beale--Kato--Majda continuation, uniqueness), and hypotheses that are
 as strong as the open problem itself (a cubic rate or a uniform vorticity bound for all data)
 (Sections~\ref{sec:analytic}--\ref{sec:clay}).
+\item \emph{Explicit solutions} (Section~\ref{sec:explicit}). The decaying shear and ABC flows are proved to be
+nonzero exact solutions of the library's equations and, for $k=2\pi m$, global smooth periodic solutions for
+their own data. No nonzero periodic field is a Kato witness (infinite energy on $\R^3$), so the $\R^3$ chain
+cannot be instantiated on them; this is proved, not assumed.
 \end{enumerate}
 
 \paragraph{Scope statement.} No result in this paper or in the library asserts global existence,
@@ -187,7 +199,7 @@ conditions for $T$ (Section~\ref{sec:canon}), and restricts the Kato witness to 
 for $T$; a fifth pass constructs concentrated divergence-free test fields, proves the corrected weight
 condition for $T$ (Section~\ref{sec:testfields}) and proves the transported (C1) for translations
 (Section~\ref{sec:c1t}).
-This version, 0.1.3, has the Zenodo DOI \href{https://doi.org/10.5281/zenodo.24102715}{10.5281/zenodo.24102715}. Its only change from version 0.1.2 is this DOI and version note: the Lean sources are unchanged, and the verification certificate (Appendix~\ref{app:cert}) applies to the same Lean code (verified commit \texttt{09d14b6}, merged into \texttt{main} at \texttt{2c424a8}). Earlier versions: 0.1.2, \href{https://doi.org/10.5281/zenodo.24102345}{10.5281/zenodo.24102345}; all versions are collected under the concept DOI \href{https://doi.org/10.5281/zenodo.24081999}{10.5281/zenodo.24081999}. The Zenodo version DOI of this repository's \texttt{v0.1.1} archive is \href{https://doi.org/10.5281/zenodo.24082000}{10.5281/zenodo.24082000} (GitHub tag \texttt{v0.1.1} / commit \texttt{0722b16}); it still contains the removed hypothesis \lean{KineticEnergyDerivIsVelocity}. The older-project DOI \texttt{10.5281/zenodo.23717084} belongs to \texttt{NS\_Millennium\_Proof} and does \emph{not} identify this repository. This manuscript is not peer-reviewed and is not an unconditional Navier--Stokes proof.
+Version 0.1.3 (\href{https://doi.org/10.5281/zenodo.24102715}{10.5281/zenodo.24102715}) added only its DOI to 0.1.2 (\href{https://doi.org/10.5281/zenodo.24102345}{10.5281/zenodo.24102345}). This version, 0.1.4 (DOI \VERSIONDOI), adds the module \lean{ExplicitFlows} (Section~\ref{sec:explicit}): the decaying shear and ABC flows as exact solutions, their periodic smoothness, and the proof that no nonzero periodic field can be a \lean{KatoLocalWitness}. No existing Lean statement was changed. All versions are collected under the concept DOI \href{https://doi.org/10.5281/zenodo.24081999}{10.5281/zenodo.24081999}. The Zenodo version DOI of this repository's \texttt{v0.1.1} archive is \href{https://doi.org/10.5281/zenodo.24082000}{10.5281/zenodo.24082000} (GitHub tag \texttt{v0.1.1} / commit \texttt{0722b16}); it still contains the removed hypothesis \lean{KineticEnergyDerivIsVelocity}. The older-project DOI \texttt{10.5281/zenodo.23717084} belongs to \texttt{NS\_Millennium\_Proof} and does \emph{not} identify this repository. This manuscript is not peer-reviewed and is not an unconditional Navier--Stokes proof.
 
 %=====================================================================
 \section{The formal setting}\label{sec:setting}
@@ -234,8 +246,9 @@ and allows any initial time derivative $v_0$. The sanity lemma
 \lean{IsPhysicalNSSolution} whose time derivative at $t=0$ is nonzero at some point
 (\lean{not_forall_physical_time_deriv_zero} states the same as the failure of the old consequence). The path
 is $g(t)\,\varphi$ with $\varphi(x)=\max(0,1-\|x\|)\,e_0$, $g(t)=1-t$ for $t\le0$ and $g(t)=1/(1+t)$ for $t>0$;
-it is \emph{not} a Navier--Stokes solution. The library contains no nonzero Navier--Stokes solution, so
-non-vacuity of the class for genuine non-steady flows is not formalized.
+it is \emph{not} a Navier--Stokes solution. The library's nonzero Navier--Stokes solutions (the constant flows
+and the shear and ABC flows of Section~\ref{sec:explicit}) all have infinite energy on $\R^3$ and so are not in this
+class; non-vacuity of the class for genuine non-steady flows is not formalized.
 The exact definitions are quoted in Appendix~\ref{app:lean:setting}.
 
 %=====================================================================
@@ -701,7 +714,8 @@ would satisfy \lean{NS_PDE} because \lean{deriv} is $0$ at non-differentiable po
 \end{theorem}
 
 This shows only that the conclusion form of Theorem~\ref{thm:cr} is consistent in the trivial case; it gives
-no information on nonzero data.
+no information on nonzero data. Section~\ref{sec:explicit} shows why the explicit periodic flows cannot replace
+the zero instance: for nonzero periodic data no \lean{KatoLocalWitness} exists.
 
 %=====================================================================
 \section{The periodic Clay statement and a conditional reduction}\label{sec:clay}
@@ -723,6 +737,68 @@ are at least as strong as the conclusion; the reduction is a formal bookkeeping 
 on (B).
 
 %=====================================================================
+\section{Explicit exact solutions: decaying shear and ABC flows}\label{sec:explicit}
+
+Coordinates are $x=(x_0,x_1,x_2)$ (Lean indices \lean{0}, \lean{1}, \lean{2}). The module \lean{ExplicitFlows}
+checks two classical moving solutions against the library's own equations \lean{navier_stokes_eq}
+$\partial_tu+(u\cdot\nabla)u+\nabla p=\nu\Delta u$, $\operatorname{div}u=0$ (for all $t\ge0$), hence
+\lean{NS_PDE} and \lean{NS_PDE_On} for every $T$:
+\begin{itemize}[leftmargin=1.2em]
+\item \emph{decaying shear} $u(t,x)=e^{-\nu k^2t}\,(a\sin(kx_2),0,0)$ with constant pressure $p=0$
+(\lean{shearFlow}, \lean{shearFlow_apply}, \lean{shearFlow_navier_stokes}, \lean{shearFlow_NS_PDE_On});
+\item \emph{decaying ABC (Arnold--Beltrami--Childress) flow}
+$u(t,x)=e^{-\nu k^2t}\,(A\sin kx_2+C\cos kx_1,\ B\sin kx_0+A\cos kx_2,\ C\sin kx_1+B\cos kx_0)$ with pressure
+$p=-|u|^2/2$ (\lean{abcFlow}, \lean{abcProfile_apply}, \lean{abcPressure}, \lean{abcPressure₀_eq_norm},
+\lean{abcFlow_navier_stokes}, \lean{abcFlow_NS_PDE_On}). Its profile is a curl eigenfield,
+$\nabla\times u=k\,u$ (\lean{curl_abcProfile}).
+\end{itemize}
+Both statements hold for all real $\nu,k,a,A,B,C$. Both come from one mechanism
+(\lean{flow_navier_stokes}): a trigonometric profile $V$ (\lean{trigField}) has $\Delta V=-k^2V$
+(\lean{laplacian_trigField}); if $\operatorname{div}V=0$ and $(V\cdot\nabla)V+\nabla p_0=0$, then
+$u=\varphi(t)V$, $p=\varphi(t)^2p_0$ with $\varphi'=-\nu k^2\varphi$ solves the equations. For the shear profile
+$(V\cdot\nabla)V=0$; for the ABC profile $(V\cdot\nabla)V=\nabla(|V|^2/2)$ and the sign of $p_0=-|V|^2/2$ matches the
+library's convention $+\nabla p$ on the left (\lean{abc_balance}). The time factor \lean{decay} is $e^{-\nu k^2t}$
+for $t\ge0$ and is continued affinely for $t<0$, because \lean{IsPhysicalNSSolutionOn} requires every solution to be
+affine for $t\le0$; the two-sided time derivative at $t=0$ is then $-\nu k^2u(0)$ (\lean{hasDerivAt_decay}).
+
+\paragraph{Genuine and nonzero.} For $t\ge0$, $a\neq0$ and $k\neq0$ the shear flow is not identically zero
+(\lean{shearFlow_ne_zero}); the ABC flow at the origin equals $e^{-\nu k^2t}(C,A,B)$
+(\lean{abcFlow_apply_zero}) and is nonzero unless $A=B=C=0$ (\lean{abcFlow_ne_zero}). Each time slice is
+$C^\infty$ (\lean{flow_smooth}), and the time-differentiability, continuity and affine-extension clauses of
+\lean{IsPhysicalNSSolutionOn} hold (\lean{flow_physical_clauses}).
+
+\paragraph{Periodic class: genuine instances.} With $k=2\pi m$, $m\in\mathbb Z$, both flows are $\mathbb Z^3$-periodic
+and jointly $C^\infty$ on $[0,\infty)\times\R^3$, with one-sided time derivative at $t=0$, i.e.\ global smooth
+periodic solutions in the class \lean{IsPeriodicSmoothSolution} of \lean{Clay_B_exact} with zero forcing
+(\lean{shearFlow_isPeriodicSmoothSolution}, \lean{abcFlow_isPeriodicSmoothSolution}). So their initial data
+satisfy all hypotheses of \lean{Clay_B_exact} and its conclusion holds \emph{for these data}
+(\lean{clay_B_instance_shear}, \lean{clay_B_instance_abc}); the conclusion of \lean{PeriodicBKMContinuation}
+therefore holds at these data without that hypothesis, and the binders of \lean{PeriodicTetherClosingBound} and
+\lean{PeriodicBKMContinuation} are non-vacuous there (\lean{shearFlow_isPeriodicSmoothSolutionOn},
+\lean{abcFlow_isPeriodicSmoothSolutionOn}). This is a
+statement about two explicit families of data and is not a step toward \lean{Clay_B_exact}; no Clay Millennium
+claim is made. The periodic closing bound \lean{PeriodicTetherClosingBound} is \emph{not} discharged at these data:
+it quantifies over every local smooth periodic solution from $u_0$, and uniqueness of such solutions is not
+formalized.
+
+\paragraph{They are not Kato witnesses; no witness exists for periodic data.} A \lean{KatoLocalWitness} carries
+\lean{IsPhysicalNSSolutionOn}, which requires $\int_{\R^3}\|u(t)\|^2<\infty$. The library proves that no continuous,
+$\mathbb Z^3$-periodic, not identically zero field has $\|u\|^2$ integrable on $\R^3$
+(\leanl{not_integrable_sq_of_periodic}: the set $\{\|u\|^2\ge c\}$ contains infinitely many disjoint translates of a
+ball), hence $\mathrm{KatoLocalWitness}\ u_0\ \nu$ is empty for every such $u_0$
+(\leanl{isEmpty_katoLocalWitness_of_periodic}), in particular for the shear and ABC data
+(\leanl{isEmpty_katoLocalWitness_shear}, \leanl{isEmpty_katoLocalWitness_abc}). The planned witness
+\texttt{kato\_witness\_shear} therefore cannot exist, and the $\R^3$ chain of Section~\ref{sec:analytic} cannot be
+instantiated on these flows. Moreover, at such data the $\R^3$-class hypotheses \lean{LocalTetherBound},
+\lean{SmoothPhysicalUniqueness} and \lean{BKMGlobalContinuation} hold only \emph{vacuously}
+(\leanl{localTetherBound_vacuous_of_periodic}, \leanl{smoothPhysicalUniqueness_vacuous_of_periodic},
+\leanl{bkmGlobalContinuation_vacuous_of_periodic}): there is no local physical solution to quantify over, and the
+premise $\mathrm{Nonempty}(\mathrm{KatoLocalWitness}\ u_0\ \nu)$ is false. These are recorded as an audit of the
+encoding and are \emph{not} counted as discharged hypotheses. A nonzero finite-energy exact solution on $\R^3$ (and
+hence a nonzero \lean{KatoLocalWitness}) is not constructed. (The library already contained the constant flows
+$u\equiv c$, \leanl{nonzero_smooth_ns_solution_exists}, which are stationary and also have infinite energy.)
+
+%=====================================================================
 \section{What the Lean development does and does not prove}\label{sec:does}
 
 \paragraph{Proved (no further hypotheses).}
@@ -736,7 +812,8 @@ the canonical density for $T$; the corrected weight condition \lean{AEEnstrophyW
 (Theorem~\ref{thm:weight}); the transported (C1) for $T$ under translations (Theorem~\ref{thm:c1t}); the finite-interval comparison lemma; the sanity lemma for \lean{IsPhysicalNSSolution}; the comparison Lemma~\ref{lem:cmp}; the scaling
 identity and the scale non-invariance lemma; the zero-data facts and \lean{stepField_not_physical}; the Fourier-symbol identities
 \lean{PlanSteps.bsSymbol_div}, \lean{PlanSteps.bsSymbol_curl} (mode-wise algebra, not connected to the
-real-space Biot--Savart integral).
+real-space Biot--Savart integral); the explicit shear and ABC solutions, their non-triviality and periodic
+smoothness, and the non-existence of Kato witnesses for nonzero periodic data (Section~\ref{sec:explicit}).
 
 \paragraph{Proved as implications from named, open hypotheses.}
 Canonicity (from saturation and polarization); Casimir conservation (from \lean{IsCoadjointMotion}); the
@@ -761,7 +838,10 @@ $\{\cdot,\cdot\}_{\mathrm{cl}}$ (cited only).
 parabolic smoothing, energy uniqueness: all are inputs, none is formalized.
 \item Anything on the quotient torus: \lean{T3} is $\R^3$, and no diffeomorphism group of $\T$ is constructed.
 \item Derivation of $T$ from (C1)--(C3): canonicity assumes diagonal agreement with $T$.
-\item Any nonzero Navier--Stokes solution; the sanity path for \lean{IsPhysicalNSSolution} is not one.
+\item Any nonzero Navier--Stokes solution of finite energy on $\R^3$, and any nonzero \lean{KatoLocalWitness}; the
+sanity path for \lean{IsPhysicalNSSolution} is not a solution. (Nonzero solutions of infinite energy are proved:
+the constant flows and the shear and ABC flows of Section~\ref{sec:explicit}.)
+\item Uniqueness of smooth periodic solutions, hence \lean{PeriodicTetherClosingBound} even at the explicit data.
 \end{itemize}
 
 The physical motivations of earlier versions (fluid--gravity duality, Onsager's conjecture
@@ -794,6 +874,22 @@ diffeomorphisms (not formalized). Settled since the previous draft: \lean{AEEnst
 is proved (Theorem~\ref{thm:weight}); fixed-functional (C1) is refuted (Theorem~\ref{thm:c1ref}); transported (C1)
 for translations is proved (Theorem~\ref{thm:c1t}).
 \end{description}
+\paragraph{Vacuity at periodic data.} Because \lean{IsPhysicalNSSolutionOn} requires finite energy on $\R^3$,
+\lean{LocalTetherBound}, \lean{SmoothPhysicalUniqueness} and \lean{BKMGlobalContinuation} hold trivially at every
+continuous nonzero $\mathbb Z^3$-periodic $u_0$ and \lean{KatoLocalWitness} is empty there
+(Section~\ref{sec:explicit}). They are not discharged by the explicit flows; the list above is unchanged by
+version 0.1.4.
+\paragraph{Hypotheses of auxiliary lemmas.} Re-derived from the source (every theorem binder whose type is a named
+\lean{Prop} of the library): besides the items above, auxiliary lemmas that are not stated in this paper take
+the following named, unproved \lean{Prop}s as explicit hypotheses: \lean{BKMContinuationCriterion},
+\lean{BKMContinuationCriterionFor}, \lean{LocalExistenceTime}, \lean{SmoothBelowTstar}, \lean{SmoothBelowTstarFor},
+\lean{PathBKMIntegrable}, \lean{TstarIsTop}, \lean{KatoUniformRestart}, \lean{UniformVorticityCeiling},
+\lean{FiniteTimeVorticityBound}, \lean{PhysicalUniformVorticityCeiling}, \lean{PhysicalFiniteTimeVorticityBound},
+\lean{LocalFiniteTimeVorticityBound}, \lean{ClassicalStretchingSource}, \lean{CorrectedMaxRate},
+\lean{SymplecticQuarticStretchingSinkAtMax}, \lean{Clay_B_exact_with_energy}, \lean{ZeroDerivAlongEnergy}, and the
+regularity side conditions \lean{VorticityTransportRegularity}, \lean{SpatialMaxVorticityEnvelope},
+\lean{PeriodicCellPhysicalNSSolution}, \lean{VolumePreservingCoadjointAction}. None of them is used by a theorem
+stated in Sections~\ref{sec:tether}--\ref{sec:explicit}; each is an explicit argument, never an axiom.
 
 \subsection{Mathlib declarations used; project-local definitions}\label{sec:mathlib}
 \paragraph{Mathlib declarations used directly by the new modules.} \lean{ContDiff}, \lean{ContDiffBump}
@@ -805,7 +901,12 @@ for translations is proved (Theorem~\ref{thm:c1t}).
 \lean{Lp.compMeasurePreservingₗᵢ}, \lean{Lp.coeFn_compMeasurePreserving}, \lean{measurePreserving_sub_right},
 \lean{integral_add_right_eq_self}, \lean{integral_sub_right_eq_self}, \lean{map_mem_closure},
 \lean{Submodule.topologicalClosure}, \lean{LinearIsometry.inner_map_map}, \lean{Equiv.addRight},
-\lean{Subgroup}, \lean{crossProduct}, \lean{QuotientAddGroup} (Vitali construction).
+\lean{Subgroup}, \lean{crossProduct}, \lean{QuotientAddGroup} (Vitali construction). Module \lean{ExplicitFlows}:
+\lean{Real.sin}, \lean{Real.cos}, \lean{Real.exp}, \lean{HasFDerivAt}, \lean{HasDerivAt}, \lean{HasDerivWithinAt.union},
+\lean{contDiff_piLp}, \lean{Real.sin_add_int_mul_two_pi}, \lean{Real.cos_add_int_mul_two_pi},
+\lean{EuclideanSpace.norm_sq_eq}, \lean{PiLp.norm_single}, \lean{Integrable.measure_norm_ge_lt_top},
+\lean{Measure.addHaar_ball_center}, \lean{Metric.measure_ball_pos}, \lean{Metric.ball_disjoint_ball},
+\lean{measure_iUnion}, \lean{ENNReal.tsum_const_eq_top_of_ne_zero}.
 \paragraph{Project-local names proved equal to Mathlib declarations} (module \lean{MathlibAgreement}, all by
 \texttt{rfl}): \lean{NavierStokes3D.volume} $=$ \lean{MeasureTheory.volume}; \lean{pairing} $=$ the real inner
 product; \lean{eb i} $=$ \lean{EuclideanSpace.single i 1}; \lean{pd} $=$ \lean{fderiv} along a basis vector;
@@ -816,11 +917,15 @@ product; \lean{eb i} $=$ \lean{EuclideanSpace.single i 1}; \lean{pd} $=$ \lean{f
 \lean{CoadjointOrbit} (pointwise divergence-free fields), \lean{IsTestDirection}, \lean{testFields},
 \lean{DivFreeL2}, \lean{IsFunctionalGradient}, \lean{FunctionalDerivative}, \lean{BiotSavart} and
 \lean{biotSavartKernel}, \lean{Pi_u}, \lean{projCoef}, \lean{TetherKernel}, the concrete group
-\lean{ConcreteSDiff.G}, and the predicates (C1)--(C3), \lean{InvariantUnderTransportedCoadjointAction}.
+\lean{ConcreteSDiff.G}, and the predicates (C1)--(C3), \lean{InvariantUnderTransportedCoadjointAction};
+in \lean{ExplicitFlows}: \lean{tp}, \lean{tq} (trigonometric pairs), \lean{trigField}, \lean{decay} (exponential
+continued affinely to $t<0$), \lean{flow}, \lean{flowPressure}, \lean{shearProfile}, \lean{shearFlow},
+\lean{abcProfile}, \lean{abcFlow}, \lean{abcPressure}.
 \paragraph{Remaining duplicates, not refactored in this version.} \lean{NavierStokes3D.div} could be stated
 via the trace of \lean{fderiv}; \lean{Pi_u} is a pointwise formula rather than Mathlib's
 \lean{Submodule.orthogonalProjection} on $L^2$; the $\mathbb{Z}^3$-periodicity predicate \lean{IsZ3Periodic} is not
-stated through Mathlib's \lean{Function.Periodic} along each coordinate direction. Existing working code was left
+stated through Mathlib's \lean{Function.Periodic} along each coordinate direction; the Kronecker delta \lean{kd}
+in \lean{ExplicitFlows} is the coordinate \lean{EuclideanSpace.single i 1 j} (\lean{single_apply_kd}). Existing working code was left
 unchanged.
 
 %=====================================================================
@@ -954,24 +1059,72 @@ Quoted verbatim from the repository by \texttt{scripts/extract\_statements.py}; 
 \leanstmt{stepField_not_physical}
 
 \subsection{Periodic Clay statement}\label{app:lean:clay}
+\leanstmt{IsZ3Periodic}
+\leanstmt{IsPeriodicSmoothSolution}
+\leanstmt{IsPeriodicSmoothSolutionOn}
 \leanstmt{Clay_B_exact}
 \leanstmt{PeriodicTetherClosingBound}
 \leanstmt{PeriodicBKMContinuation}
 \leanstmt{clay_B_exact_of_periodic_tether_bound}
+
+\subsection{Explicit exact solutions}\label{app:lean:explicit}
+\leanstmt{tp}
+\leanstmt{trigField}
+\leanstmt{decay}
+\leanstmt{hasDerivAt_decay}
+\leanstmt{laplacian_trigField}
+\leanstmt{flow}
+\leanstmt{flowPressure}
+\leanstmt{flow_navier_stokes}
+\leanstmt{shearProfile}
+\leanstmt{shearFlow}
+\leanstmt{shearPressure}
+\leanstmt{shearFlow_apply}
+\leanstmt{shearFlow_navier_stokes}
+\leanstmt{shearFlow_NS_PDE_On}
+\leanstmt{shearFlow_ne_zero}
+\leanstmt{abcProfile}
+\leanstmt{abcProfile_apply}
+\leanstmt{abcFlow}
+\leanstmt{abcPressure0}
+\leanstmt{abcPressure0_eq_norm}
+\leanstmt{abcPressure}
+\leanstmt{abc_balance}
+\leanstmt{abcFlow_navier_stokes}
+\leanstmt{abcFlow_NS_PDE_On}
+\leanstmt{curl_abcProfile}
+\leanstmt{abcFlow_apply_zero}
+\leanstmt{abcFlow_ne_zero}
+\leanstmt{flow_smooth}
+\leanstmt{flow_physical_clauses}
+\leanstmt{shearFlow_isPeriodicSmoothSolution}
+\leanstmt{abcFlow_isPeriodicSmoothSolution}
+\leanstmt{clay_B_instance_shear}
+\leanstmt{clay_B_instance_abc}
+\leanstmt{shearFlow_isPeriodicSmoothSolutionOn}
+\leanstmt{abcFlow_isPeriodicSmoothSolutionOn}
+\leanstmt{not_integrable_sq_of_periodic}
+\leanstmt{isEmpty_katoLocalWitness_of_periodic}
+\leanstmt{isEmpty_katoLocalWitness_shear}
+\leanstmt{isEmpty_katoLocalWitness_abc}
+\leanstmt{localTetherBound_vacuous_of_periodic}
+\leanstmt{smoothPhysicalUniqueness_vacuous_of_periodic}
+\leanstmt{bkmGlobalContinuation_vacuous_of_periodic}
+\leanstmt{nonzero_smooth_ns_solution_exists}
 
 %=====================================================================
 \section{Verification certificate}\label{app:cert}
 \begin{center}
 \begin{tabular}{>{\raggedright\arraybackslash}p{0.3\textwidth}>{\raggedright\arraybackslash}p{0.62\textwidth}}
 \toprule
-Repository & \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} (version 0.1.3, DOI \texttt{10.5281/zenodo.24102715}; Lean sources unchanged since 0.1.2)\\
-Verified commit & \texttt{09d14b6a0c2ca7ff673a52ed2716c675d7268379} (Lean sources; later commits change only documentation and the manuscript)\\
+Repository & \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} (version 0.1.4, DOI \VERSIONDOI)\\
+Verified commit & \texttt{749ddf8e8cb6ba330caaab701896ece96680efd4} (Lean sources; later commits change only documentation, the manuscript and metadata)\\
 Lean toolchain & \texttt{leanprover/lean4:v4.30.0-rc1} (pinned in \texttt{lean-toolchain})\\
 Mathlib & \texttt{v4.30.0-rc1}, rev \texttt{0c154d67103f74be3a0f2c509f72ccbf5be9f2a7} (pinned in \texttt{lake-manifest.json})\\
-Build & \texttt{lake build}: 2794 jobs, success\\
-Modules & 32 (\texttt{FrohmanianTether} and 31 submodules)\\
-Theorems audited & 673 (600 stated in the sources, 73 auto-generated)\\
-Declarations audited & 968 (theorems, definitions, structures, instances)\\
+Build & \texttt{lake build}: 2795 jobs, success\\
+Modules & 33 (\texttt{FrohmanianTether} and 32 submodules)\\
+Theorems audited & 760 (670 stated in the sources, 90 auto-generated)\\
+Declarations audited & 1074 (theorems, definitions, structures, instances)\\
 Axioms & only \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\\
 \texttt{sorry} / \texttt{admit} / \texttt{native\_decide} & none (\texttt{scripts/check\_no\_sorry.py}: \texttt{OK})\\
 Axiom declarations & none\\
@@ -1018,8 +1171,15 @@ strings.
 'FrohmanianTether.not_tetherKernel_invariant_transSubgroup' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_transported_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.not_transported_invariant_pointEval' depends on axioms: [propext, Classical.choice, Quot.sound]
-AUDIT SUMMARY: theorems audited: 673 (600 stated in the sources, 73 auto-generated
-  equation/congruence/injectivity lemmas); declarations audited: 968; violations: 0
+'ExplicitFlows.shearFlow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.curl_abcProfile' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.not_integrable_sq_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.isEmpty_katoLocalWitness_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+AUDIT SUMMARY: theorems audited: 760 (670 stated in the sources, 90 auto-generated
+  equation/congruence/injectivity lemmas); declarations audited: 1074; violations: 0
 AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations
 \end{Verbatim}
 

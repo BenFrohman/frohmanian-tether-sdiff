@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 605
+public theorem abcFlow_apply_zero (ν k A B C : ℝ) {t : ℝ} (ht : 0 ≤ t) :
+    abcFlow ν k A B C t 0 = Real.exp (-(ν * k ^ 2) * t) • WithLp.toLp 2 ![C, A, B] := ...

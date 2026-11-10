@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 465
+public theorem flow_smooth (ν k : ℝ) (α β : Fin 3 → ℝ) (j l : Fin 3 → Fin 3) (t : ℝ) :
+    ContDiff ℝ (⊤ : ℕ∞) (flow ν k α β j l t) := ...

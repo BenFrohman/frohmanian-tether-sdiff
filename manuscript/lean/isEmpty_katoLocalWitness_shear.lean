@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 756
+public theorem isEmpty_katoLocalWitness_shear (ν : ℝ) {m : ℤ} (hm : m ≠ 0) {a : ℝ}
+    (ha : a ≠ 0) : IsEmpty (KatoLocalWitness (shearProfile (2 * Real.pi * m) a) ν) := ...

@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 397
+public theorem abcPressure₀_eq_norm (k A B C : ℝ) (y : T3) :
+    abcPressure₀ k A B C y = -‖abcProfile k A B C y‖ ^ 2 / 2 := ...

@@ -24,3 +24,11 @@ repository-wide audit of every declaration is `scripts/AxiomAudit.lean`. -/
 #print axioms FrohmanianTether.not_tetherKernel_invariant_transSubgroup
 #print axioms FrohmanianTether.tetherKernel_transported_invariant
 #print axioms FrohmanianTether.not_transported_invariant_pointEval
+-- explicit exact NS solutions (shear, ABC) and the periodic/finite-energy obstruction
+#print axioms ExplicitFlows.shearFlow_navier_stokes
+#print axioms ExplicitFlows.abcFlow_navier_stokes
+#print axioms ExplicitFlows.shearFlow_isPeriodicSmoothSolution
+#print axioms ExplicitFlows.abcFlow_isPeriodicSmoothSolution
+#print axioms ExplicitFlows.curl_abcProfile
+#print axioms ExplicitFlows.not_integrable_sq_of_periodic
+#print axioms ExplicitFlows.isEmpty_katoLocalWitness_of_periodic

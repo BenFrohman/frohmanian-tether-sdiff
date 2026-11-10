@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 629
+public theorem curl_abcProfile (k A B C : ℝ) (x : T3) :
+    curl (abcProfile k A B C) x = k • abcProfile k A B C x := ...

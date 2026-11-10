@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 612
+public theorem abcFlow_ne_zero (ν k : ℝ) {A B C : ℝ} (hABC : A ≠ 0 ∨ B ≠ 0 ∨ C ≠ 0) {t : ℝ}
+    (ht : 0 ≤ t) : abcFlow ν k A B C t ≠ 0 := ...

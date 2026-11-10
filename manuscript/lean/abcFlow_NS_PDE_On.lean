@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 459
+public theorem abcFlow_NS_PDE_On (ν k A B C T : ℝ) :
+    NS_PDE_On (abcFlow ν k A B C) (abcPressure ν k A B C) ν T := ...
