@@ -1,4 +1,4 @@
--- FrohmanianTether/ArnoldGeometric.lean, line 1108
+-- FrohmanianTether/ArnoldGeometric.lean, line 1102
 public theorem isVelocityGateauxRepresentative_kineticEnergy_at
     (ω ε : CoadjointOrbit)
     (hω : ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x)

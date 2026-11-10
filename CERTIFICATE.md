@@ -6,7 +6,7 @@
 
 | Item | Value |
 |---|---|
-| Verified commit | `07f38b0c1f034f15f605147e119c931bee57c81f` (branch `remove-kinetic-energy-hypothesis`; later commits on the branch change only documentation) |
+| Verified commit | `07f38b0c1f034f15f605147e119c931bee57c81f` (branch `remove-kinetic-energy-hypothesis`; later commits on the branch change only documentation and Lean comments; build, counts and audit are unchanged) |
 | Lean toolchain | `leanprover/lean4:v4.30.0-rc1` (`lean-toolchain`) |
 | Mathlib | `v4.30.0-rc1`, rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` (`lake-manifest.json`) |
 | Build | `lake build`: 2726 jobs, success |

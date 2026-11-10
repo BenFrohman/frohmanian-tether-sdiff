@@ -1,4 +1,4 @@
--- FrohmanianTether/TetheredLyapunov.lean, line 1944
+-- FrohmanianTether/TetheredLyapunov.lean, line 1511
 @[expose] public def LocalTetherRate (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∃ C κ'' : ℝ, 0 < C ∧ 0 < κ'' ∧
     ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),

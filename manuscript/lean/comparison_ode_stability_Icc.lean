@@ -1,4 +1,4 @@
--- FrohmanianTether/TetheredLyapunov.lean, line 1913
+-- FrohmanianTether/TetheredLyapunov.lean, line 1480
 public theorem comparison_ode_stability_Icc
     (C κ'' : ℝ) (hC : 0 < C) (hκ : 0 < κ'') (y : ℝ → ℝ) (T : ℝ)
     (hdiff : ∀ s ∈ Set.Icc (0 : ℝ) T, DifferentiableAt ℝ y s)

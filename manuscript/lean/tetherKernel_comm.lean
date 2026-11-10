@@ -1,3 +1,3 @@
--- FrohmanianTether/SymplecticTether.lean, line 414
+-- FrohmanianTether/SymplecticTether.lean, line 261
 public theorem tetherKernel_comm (ω : CoadjointOrbit) (F G : Functional) :
     TetherKernel ω F G = TetherKernel ω G F := ...

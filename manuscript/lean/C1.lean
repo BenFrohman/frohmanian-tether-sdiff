@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 375
+-- FrohmanianTether/SymplecticTether.lean, line 222
 @[expose] public def InvariantUnderCoadjointAction (SDiff : Type*) [Group SDiff]
     [MulAction SDiff CoadjointOrbit] (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
   -- (C1): The correction B is invariant under the coadjoint action of SDiff(T³).

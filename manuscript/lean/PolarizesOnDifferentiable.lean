@@ -1,4 +1,4 @@
--- FrohmanianTether/Uniqueness.lean, line 292
+-- FrohmanianTether/Uniqueness.lean, line 240
 @[expose] public def PolarizesOnDifferentiable
     (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
   ∀ (ω : CoadjointOrbit) (F G : Functional),

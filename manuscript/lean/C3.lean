@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 391
+-- FrohmanianTether/SymplecticTether.lean, line 238
 @[expose] public def ProducesControllableNegativeFeedback
     (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
   ∀ (F : Functional) (ω : CoadjointOrbit),

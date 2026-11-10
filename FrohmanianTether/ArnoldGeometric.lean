@@ -17,8 +17,8 @@ blog post, the Analysis I companion, and the PFR project):
   (`have`, `calc`, `suffices`).
 - Use granular Mathlib imports when possible (avoiding a single monolithic
   `import Mathlib` except in short tutorial-style explorations).
-- Treat classical results as black boxes with documented citations (Tao routinely
-  uses `sorry` placeholders during development while the logical skeleton is built).
+- Treat classical results not in Mathlib as explicit hypotheses with documented citations
+  (the repository contains no `sorry` and declares no axioms).
 - Avoid ansatz and ad-hoc choices: every object (here the tether strength κ)
   is forced by necessary conditions derived earlier in the blueprint.
 
@@ -43,11 +43,6 @@ public import Mathlib.Tactic.Ring
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.MeasureTheory.Function.L2Space
 public import FrohmanianTether.NS_Equations
-
--- NOTE (post-bumper-rails phase): All silencing options removed. Every `declaration uses 'sorry'`
--- warning is now visible. The great majority here are classical black-boxes (coadjoint orbit
--- structure, functional derivatives, classical Lie-Poisson bracket properties). See the detailed
--- explanation in TetheredLyapunov.lean for the full convention.
 
 -- Error Explanations (Lean Language Reference) — Foundation Layer
 -- The full table was integrated in this session. Relevant rows for this classical foundation file:
@@ -97,9 +92,8 @@ curl, as in Section 2.1) and `ClassicalBracket` (the clean geometric version)
 are retained.
 
 All operators here are treated as standard classical objects. Their concrete
-realizations and mapping properties are taken from the literature and are
-independent of the global regularity result proved later via the Frohmanian
-Symplectic Tether.
+realizations and mapping properties are taken from the literature. Nothing in this
+repository proves global regularity; the later analytic statements are conditional.
 
 See the authoritative source documents for the precise classical justifications.
 -/

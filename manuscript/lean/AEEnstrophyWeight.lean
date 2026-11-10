@@ -1,4 +1,4 @@
--- FrohmanianTether/Uniqueness.lean, line 566
+-- FrohmanianTether/Uniqueness.lean, line 514
 @[expose] public def AEEnstrophyWeight
     (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
   ∀ α, HasTetherKernelDensity B α → ∃ c : ℝ, ∀ ω, IsRegularVorticity ω →

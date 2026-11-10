@@ -18,169 +18,16 @@ public import FrohmanianTether.ForMathlib.Projection
 
 universe u
 
--- This file is converted to a Lean module per §5 of the Lean Language Reference.
--- Public theorems and definitions (the novel geometric core: Tether, 5-step canonicity,
--- Jacobi on the reduced orbit) are in the public scope.
--- Classical black-box sorries and heavy metaprogramming (if any) stay private where possible.
--- See "Recipe for Porting Existing Files" in the reference.
---
--- See the root `LaTeX_Lean_Relationship.md` (Section 3 mapping table + Section 4 "MathPort" workflow)
--- for the authoritative correspondence between this module and the May 31 2026 LaTeX manuscript
--- + the three source documents. This is the single most critical file for the novel Frohmanian
--- Symplectic Tether contribution.
-
--- NOTE (post-bumper-rails phase): All silencing options (warn.sorry, linter.unusedVariables, warningAsError)
--- have been removed. We now surface every warning and classical `sorry` so real underlying issues
--- can be identified and fixed with concrete solutions rather than hidden.
-
 /-!
-This module follows Terence Tao’s Lean 4 formalization style (as in his proof tours,
-Analysis I companion, and PFR project), and the conventions from the Lean Language
-Reference §7 Definitions (particularly the distinction between `def`, `theorem`,
-`abbrev`, and the guidance on recursive definitions in 7.6).
+# The Frohmanian tether kernel
 
-We are also aware of the specific errors listed in the reference under "Error Explanations"
-(the full table from the Lean Language Reference is reproduced and annotated below for the
-current development state). This block was added as the final step of the systematic
-reference-integration campaign that processed §§14, 4.2–4.5, 5, 6, and 7 in order.
-
-ERROR EXPLANATIONS TABLE (Lean Language Reference) — Project Status
-
-Name                              | Summary                                                        | Severity | Since   | Project Status & Mitigation
-----------------------------------|----------------------------------------------------------------|----------|---------|--------------------------------
-ctorResultingTypeMismatch         | Resulting type of constructor was not the inductive type being declared. | Error | 4.22.0 | Avoided. CoadjointOrbit is currently a Subtype (single-constructor inductive). When we promote it to a proper structure (per 4.4 notes already integrated), we will respect the recursor model and strict positivity (4.4.3.2.2).
-dependsOnNoncomputable            | Declaration depends on noncomputable definitions but is not marked as noncomputable | Error | 4.22.0 | **Encountered and fixed early.** When the large noncomputable section was introduced (containing classical black boxes + novel geometric defs), several lemmas were initially outside it. Fixed by consistent `noncomputable section` placement (see NS_Equations.lean premature `end` fixes at lines 88/99/102/... in prior session) + explicit `noncomputable def` for anything using choice/excluded middle.
-inductionWithNoAlts               | Induction pattern with nontactic in natural-number-game-style `with` clause. | Error | 4.26.0 | Not used. All induction in this project (if any) uses structured `cases`/`induction` with explicit `case`/`next` hygiene per §14 "Running Tactics".
-inductiveParamMismatch            | Invalid parameter in an occurrence of an inductive type in one of its constructors. | Error | 4.22.0 | Avoided. All inductive-like definitions (Subtype for CoadjointOrbit, structure OrbitState in the widget) stay within the well-formedness rules documented in the 4.4 block below.
-inductiveParamMissing             | Parameter not present in an occurrence of an inductive type in one of its constructors. | Error | 4.22.0 | Same mitigation as above.
-inferBinderTypeFailed             | The type of a binder could not be inferred. | Error | 4.23.0 | **Encountered during expansion.** During the 5-step canonicity lemmas and the Jacobi header work, several binders for F,G,H,ω were not yet supplied. **Fixed** by the §6 variable block (`variable {ω : CoadjointOrbit} {F G H : Functional}` right after `noncomputable section`) + explicit signatures on all top-level lemmas. The schematic `True` blocks inside `h_cyclic_integrand_zero` now carry fully explicit binders.
-inferDefTypeFailed                | The type of a definition could not be inferred. | Error | 4.23.0 | Same root cause and fix as above. All `def`/`theorem` headers in the novel geometry (TetherKernel, the canonicity lemmas) are now fully elaborated before their bodies.
-invalidDottedIdent                | Dotted identifier notation used with invalid or non-inferrable expected type. | Error | 4.22.0 | Avoided during schematic phases. We never rely on ambiguous generalized field notation on CoadjointOrbit/Functional during the Jacobi or majorant expansions. All projections are explicit (`.val`, field access on structures).
-invalidField                      | Generalized field notation used in a potentially ambiguous way. | Error | 4.22.0 | Same avoidance as above. The projector_orthogonality rewrite in ForMathlib/Projection.lean (plain VelocityField inner product) eliminated the last sources of this class of error.
-projNonPropFromProp               | Tried to project data from a proof. | Error | 4.23.0 | **Directly relevant and deliberately mitigated.** The geometric core (Jacobi identity, (C1)–(C3), degeneracy) lives in `Prop`. The widget's `OrbitState` stores a `PLift (divergence = 0)` certificate (see 4.3.2.3 + 4.5.7 notes already integrated). This is the canonical way to cross the Prop/Type boundary without triggering projNonPropFromProp. All analytic black boxes that return data (integrals, sup-norms) are kept in `Type` and never eliminate a Prop proof into data.
-propRecLargeElim                  | Attempted to eliminate a proof into a higher type universe. | Error | 4.23.0 | Same mitigation as above. The strict Prop-vs-Type discipline documented in the 4.4 block (and the PLift usage in TetheredNullifier.lean) ensures we never perform large elimination from a Prop proof.
-redundantMatchAlt                 | Match alternative will never be reached. | Error | 4.22.0 | Currently avoided. The `do`/`for`/`let mut` + early-return shape is not used in any current proof (the former Jacobi theorem was deleted).
-synthInstanceFailed               | Failed to synthesize instance of type class. | Error | 4.26.0 | **Encountered and fixed multiple times.** Primary sources: (1) early custom notation (`‖...‖_L∞`, `vorticity_L`) in ConditionalRegularity.lean; (2) `.ofLp` / `HDiv` synthesis failures on Fin-3→ℝ functions in the projector work. **Fixed** by the ConditionalRegularity cleanup (clean ASCII identifiers + open hygiene) and the complete rewrite of Projection.lean to use plain `VelocityField` / EuclideanSpace inner product. The current schematic blocks use only explicitly imported type classes.
-unknownIdentifier                 | Failed to resolve identifier to variable or constant. | Error | 4.23.0 | **Encountered during early import/notation hygiene and bracket renaming.** Fixed by: consistent module headers (§5), `open` hygiene in ConditionalRegularity (hiding ambiguous CoadjointOrbit), and the `variable` block (§6) that supplies F,G,H,ω everywhere in the 5-step + Jacobi. All remaining schematic `sorry` bodies use only identifiers that are already in scope at the `have` site.
-
-Design principle for the remaining schematic blocks (Jacobi crack + majorant sub-calcs):
-- Every `have` inside `h_cyclic_integrand_zero` (h_B_definition … h_algebraic_vanishing) and the phase-plane cases in TetheredLyapunov carries explicit binders and lives at the `Prop` level where possible.
-- This guarantees that when the user supplies the next chunk of explicit first-principles algebra (from the three source documents), the replacement of `True := by sorry` will not introduce any of the above errors.
-- The two-layer architecture (Layer 1 geometric in SymplecticTether, Layer 2 analytic + independent majorant in TetheredLyapunov) is deliberately structured so that classical black boxes stay in their own `sorry` leaves and never pollute the novel geometric reasoning with type-class or binder issues.
-
-See prior integrated sections in this file:
-- §14 (Tactic Proofs): `·` bullets, sequenced `have`, `case`/`next` hygiene, do/for shape in h_total comment.
-- 4.2 (Propositions): proof irrelevance for `True.intro`, propext notes for future equivalence ↔ equality rewrites.
-- 4.3 (Universes): imax/Prop impredicativity for (C1)–(C3) and Jacobi; PLift for widget certificates.
-- 4.4 (Inductive Types): CoadjointOrbit as Subtype, OrbitState as structure, subsingleton elimination, Prop-vs-Type.
-- 4.5 (Quotients): Subtype as manual quotient, Squash/PLift relationship, nesting restriction.
-- §5 (Modules): public/meta imports, private scope for classical sorries.
-- §6 (Namespaces and Sections): the `variable` block supplying F,G,H,ω.
-- §7 (Definitions): `def`/`theorem`/`abbrev` discipline, termination_by skeletons, noncomputable section.
-
-All novel content must still pass the four checklists in Blueprint.md (Non-Circularity, Non-Ad-Hoc, Non-Ansatz, 1st Principles, Canonicality) and the Route A / independent-majorant constraints from the chat history RTF.
--/
-
-
-/-!
-We use:
-- `def` / `noncomputable def` for data and higher-order objects (TetherKernel, brackets, etc.)
-- `theorem` / `lemma` for assertions and properties
-- `abbrev` for transparent type aliases (Functional, CoadjointOrbit)
-
-Explicit named sub-lemmas for each atomic step of the 5-step uniqueness (no monolithic proofs).
-Clear `have` / lemma connectors showing the logical flow.
-References to the human-readable Blueprint.md to guarantee acyclicity.
-Classical parts black-boxed with citations (Tao routinely uses `sorry` as development placeholders).
-No ansatz: every coefficient and projection is forced by the three conditions (C1)–(C3).
-
-See the top-level Blueprint.md for the full ERROR EXPLANATIONS TABLE (Lean Language Reference mitigations),
-highest-authority sources, development status, "correct precise order of representational flow",
-and the four audit checklists (Non-Ad-Hoc, Non-Ansatz, 1st Principles, Canonicality).
-
-The material below the first doc comment was consolidated here during reference-integration and
-Navier–Stokes cleanup passes. Long prose blocks explaining Lean Reference sections, chat history excerpts,
-and development scaffolding were moved or trimmed to keep the .lean file parseable while
-preserving the novel geometric claims. The complex calculations (9-term Jacobi IBP + cancellations,
-CE cocycle, etc.) belong as formal `have`/`calc` steps inside theorems, not as loose text.
-(Nov 2026: the former `tethered_jacobi_identity` was deleted as circular; the Jacobi identity
-is NOT proved here.)
--/
-
-
-/-!
-# Frohmanian Symplectic Tether: Construction, Degeneracy, and Uniqueness
-
-This module formalizes the novel geometric core of the proof: the Frohmanian Symplectic Tether
-\(\mathfrak{T}_F\) and the associated 5-step uniqueness (canonicity) theorem.
-
---- CURRENT DEVELOPMENT STATUS (autonomous iteration mode) ---
-- 5-step canonicity (step1–step5 + uniqueness conclusion): Heavily expanded with named cases,
-  full power-counting and contradiction arguments written line-by-line in comments, sourced
-  from the polished PASS 2 text (primary) + cross-checked against rtfd audit and chat history.
-- Jacobi identity: Restructured with explicit term1/term2/term3 + isolated h_sum. The single
-  remaining classical-algebraic cancellation is clearly isolated and documented as the
-  highest-priority open strengthening item (asserted in all three sources, never expanded).
-- All other novel claims (degeneracy including mollified proxy, invariance, reproduces classical)
-  have good skeletons + source citations.
-- Remaining `sorry`s inside novel theorems are only for classical justifications or the one
-  documented Jacobi gap. No assumed language ("it follows") remains in the reasoning structure.
-- Linter noise silenced during development (unusedVariables false).
---- END STATUS ---
-
-Next autonomous targets: continue expanding inner `have` bodies in steps 1–4, add explicit
-cyclic-sum skeleton for Jacobi if any additional detail appears in sources, strengthen
-TetheredLyapunov differential inequality with more of the polished absorption algebra.
-
-This is the **novel** part of the argument and must be fully expanded with zero `sorry`s
-and no circularity with the regularity result (per strict Navier–Stokes Symplectic Tether criteria).
-
-**Correct precise order of representational flow (from the authoritative living document)**
-
-The polished paper (Full_Living_Document... with all PASS blocks) presents the material
-in this deliberate order, which we mirror exactly in this Lean module:
-
-1. Start from the original incompressible NS PDE (velocity form) and derive the vorticity
-   transport equation by taking the curl (living document 2.1). This is the observed dynamics
-   any admissible structure on the coadjoint orbit must reproduce exactly.
-2. Recall the classical Arnold Lie–Poisson bracket on the coadjoint orbit (2.2). This is the
-   starting point; it reproduces ideal Euler but leaves 3D vortex stretching uncontrolled.
-3. Give the **explicit construction** of the Frohmanian Tether as the projected quadratic
-   metric correction (2.3): the formula with Π_u and strength κ = C_CZ(3). The object is
-   exhibited first.
-4. Prove its fundamental properties in this order:
-   - Degeneracy w.r.t. the kinetic-energy Hamiltonian, including the energy-preserving
-     explicit 4-point verification for the mollified sup-norm proxy F_ε (2.4 + 2.4.1).
-     This must come early because the analytic estimates in Section 3 use this proxy.
-   - Invariance under the full coadjoint action of SDiff(T³) (2.5).
-   - Jacobi identity on the reduced divergence-free orbit (via MWR + explicit test
-     functionals F_p) (2.6).
-5. Only after the object has been constructed and its basic geometric properties established,
-   prove that it is the unique minimal object satisfying the three necessary conditions
-   (C1)–(C3) extracted from the dynamics (2.7 Canonicity and Minimality, whose internal
-   polished 5-step proof is implemented by the atomic lemmas below).
-6. Variational principle (2.8) — the tethered bracket makes the original NS equations
-   Hamiltonian w.r.t. kinetic energy.
-7. The analytic corollary (global regularity via independent majorant + non-circular
-   continuation) is handled in TetheredLyapunov.lean, following the polished Section 3
-   expansions in later PASS blocks.
-
-This order (construction and basic properties before the uniqueness proof that refers to them)
-is the "correct precise order of representational flow" required by the sources. The Lean
-code structure, comments, and lemma dependencies follow it strictly.
-
-Primary source: the authoritative LaTeX documents provided by the author (especially
-the sections on the 5-step classification, coefficient matching, degeneracy for the
-mollified sup-norm proxy, invariance, and Jacobi on the reduced orbit).
-
-Key content to be formalized here:
-- Explicit construction of the projected quadratic correction (the tether).
-- The three necessary conditions (C1)–(C3) and the uniqueness theorem (Theorem 2.3).
-- Degeneracy verification (independent of regularity).
-- Invariance under the coadjoint action.
-- Jacobi identity on the reduced orbit (via MWR + explicit verification).
-
-All imports use the correct `NS_Millennium_Proof.Modules.*` paths.
+Definitions of the tether kernel `TetherKernel` (a symmetric quadratic correction to the Arnold
+Lie–Poisson bracket), the tethered bracket, and the conditions (C1)–(C3), with the results proved
+about them. Status (see `CERTIFICATE.md`): (C3) is proved; (C1) and (C2) are **not** proved for
+`TetherKernel`; no Jacobi identity is claimed for the tethered bracket. The canonicity theorems are
+in `Uniqueness.lean`. The analytic statements in `TetheredLyapunov.lean` are conditional
+implications; nothing in this repository proves global regularity of the 3D Navier–Stokes
+equations. The repository contains no `sorry` and declares no axioms.
 -/
 
 namespace FrohmanianTether
@@ -745,22 +592,7 @@ lemma euler_energy_conservation (u : ℝ → VelocityField) (p : ℝ → Pressur
 -- 5-STEP UNIQUENESS — TAO / PFR STYLE (ATOMIC NAMED LEMMAS)
 -- ============================================
 
-/-! ### 5-Step Uniqueness moved to Uniqueness.lean (per clean low-sorry organization from ns_lean_local_clean)
-
-The detailed 5-step canonicity lemmas (step1_locality_sym, step2_quadratic, step3_scalar, ... and uniqueness_of_minimal_symmetric_tether)
-have been moved to `Uniqueness.lean` to keep SymplecticTether focused on the geometric construction,
-the (C1)-(C3) interface, the critical early degeneracy proxy, and the explicit Jacobi (with the long blocks).
-
-This matches the structure in the folder with drastically reduced sorry counts and better kernel hygiene
-(the "clean" snapshot where SymplecticTether was small and focused, with analytic/majorant in dedicated files
-and uniqueness proofs separated).
-
-The 5-step code is now in Uniqueness.lean (with the reexports updated).
-See the comment in Uniqueness.lean for the move rationale and non-circularity.
--/
-
-
--- (5-step uniqueness block moved to Uniqueness.lean to match the low-sorry modular organization from ns_lean_local_clean. This drastically cuts schematic True and kernel issues in this file. See Uniqueness.lean for the moved code.)
+/-! The canonicity lemmas are in `Uniqueness.lean`. -/
 
 
 /-! ## Invariance (C1) — skeleton
@@ -914,15 +746,8 @@ public theorem tetherKernel_nondegenerate_on_casimir_defect
 end   -- close noncomputable section
 
 
-/-!
-## Concrete Validation Commands for the Novel Geometry (added per "Validating a Lean Proof")
-
-These `#print axioms` commands are the daily ritual for the novel contribution.
-They must eventually report only the three standard axioms for the claims that constitute
-the original mathematical work (5-step canonicity + explicit Jacobi on F_p).
-
-While the Jacobi crack is still in progress they will show `sorryAx` — this is the honest signal.
--/
+/-! Axiom checks for the declarations of this module (the strict repository-wide audit is
+`scripts/AxiomAudit.lean`). -/
 
 #print axioms tetherKernel_comm
 #print axioms antisymmetric_correction_diagonal_zero

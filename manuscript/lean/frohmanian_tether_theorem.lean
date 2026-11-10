@@ -1,4 +1,4 @@
--- FrohmanianTether/ConditionalRegularity.lean, line 91
+-- FrohmanianTether/ConditionalRegularity.lean, line 60
 public theorem frohmanian_tether_theorem
     (hKato : ∀ u₀ ν, ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) → 0 < ν →

@@ -1,4 +1,4 @@
--- FrohmanianTether/SymplecticTether.lean, line 445
+-- FrohmanianTether/SymplecticTether.lean, line 292
 public theorem tetherKernel_C3 (F : Functional) (ω : CoadjointOrbit) :
     TetherKernel ω F F ≤
       -kappa * Enstrophy ω * ∫ x,

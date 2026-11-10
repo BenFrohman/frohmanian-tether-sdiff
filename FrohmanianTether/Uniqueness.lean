@@ -12,46 +12,16 @@ public import FrohmanianTether.Assumptions
 public import FrohmanianTether.TetherNondegeneracy
 
 /-!
-Uniqueness of the Frohmanian Tether (`uniqueness_of_minimal_tether`).
-Original work by Benjamin Stanley Frohman.
-Lean 4 encoding of the NS global regularity proof.
+# Canonicity of the tether kernel
 
-This file is part of the Lean 4 formalization of the Frohmanian Symplectic Tether Theorem.
-
-See the root document `LaTeX_Lean_Relationship.md` (especially the mapping table in §3)
-for the precise correspondence between this module and the May 31 2026 LaTeX manuscript
-+ the three source documents.
-
-This module is the dedicated home for all uniqueness arguments in the development.
-
-## Distinction Between This File and the Skeleton
-
-- `Uniqueness.lean` (this file) = the actual proofs and lemmas.
-- `Skeleton/UniquenessOverview.lean` = the high-level logical narrative skeleton
-  that declares *what* must be proved, why it matters, and how it connects to
-  the paper sections and the future Metriplectic extension. It mirrors the style
-  of `Skeleton/PaperOverview.lean`.
-
-Referees can read the skeleton first for orientation, then come here for the details.
-
-## Scope of Uniqueness Claims
-
-This module will eventually contain two distinct uniqueness results:
-
-1. **Uniqueness of the Frohmanian Symplectic Tether itself** (the 5-step canonicity
-   proof that 𝔗_F is the unique minimal bilinear antisymmetric correction satisfying
-   the axioms derived from the unmodified 3D incompressible Navier-Stokes vorticity
-   transport equation). This is the core novel geometric contribution.
-
-2. **Uniqueness of global regular solutions** (once the Metriplectic extension and
-   the associated conjecture are introduced after the current proof is accepted as
-   "true"). This will be a future, clearly separated development.
-
-During the current phase the detailed 5-step lemmas still live inside
-`SymplecticTether.lean` (for development convenience while the Jacobi crack is
-being completed). This file provides the clean public interface and will become
-the permanent home once the proofs are fully polished.
+Uniqueness ("canonicity") statements for `TetherKernel` inside a restricted class of kernels,
+the kernel conditions proved or refuted for `TetherKernel` itself (nondegeneracy, polarization on
+functionals with gradients, saturation, `h_proj`, the canonical density; refutations of
+unrestricted polarization, of `Step1Hyp` and of the pointwise weight hypothesis), and the
+vacuity of the former antisymmetric clause. These are statements about kernels; they say nothing
+about regularity of Navier–Stokes solutions.
 -/
+
 
 namespace FrohmanianTether
 
@@ -61,28 +31,6 @@ open NavierStokes3D
 open MeasureTheory ForMathlib TetherNondegeneracy
 open scoped InnerProductSpace
 
-/-!
-## Tether Uniqueness (5-Step Canonicity)
-
-The following block imports and re-exports the core uniqueness statements
-from the geometric layer. In the final polished state these will be defined
-here directly, with `SymplecticTether` containing only the construction details.
-
-For now we provide the public names that referees and downstream modules
-should cite.
--/
-
--- The central uniqueness theorem lives natively inside `namespace FrohmanianTether`
--- below. The root re-exports it via `export FrohmanianTether (...)` (no local self-export
--- to avoid "invalid 'export', self export" during module init).
-
--- ============================================================================
--- 5-STEP CANONICITY (moved from SymplecticTether.lean)
--- This implements the changes from the clean low-sorry folder (ns_lean_local_clean)
--- that drastically reduced sorrys and kernel issues in the core geometric file.
--- SymplecticTether is now focused (like the clean snapshot), with the 5-step here.
--- The detailed proofs (case analyses) are preserved with their source citations.
--- ============================================================================
 
 -- Step 2 is not a theorem from antisymmetry of an arbitrary `B`. The honest
 -- statements are `step2_degree` / `step2_degree_of_canonical_density` below
@@ -723,22 +671,10 @@ Non-Circularity" section.
 -/
 
 -- =============================================================================
--- VALIDATION RITUAL (run these after any edit to this file)
--- =============================================================================
+-- AXIOM CHECKS
 
-/-!
-Recommended daily validation commands (copy-paste into the Lean InfoView or
-a terminal with `lake env`):
-
-  #print axioms uniqueness_of_minimal_tether
-#print axioms uniqueness_of_minimal_tether_core
-
-  lake build NS_Millennium_Proof.Modules.Uniqueness
-
-When the proofs become real, also run:
-
-  lean4checker --fresh .lake/build/lib/lean/NS_Millennium_Proof/Modules/Uniqueness.olean
--/
+/-! Axiom checks for the declarations of this module (the strict repository-wide audit is
+`scripts/AxiomAudit.lean`). -/
 
 #print axioms uniqueness_of_kernel_density
 #print axioms uniqueness_of_kernel_density_fun

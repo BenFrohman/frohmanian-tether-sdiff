@@ -1,4 +1,4 @@
--- FrohmanianTether/TetheredLyapunov.lean, line 1900
+-- FrohmanianTether/TetheredLyapunov.lean, line 1467
 @[expose] public def LocalFiniteTimeVorticityBound (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ T₀ : ℝ, ∃ C : ℝ, ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
     T ≤ T₀ → IsLocalPhysicalSolution ν T u₀ u p →
