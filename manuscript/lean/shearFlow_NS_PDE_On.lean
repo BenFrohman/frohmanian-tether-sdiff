@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 363
+public theorem shearFlow_NS_PDE_On (ν k a T : ℝ) :
+    NS_PDE_On (shearFlow ν k a) shearPressure ν T := ...

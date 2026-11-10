@@ -1,6 +1,6 @@
 # Verification certificate
 
-**Paper:** *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping — Conditional statements verified in Lean 4*, version 0.1.3 (preprint, work in progress; Zenodo DOI 10.5281/zenodo.24102715). Version 0.1.3 differs from 0.1.2 (10.5281/zenodo.24102345) only in the paper's DOI/version note; the Lean sources are unchanged and this certificate applies to the same Lean code (verified commit `09d14b6`, merged at `2c424a8`).
+**Paper:** *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping — Conditional statements verified in Lean 4*, version 0.1.4 (preprint, work in progress; Zenodo DOI VERSIONDOI). Version 0.1.4 adds the Lean module `ExplicitFlows` (explicit shear and ABC solutions; no Kato witness for nonzero periodic data); no existing Lean statement was changed (see "Changes in 0.1.4").
 **Author:** Benjamin Stanley Frohman (Independent Researcher, Texas, United States; frohmanbenjamin@gmail.com, ORCID 0009-0006-7068-3718)
 **PDF:** `manuscript/main.pdf` (source `manuscript/main.tex`)
 
@@ -10,18 +10,16 @@ theorems are implications from hypotheses that are not proved; the complete list
 
 | Item | Value |
 |---|---|
-| Verified commit | `09d14b6a0c2ca7ff673a52ed2716c675d7268379` (Lean sources; later commits change only documentation, manuscript and metadata) |
+| Verified commit | `VERIFIEDCOMMIT` (Lean sources; later commits change only documentation, manuscript and metadata) |
 | Lean toolchain | `leanprover/lean4:v4.30.0-rc1` (pinned in `lean-toolchain`) |
 | Mathlib | `v4.30.0-rc1`, rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` (pinned in `lake-manifest.json`) |
 | One-command verification | `bash scripts/verify.sh` (or `make verify`) from a fresh clone |
-| Build | `lake build`: 2794 jobs, success |
-| CI run, Lean certificate (build + source scan + strict axiom audit + `scripts/verify.sh`) | passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42783533141 |
-| CI run, Lean 4 (lean-action build) | passed (workflow_dispatch on the branch, verified commit): https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42784032747 |
-| CI runs on the documentation tip `12d731e` | Lean certificate https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42784258241, Lean 4 https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42784309658 (both passed) |
-| Zenodo archive | 0.1.3: [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (record https://zenodo.org/records/24102715; adds only the DOI to the paper). 0.1.2: [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) (record https://zenodo.org/records/24102345, published 2026-11-10 from main at `2c424a8`; concept DOI `10.5281/zenodo.24081999`). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
-| Modules | 32 (`FrohmanianTether` and 31 submodules) |
-| Declarations audited | 968 |
-| Theorem constants audited | 673 (600 stated in the sources, 73 auto-generated equation/congruence/injectivity lemmas) |
+| Build | `lake build`: 2795 jobs, success |
+| CI runs (branch `real-ns-witnesses`, verified commit) | CIRUNS |
+| Zenodo archive | 0.1.4: VERSIONDOI (new version of 0.1.3). 0.1.3: [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (record https://zenodo.org/records/24102715; adds only the DOI to the paper). 0.1.2: [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) (record https://zenodo.org/records/24102345, published 2026-11-10 from main at `2c424a8`; concept DOI `10.5281/zenodo.24081999`). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
+| Modules | 33 (`FrohmanianTether` and 32 submodules) |
+| Declarations audited | 1074 |
+| Theorem constants audited | 760 (670 stated in the sources, 90 auto-generated equation/congruence/injectivity lemmas) |
 | Axioms used | only `propext`, `Classical.choice`, `Quot.sound` (some declarations use a subset) |
 | `sorry` / `admit` / `native_decide` | none (`python3 scripts/check_no_sorry.py`: `OK: no sorry/admit/native_decide, no axiom declarations`) |
 | `axiom` declarations | none |
@@ -45,8 +43,12 @@ bash scripts/verify.sh        # or: make verify
 ```
 'ConditionalRegularity.frohmanian_tether_theorem' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.ClayStatements.frohmanian_conditional_regularity_of_closing_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
-'FrohmanianTether.ClayStatements.conditional_regularity_nonvacuous_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.frohmanian_conditional_regularity_of_closing_bound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FrohmanianTether.ClayStatements.conditional_regularity_nonvacuous_at_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
 'FrohmanianTether.tetherKernel_C3' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.pairsToZero_of_C2' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.uniqueness_of_minimal_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -60,7 +62,41 @@ bash scripts/verify.sh        # or: make verify
 'FrohmanianTether.not_tetherKernel_invariant_transSubgroup' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.tetherKernel_transported_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.not_transported_invariant_pointEval' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.curl_abcProfile' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.not_integrable_sq_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.isEmpty_katoLocalWitness_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
+
+## Changes in 0.1.4 (explicit exact solutions; module `ExplicitFlows`)
+
+- New module `FrohmanianTether/ExplicitFlows.lean` (namespace `ExplicitFlows`). Nothing else in
+  `FrohmanianTether/` changed except the root import file (one added `import`). Verified by diffing every
+  existing `.lean` file against `main` and by regenerating all previously extracted statements
+  (byte-identical).
+- Proved, against the library's own `navier_stokes_eq` (hence `NS_PDE`, `NS_PDE_On` for every `T`):
+  `shearFlow_navier_stokes` (decaying shear `e^{-νk²t}(a sin k x₂, 0, 0)`, pressure `0`),
+  `abcFlow_navier_stokes` (decaying ABC flow, pressure `-|u|²/2`, `abcPressure₀_eq_norm`, Beltrami
+  balance `abc_balance`, `curl_abcProfile : ∇×u = k u`), via the master lemma `flow_navier_stokes`
+  and `laplacian_trigField` (`ΔV = -k²V`). Non-triviality: `shearFlow_ne_zero`, `abcFlow_apply_zero`,
+  `abcFlow_ne_zero`. The time factor `decay` is affine for `t < 0` (`hasDerivAt_decay`), and the
+  time-differentiability, continuity and affine-extension clauses of `IsPhysicalNSSolutionOn` hold
+  (`flow_physical_clauses`).
+- Periodic class: `shearFlow_isPeriodicSmoothSolution`, `abcFlow_isPeriodicSmoothSolution` (`k = 2πm`),
+  `clay_B_instance_shear`, `clay_B_instance_abc` (hypotheses and conclusion of `Clay_B_exact` for these
+  data only; no Clay Millennium claim), `shearFlow_isPeriodicSmoothSolutionOn`,
+  `abcFlow_isPeriodicSmoothSolutionOn` (the binder of `PeriodicTetherClosingBound` is non-vacuous there).
+- Obstruction: `not_integrable_sq_of_periodic` (no continuous nonzero `ℤ³`-periodic field has `‖u‖²`
+  integrable on ℝ³), `not_isPhysicalNSSolutionOn_of_periodic`, `isEmpty_katoLocalWitness_of_periodic`,
+  `isEmpty_katoLocalWitness_shear`, `isEmpty_katoLocalWitness_abc`. The planned `kato_witness_shear`
+  cannot exist; the ℝ³ chain cannot be instantiated on these flows.
+- Vacuity audit (not discharges): `localTetherBound_vacuous_of_periodic`,
+  `smoothPhysicalUniqueness_vacuous_of_periodic`, `bkmGlobalContinuation_vacuous_of_periodic`.
+- Not discharged: `PeriodicTetherClosingBound` at these data (needs uniqueness of smooth periodic
+  solutions, not formalized); every open hypothesis below is unchanged.
 
 ## Changes in 0.1.2, fifth pass (weight condition proved; transported C1; reproducibility)
 
@@ -382,6 +418,18 @@ exactly what the headline theorems take.
   (`InvariantUnderCoadjointAction ConcreteSDiff.G TetherKernel`), `Step1Hyp`, and the hypotheses
   removed in the earlier passes. (C1 for a competitor `B` remains a carried, unused hypothesis of
   `uniqueness_of_minimal_tether` over an abstract action.)
+- **Vacuous at nonzero periodic data** (0.1.4): `LocalTetherBound`, `SmoothPhysicalUniqueness`,
+  `BKMGlobalContinuation` hold trivially there and `KatoLocalWitness` is empty, because
+  `IsPhysicalNSSolutionOn` requires finite energy on ℝ³. They are not counted as discharged.
+- **Hypotheses of auxiliary lemmas only** (re-derived in 0.1.4 from every theorem binder whose type is
+  a named `Prop`; not used by the headline theorems): `BKMContinuationCriterion`,
+  `BKMContinuationCriterionFor`, `LocalExistenceTime`, `SmoothBelowTstar`, `SmoothBelowTstarFor`,
+  `PathBKMIntegrable`, `TstarIsTop`, `KatoUniformRestart`, `UniformVorticityCeiling`,
+  `FiniteTimeVorticityBound`, `PhysicalUniformVorticityCeiling`, `PhysicalFiniteTimeVorticityBound`,
+  `LocalFiniteTimeVorticityBound`, `ClassicalStretchingSource`, `CorrectedMaxRate`,
+  `SymplecticQuarticStretchingSinkAtMax`, `Clay_B_exact_with_energy`, `ZeroDerivAlongEnergy`, and the
+  regularity side conditions `VorticityTransportRegularity`, `SpatialMaxVorticityEnvelope`,
+  `PeriodicCellPhysicalNSSolution`, `VolumePreservingCoadjointAction`.
 - Nothing here proves global regularity of the 3D Navier–Stokes equations or any part of the Clay
   Millennium Problem.
 
@@ -399,7 +447,7 @@ exactly what the headline theorems take.
 | batteries | `v4.30.0-rc1` | `bf597c77bf9b8e66720d724928207f5911533113` |
 | Cli | `v4.30.0-rc1` | `f7d0ca7c926cdde0562af20394dd25d028b839a5` |
 
-## Axiom report (`lake env lean scripts/AxiomAudit.lean`, local run on the verified commit `09d14b6`; same summary as the CI artifact `axioms` of run 42783533141)
+## Axiom report (`lake env lean scripts/AxiomAudit.lean`, local run on the verified commit `VERIFIEDCOMMIT`)
 
 ```
 'AnalyticPipeline.bkm_integrableOn_of_uniform_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -529,6 +577,93 @@ exactly what the headline theorems take.
 'ConditionalRegularity.conditional_regularity_of_open_hyps' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ConditionalRegularity.frohmanian_tether_theorem' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ContDiffBump.mk.congr_simp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_NS_PDE' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_NS_PDE_On' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_apply_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_isPeriodicSmoothSolutionOn' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcPressure₀.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcPressure₀_eq_norm' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcPressure₀_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcProfile.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcProfile_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcProfile_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abc_balance' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcj.eq_1' depends on axioms: [propext]
+'ExplicitFlows.abcl.eq_1' depends on axioms: [propext]
+'ExplicitFlows.abcα.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcβ.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.bkmGlobalContinuation_vacuous_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.clay_B_instance_abc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.clay_B_instance_shear' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.contDiff_abcPressure₀' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.contDiff_tp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.contDiff_trigField' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.convective_shearProfile' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.convective_trigField' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.curl_abcProfile' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.decay.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.decay_of_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.decay_of_nonpos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.decay_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.decay_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.differentiable_abcPressure₀' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.div_abcProfile' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.div_shearProfile' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.div_trigField' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.fderiv_tp_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.fderiv_tp_single' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.fderiv_tq_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.fderiv_tq_single_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.flow.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.flowPressure.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.flow_eq_trigField' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.flow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.flow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.flow_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.flow_physical_clauses' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.flow_smooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.flow_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.gradient_const_mul' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.hasDerivAt_decay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.hasFDerivAt_tp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.hasFDerivAt_tq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.isEmpty_katoLocalWitness_abc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.isEmpty_katoLocalWitness_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.isEmpty_katoLocalWitness_shear' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.isPeriodicSmoothSolutionOn_of_global' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.kd.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.laplacian_trigField' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.latticeVec_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.localTetherBound_vacuous_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.not_integrable_sq_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.not_isPhysicalNSSolutionOn_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.periodicBKM_conclusion_abc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.periodicBKM_conclusion_shear' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_NS_PDE' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_NS_PDE_On' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_isPeriodicSmoothSolutionOn' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearPressure.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearProfile.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearProfile_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearProfile_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearα.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.single_apply_kd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.smoothPhysicalUniqueness_vacuous_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.time_deriv_flow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.tp.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.tp_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.tq.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.trigField_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.trigField_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ForMathlib.Pi_u.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ForMathlib.Pi_u_is_the_L2_orthogonal_projection_onto_complement_of_u' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ForMathlib.Pi_u_of_energy_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -1075,6 +1210,6 @@ exactly what the headline theorems take.
 'crossProduct.eq_1' depends on axioms: [propext, Quot.sound]
 'fderivInnerCLM.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'gradient.congr_simp' depends on axioms: [propext, Classical.choice, Quot.sound]
-AUDIT SUMMARY: theorems audited: 673 (600 stated in the sources, 73 auto-generated equation/congruence/injectivity lemmas); declarations audited: 968; violations: 0
+AUDIT SUMMARY: theorems audited: 760 (670 stated in the sources, 90 auto-generated equation/congruence/injectivity lemmas); declarations audited: 1074; violations: 0
 AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations
 ```

@@ -103,7 +103,37 @@ What is formalized:
 * `IsPhysicalNSSolution` was repaired. The old clause `u t = u 0` for `t ≤ 0` forced `∂ₜu(0) = 0`, since
   `deriv` is two-sided. It is now an affine extension: `∃ v₀, ∀ t ≤ 0, u t = u 0 + t • v₀`. Sanity lemma:
   `PhysicalSolutionSanity.exists_physical_time_deriv_ne_zero` gives a physical path with a nonzero time
-  derivative at `t = 0`. That path is not a Navier–Stokes solution, and none is formalized.
+  derivative at `t = 0`. That path is not a Navier–Stokes solution. The library's nonzero
+  Navier–Stokes solutions (constant flows; the shear and ABC flows below) have infinite energy on ℝ³,
+  so none of them is in this class.
+
+## Explicit exact solutions (new in 0.1.4, module `ExplicitFlows`)
+
+Coordinates `x = (x₀, x₁, x₂)`. Proved against the library's own `navier_stokes_eq` (all `t ≥ 0`, hence
+`NS_PDE` and `NS_PDE_On` for every `T`), for all real parameters:
+
+* Decaying shear `u = e^{-νk²t} (a sin(k x₂), 0, 0)`, pressure `0`: `shearFlow_navier_stokes`,
+  `shearFlow_NS_PDE_On`; nonzero for `a ≠ 0`, `k ≠ 0`, `t ≥ 0` (`shearFlow_ne_zero`).
+* Decaying ABC flow `u = e^{-νk²t} (A sin kx₂ + C cos kx₁, B sin kx₀ + A cos kx₂, C sin kx₁ + B cos kx₀)`,
+  pressure `-|u|²/2` (`abcPressure₀_eq_norm`): `abcFlow_navier_stokes`, `abcFlow_NS_PDE_On`, Beltrami
+  property `curl_abcProfile` (`∇ × u = k u`); equal to `e^{-νk²t}(C, A, B)` at the origin, nonzero unless
+  `A = B = C = 0` (`abcFlow_ne_zero`).
+* One mechanism (`flow_navier_stokes`): `ΔV = -k²V` for trig profiles (`laplacian_trigField`), `div V = 0`,
+  `(V·∇)V + ∇p₀ = 0`. The time factor `decay` is continued affinely to `t < 0`, as
+  `IsPhysicalNSSolutionOn` requires (`hasDerivAt_decay`, `flow_physical_clauses`).
+* With `k = 2πm` both are global smooth `ℤ³`-periodic solutions in the class `IsPeriodicSmoothSolution`
+  of `Clay_B_exact`, for these particular data (`shearFlow_isPeriodicSmoothSolution`,
+  `abcFlow_isPeriodicSmoothSolution`, `clay_B_instance_shear`, `clay_B_instance_abc`). This is not a step
+  toward `Clay_B_exact` and no Clay Millennium claim is made. `PeriodicTetherClosingBound` is not
+  discharged even at these data (it quantifies over all local periodic solutions; uniqueness is not
+  formalized).
+* **They are not Kato witnesses, and none exists for periodic data:** a continuous nonzero
+  `ℤ³`-periodic field never has `‖u‖²` integrable on ℝ³ (`not_integrable_sq_of_periodic`), so
+  `KatoLocalWitness u₀ ν` is empty for every nonzero periodic `u₀`
+  (`isEmpty_katoLocalWitness_of_periodic`, `isEmpty_katoLocalWitness_shear`,
+  `isEmpty_katoLocalWitness_abc`). A `kato_witness_shear` cannot be built. At such data
+  `LocalTetherBound`, `SmoothPhysicalUniqueness`, `BKMGlobalContinuation` hold only vacuously
+  (`*_vacuous_of_periodic`); this is an audit of the encoding, not a discharge.
 
 ## Removed: `KineticEnergyDerivIsVelocity` (δH/δω = u) is false
 
@@ -181,6 +211,17 @@ its interval `[0, T]`. `frohmanian_tether_theorem` now takes `hKato` (local exis
   general volume-preserving diffeomorphisms (the geometric push-forward action is not formalized).
   Settled: `AEEnstrophyWeight TetherKernel` proved; fixed-functional C1 refuted; transported C1 for
   translations proved.
+* **Hypotheses of auxiliary lemmas only** (re-derived from every theorem binder whose type is a named
+  `Prop`; not used by the paper's theorems): `BKMContinuationCriterion`, `BKMContinuationCriterionFor`,
+  `LocalExistenceTime`, `SmoothBelowTstar`, `SmoothBelowTstarFor`, `PathBKMIntegrable`, `TstarIsTop`,
+  `KatoUniformRestart`, `UniformVorticityCeiling`, `FiniteTimeVorticityBound`,
+  `PhysicalUniformVorticityCeiling`, `PhysicalFiniteTimeVorticityBound`, `LocalFiniteTimeVorticityBound`,
+  `ClassicalStretchingSource`, `CorrectedMaxRate`, `SymplecticQuarticStretchingSinkAtMax`,
+  `Clay_B_exact_with_energy`, `ZeroDerivAlongEnergy`, and the regularity side conditions
+  `VorticityTransportRegularity`, `SpatialMaxVorticityEnvelope`, `PeriodicCellPhysicalNSSolution`,
+  `VolumePreservingCoadjointAction`.
+* Unchanged by 0.1.4: the explicit flows discharge none of the hypotheses above (they are vacuous at
+  periodic data, see "Explicit exact solutions").
 
 ## Mathlib names
 
@@ -194,7 +235,11 @@ Project-local because Mathlib lacks them: curl (`curlVal`), divergence-free fiel
 `DivFreeL2`), test directions, the functional gradient, Biot–Savart, `Pi_u`, the tether and (C1)–(C3).
 Remaining duplicates, not refactored: `NavierStokes3D.div` (could use the trace of `fderiv`), `Pi_u`
 (pointwise formula rather than `Submodule.orthogonalProjection` on `L²`), `IsZ3Periodic` (not stated via
-`Function.Periodic`).
+`Function.Periodic`), `ExplicitFlows.kd` (the coordinate of `EuclideanSpace.single i 1`,
+`single_apply_kd`). `ExplicitFlows` uses `Real.sin`/`Real.cos`/`Real.exp`, `HasFDerivAt`, `HasDerivAt`,
+`contDiff_piLp`, `Real.sin_add_int_mul_two_pi`, `Integrable.measure_norm_ge_lt_top`,
+`Measure.addHaar_ball_center`, `Metric.measure_ball_pos`, `measure_iUnion`; its project-local
+definitions are `tp`, `tq`, `trigField`, `decay`, `flow`, `flowPressure` and the named profiles/flows.
 
 ## Build
 
@@ -208,9 +253,9 @@ lake env lean scripts/AxiomAudit.lean
 lake env lean scripts/PrintAxioms.lean
 ```
 
-Build: 2794 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
-`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 968 declarations in the 32
-`FrohmanianTether.*` modules, including 673 theorem constants (600 stated in the sources, 73
+Build: 2795 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
+`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 1074 declarations in the 33
+`FrohmanianTether.*` modules, including 760 theorem constants (670 stated in the sources, 90
 auto-generated equation/congruence/injectivity lemmas), and **fails** if any depends on an axiom other
 than `propext`, `Classical.choice`, `Quot.sound` (so `sorryAx` and `native_decide` are rejected). Both
 checks run in CI (`.github/workflows/certify.yml`). See [`CERTIFICATE.md`](CERTIFICATE.md).
@@ -223,7 +268,7 @@ hypothesis.
 
 * `FrohmanianTether/` — Lean modules (originally extracted from the author's NS_Millennium_Proof
   project, branch `sdiff-abstract-action`, commit `0c9cfdb`; this repository is now standalone).
-* `manuscript/main.tex`, `manuscript/main.pdf` — the paper (version 0.1.3 preprint; conditional results). It quotes the Lean statements
+* `manuscript/main.tex`, `manuscript/main.pdf` — the paper (version 0.1.4 preprint; conditional results). It quotes the Lean statements
   verbatim from `manuscript/lean/`, generated by `python3 scripts/extract_statements.py`; build with
   `cd manuscript && tectonic main.tex`.
 * `scripts/verify.sh` (`make verify`) — one-command verification; `scripts/AxiomAudit.lean`,

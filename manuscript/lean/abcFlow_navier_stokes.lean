@@ -1,0 +1,3 @@
+-- FrohmanianTether/ExplicitFlows.lean, line 450
+public theorem abcFlow_navier_stokes (ν k A B C : ℝ) :
+    navier_stokes_eq (abcFlow ν k A B C) (abcPressure ν k A B C) ν := ...
