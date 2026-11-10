@@ -13,6 +13,7 @@ import FrohmanianTether.ForMathlib.Projection
 import FrohmanianTether.HighSetDepletionAndBKM
 import FrohmanianTether.IndependentMajorant
 import FrohmanianTether.KineticEnergyDerivative
+import FrohmanianTether.MathlibAgreement
 import FrohmanianTether.NS_Equations
 import FrohmanianTether.PhysicalSolutionSanity
 import FrohmanianTether.PlanSteps
