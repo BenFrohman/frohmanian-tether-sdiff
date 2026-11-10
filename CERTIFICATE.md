@@ -10,12 +10,12 @@ theorems are implications from hypotheses that are not proved; the complete list
 
 | Item | Value |
 |---|---|
-| Verified commit | `VERIFIEDCOMMIT` (Lean sources; later commits change only documentation, manuscript and metadata) |
+| Verified commit | `749ddf8e8cb6ba330caaab701896ece96680efd4` (Lean sources; later commits change only documentation, manuscript and metadata) |
 | Lean toolchain | `leanprover/lean4:v4.30.0-rc1` (pinned in `lean-toolchain`) |
 | Mathlib | `v4.30.0-rc1`, rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` (pinned in `lake-manifest.json`) |
 | One-command verification | `bash scripts/verify.sh` (or `make verify`) from a fresh clone |
 | Build | `lake build`: 2795 jobs, success |
-| CI runs (branch `real-ns-witnesses`, verified commit) | CIRUNS |
+| CI runs (branch `real-ns-witnesses`, verified commit) | Lean certificate passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42909211506 ; Lean 4 (workflow_dispatch) passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42909284785 |
 | Zenodo archive | 0.1.4: VERSIONDOI (new version of 0.1.3). 0.1.3: [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (record https://zenodo.org/records/24102715; adds only the DOI to the paper). 0.1.2: [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) (record https://zenodo.org/records/24102345, published 2026-11-10 from main at `2c424a8`; concept DOI `10.5281/zenodo.24081999`). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
 | Modules | 33 (`FrohmanianTether` and 32 submodules) |
 | Declarations audited | 1074 |
@@ -447,7 +447,7 @@ exactly what the headline theorems take.
 | batteries | `v4.30.0-rc1` | `bf597c77bf9b8e66720d724928207f5911533113` |
 | Cli | `v4.30.0-rc1` | `f7d0ca7c926cdde0562af20394dd25d028b839a5` |
 
-## Axiom report (`lake env lean scripts/AxiomAudit.lean`, local run on the verified commit `VERIFIEDCOMMIT`)
+## Axiom report (`lake env lean scripts/AxiomAudit.lean`, local run on the verified commit `749ddf8e8cb6ba330caaab701896ece96680efd4`)
 
 ```
 'AnalyticPipeline.bkm_integrableOn_of_uniform_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
