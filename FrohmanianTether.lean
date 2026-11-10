@@ -20,6 +20,7 @@ import FrohmanianTether.ScalingIdentities
 import FrohmanianTether.StrainBoundRefutation
 import FrohmanianTether.SymplecticConstraint
 import FrohmanianTether.SymplecticTether
+import FrohmanianTether.TetherNondegeneracy
 import FrohmanianTether.TetheredLyapunov
 import FrohmanianTether.TorusStrainExclusion
 import FrohmanianTether.Uniqueness

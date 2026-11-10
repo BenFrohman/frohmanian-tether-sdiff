@@ -785,13 +785,12 @@ With the abstract action it is a NAMED HYPOTHESIS: `TetherKernel` is invariant u
 
 /-! ## C2 — degeneracy on the kinetic-energy Hamiltonian -/
 
-/-- If kinetic energy has no Gâteaux representative, the encoding sets
-`FunctionalDerivative H = 0`, so `Π_u 0 = 0` and the tether pairing
-against `H` vanishes. Binder is ASCII `dH`: the notation `δ F /δω` makes
-`δ` illegal in a binder. -/
+/-- If kinetic energy has no functional gradient at `ω` (in particular at every non-regular
+`ω`), `FunctionalDerivative H ω = 0`, so `Π_u 0 = 0` and the tether pairing against `H`
+vanishes. Binder is ASCII `dH`: the notation `δ F /δω` makes `δ` illegal in a binder. -/
 public theorem tetherKernel_C2_of_no_gateaux
     (ω : CoadjointOrbit)
-    (h : ¬ ∃ dH, IsGateauxRepresentative KineticEnergyHamiltonian ω dH)
+    (h : ¬ ∃ dH, IsFunctionalGradient KineticEnergyHamiltonian ω dH)
     (F : Functional) :
     TetherKernel ω F KineticEnergyHamiltonian = 0 := by
   apply tetherKernel_of_right_factor_zero

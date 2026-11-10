@@ -18,16 +18,16 @@ definitions of this repository. This file proves the negation:
 * `not_forall_functionalDerivative_kineticEnergy_eq_velocity` — the statement is false.
   Counterexample: `ω = 1_B e₁` and `2 ω`, `B` the open unit ball centred at `(0,2,0)`. Their
   `fderiv`-based divergence vanishes identically (a two-valued function has zero `fderiv`
-  everywhere), so both lie in `CoadjointOrbit`; they are not differentiable, so the Gâteaux
-  condition is vacuous and `FunctionalDerivative` returns the same `Classical.choose` value at
-  both; but `BiotSavart (2 ω) = 2 BiotSavart ω` and `BiotSavart ω 0 ≠ 0` (its third component is
-  strictly negative).
+  everywhere), so it lies in `CoadjointOrbit`; it is not differentiable, so it has no functional
+  gradient and `FunctionalDerivative` returns `0`; but `BiotSavart ω 0 ≠ 0` (its third component
+  is strictly negative).
 * `not_unique_isGateauxRepresentative`, `not_unique_velocity_representative` — a Gâteaux
   representative is never unique (changing it at one point gives another), so the former
-  "unique representative ⇒ δH = u" lemmas had hypotheses that can never hold.
+  "unique representative ⇒ δH = u" lemmas had hypotheses that can never hold. (These concern the
+  legacy pointwise predicate `IsGateauxRepresentative`; the rebuilt `FunctionalDerivative` uses
+  `L²` classes, where the gradient IS unique: `ArnoldGeometric.isFunctionalGradient_unique`.)
 
-SCOPE. The refutation uses a non-smooth vorticity field, at which `FunctionalDerivative` is an
-unconstrained `Classical.choose` value. It does not by itself decide what the derivative is for
+SCOPE. The refutation uses a non-smooth vorticity field, at which `FunctionalDerivative` is `0`. It does not by itself decide what the derivative is for
 smooth fields. For the vorticity (L²) pairing used by `IsGateauxRepresentative`, the classical
 formal answer is the vector stream function `ψ = BS* BS ω` (with `curl ψ = u`), not `u`; that
 identity is NOT formalized here. What is formalized (in `ArnoldGeometric`) is the
@@ -138,21 +138,12 @@ theorem isGateauxRepresentative_of_not_differentiable (F : CoadjointOrbit → �
   intro ε hω
   exact absurd hω hnd
 
-theorem choose_eq_of_pred_eq_true {α : Type*} (p : α → Prop) (hp : p = fun _ => True)
-    (h : ∃ a, p a) (a₀ : α) :
-    Classical.choose h = Classical.choose (⟨a₀, trivial⟩ : ∃ _ : α, True) := by
-  subst hp; rfl
-
-/-- At a non-differentiable orbit point, `FunctionalDerivative F ω` is one fixed junk value
-`Classical.choose (⟨0, trivial⟩ : ∃ _, True)`, independent of `F` and of `ω`. -/
+/-- At a non-differentiable orbit point, `FunctionalDerivative F ω = 0` for every `F`
+(no functional gradient exists there: the orbit line `ω + t ε` is not defined). -/
 theorem functionalDerivative_of_not_differentiable (F : CoadjointOrbit → ℝ)
     (ω : CoadjointOrbit) (hnd : ¬ ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x) :
-    FunctionalDerivative F ω =
-      Classical.choose (⟨0, trivial⟩ : ∃ _ : T3 → EuclideanSpace ℝ (Fin 3), True) := by
-  have hall := isGateauxRepresentative_of_not_differentiable F ω hnd
-  have hex : ∃ d, IsGateauxRepresentative F ω d := ⟨0, hall 0⟩
-  rw [FunctionalDerivative_eq_choose hex]
-  exact choose_eq_of_pred_eq_true _ (funext fun d => propext ⟨fun _ => trivial, fun _ => hall d⟩) hex 0
+    FunctionalDerivative F ω = 0 :=
+  functionalDerivative_eq_zero_of_not_regular hnd
 
 theorem indField_smul (B : Set T3) (c : ℝ) (a : EuclideanSpace ℝ (Fin 3)) :
     indField B (c • a) = fun y => c • indField B a y := by
@@ -285,39 +276,27 @@ theorem biotSavart_indField_ne_zero :
   exact hpos.ne' hcomm
 
 /-- **Refutation of the former hypothesis `KineticEnergyDerivIsVelocity`.**
-With the repository's definitions (`FunctionalDerivative` = `Classical.choose` of a Gâteaux
-representative, else `0`; `velocity_from_vorticity` = the ℝ³ Biot–Savart integral), the statement
-`∀ ω, FunctionalDerivative KineticEnergyHamiltonian ω = velocity_from_vorticity ω` is FALSE.
-Counterexample: `ω = 1_B e₁` and `2ω` with `B` the unit ball at `(0,2,0)`; both are in
-`CoadjointOrbit` (their `div`, computed with `fderiv`, vanishes identically) and are not
-differentiable, so their functional derivatives coincide, while the Biot–Savart velocities differ
-by a factor `2` and are nonzero at the origin. -/
+With the repository's definitions (`FunctionalDerivative` = the unique `L²` functional gradient
+on regular vorticities, else `0`; `velocity_from_vorticity` = the ℝ³ Biot–Savart integral), the
+statement `∀ ω, FunctionalDerivative KineticEnergyHamiltonian ω = velocity_from_vorticity ω` is
+FALSE. Counterexample: `ω = 1_B e₁` with `B` the unit ball at `(0,2,0)`; it is in
+`CoadjointOrbit` (its `fderiv`-based `div` vanishes identically) and is not differentiable, so its
+functional derivative is `0`, while its Biot–Savart velocity is nonzero at the origin. This is a
+statement about a rough field; the smooth-field identity is not decided here. -/
 theorem not_forall_functionalDerivative_kineticEnergy_eq_velocity :
     ¬ ∀ ω : CoadjointOrbit,
       FunctionalDerivative KineticEnergyHamiltonian ω = velocity_from_vorticity ω := by
   intro H
   let B := Metric.ball ctr 1
-  have hnd : ∀ c : ℝ, c ≠ 0 →
-      ¬ ∀ i x, DifferentiableAt ℝ (fun y => (indOrbit B (c • e1)).val y i) x := by
-    intro c hc hall
-    apply not_differentiableAt_indField (c • e1) (by simp [e1, hc])
+  have hnd : ¬ ∀ i x, DifferentiableAt ℝ (fun y => (indOrbit B ((1 : ℝ) • e1)).val y i) x := by
+    intro hall
+    apply not_differentiableAt_indField ((1 : ℝ) • e1) (by simp [e1])
     exact hall 0 (ctr + e1)
   have h1 := H (indOrbit B ((1 : ℝ) • e1))
-  have h2 := H (indOrbit B ((2 : ℝ) • e1))
-  rw [functionalDerivative_of_not_differentiable _ _ (hnd 1 one_ne_zero)] at h1
-  rw [functionalDerivative_of_not_differentiable _ _ (hnd 2 two_ne_zero)] at h2
-  have h12 : velocity_from_vorticity (indOrbit B ((2 : ℝ) • e1)) =
-      velocity_from_vorticity (indOrbit B ((1 : ℝ) • e1)) := h2.symm.trans h1
-  rw [velocity_from_vorticity_eq_BiotSavart, velocity_from_vorticity_eq_BiotSavart] at h12
-  simp only [indOrbit, one_smul] at h12
-  rw [indField_smul, BiotSavart_smul] at h12
-  have h0 := congrFun h12 0
-  have hne := biotSavart_indField_ne_zero
-  have : (2 : ℝ) • BiotSavart (indField B e1) 0 - BiotSavart (indField B e1) 0 = 0 := by
-    rw [h0, sub_self]
-  rw [two_smul, add_sub_cancel_right] at this
-  exact hne this
-
+  rw [functionalDerivative_of_not_differentiable _ _ hnd, velocity_from_vorticity_eq_BiotSavart]
+    at h1
+  simp only [indOrbit, one_smul] at h1
+  exact biotSavart_indField_ne_zero (congrFun h1 0).symm
 
 /-- Gâteaux representatives are never unique: changing a representative at the single point `0`
 gives another one (the pairing integral only sees the a.e. class). -/
