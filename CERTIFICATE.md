@@ -1,6 +1,6 @@
 # Verification certificate
 
-**Paper:** *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping — Conditional statements verified in Lean 4*, version 0.1.4 (preprint, work in progress; Zenodo DOI VERSIONDOI). Version 0.1.4 adds the Lean module `ExplicitFlows` (explicit shear and ABC solutions; no Kato witness for nonzero periodic data); no existing Lean statement was changed (see "Changes in 0.1.4").
+**Paper:** *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping — Conditional statements verified in Lean 4*, version 0.1.4 (preprint, work in progress; Zenodo DOI 10.5281/zenodo.24120781). Version 0.1.4 adds the Lean module `ExplicitFlows` (explicit shear and ABC solutions; no Kato witness for nonzero periodic data); no existing Lean statement was changed (see "Changes in 0.1.4").
 **Author:** Benjamin Stanley Frohman (Independent Researcher, Texas, United States; frohmanbenjamin@gmail.com, ORCID 0009-0006-7068-3718)
 **PDF:** `manuscript/main.pdf` (source `manuscript/main.tex`)
 
@@ -16,7 +16,8 @@ theorems are implications from hypotheses that are not proved; the complete list
 | One-command verification | `bash scripts/verify.sh` (or `make verify`) from a fresh clone |
 | Build | `lake build`: 2795 jobs, success |
 | CI runs (branch `real-ns-witnesses`, verified commit) | Lean certificate passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42909211506 ; Lean 4 (workflow_dispatch) passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42909284785 |
-| Zenodo archive | 0.1.4: VERSIONDOI (new version of 0.1.3). 0.1.3: [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (record https://zenodo.org/records/24102715; adds only the DOI to the paper). 0.1.2: [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) (record https://zenodo.org/records/24102345, published 2026-11-10 from main at `2c424a8`; concept DOI `10.5281/zenodo.24081999`). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
+| CI runs on `main` (merge commit `1890051`) | Lean certificate passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42910656109 ; Lean 4 passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42910656114 |
+| Zenodo archive | 0.1.4: [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) (record https://zenodo.org/records/24120781; new version of 0.1.3). 0.1.3: [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (record https://zenodo.org/records/24102715; adds only the DOI to the paper). 0.1.2: [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) (record https://zenodo.org/records/24102345, published 2026-11-10 from main at `2c424a8`; concept DOI `10.5281/zenodo.24081999`). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
 | Modules | 33 (`FrohmanianTether` and 32 submodules) |
 | Declarations audited | 1074 |
 | Theorem constants audited | 760 (670 stated in the sources, 90 auto-generated equation/congruence/injectivity lemmas) |
