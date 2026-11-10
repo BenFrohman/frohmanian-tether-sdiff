@@ -7,8 +7,7 @@ authors:
     given-names: "Benjamin Stanley"
     orcid: "https://orcid.org/0009-0006-7068-3718"
     email: frohmanbenjamin@gmail.com
-version: "0.1.2"
-date-released: "2026-11-09"
+version: "0.1.2-draft"
 url: "https://github.com/BenFrohman/frohmanian-tether-sdiff"
 license: "Apache-2.0"
 repository-code: "https://github.com/BenFrohman/frohmanian-tether-sdiff"
