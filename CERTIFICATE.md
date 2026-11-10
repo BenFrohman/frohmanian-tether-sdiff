@@ -16,7 +16,8 @@ theorems are implications from hypotheses that are not proved; the complete list
 | One-command verification | `bash scripts/verify.sh` (or `make verify`) from a fresh clone |
 | Build | `lake build`: 2794 jobs, success |
 | CI run, Lean certificate (build + source scan + strict axiom audit + `scripts/verify.sh`) | passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42783533141 |
-| CI run, Lean 4 (lean-action build) | LEAN4_RUN |
+| CI run, Lean 4 (lean-action build) | passed (workflow_dispatch on the branch, verified commit): https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42784032747 |
+| CI runs on the documentation tip `12d731e` | Lean certificate https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42784258241, Lean 4 https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42784309658 (both passed) |
 | Zenodo archive | none for 0.1.2 yet (`.zenodo.json` prepared). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
 | Modules | 32 (`FrohmanianTether` and 31 submodules) |
 | Declarations audited | 968 |
