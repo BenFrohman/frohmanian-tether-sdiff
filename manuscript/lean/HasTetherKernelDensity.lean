@@ -1,5 +1,5 @@
--- FrohmanianTether/Uniqueness.lean, line 46
-public def HasTetherKernelDensity
+-- FrohmanianTether/Uniqueness.lean, line 47
+@[expose] public def HasTetherKernelDensity
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (α : CoadjointOrbit → T3 → ℝ) : Prop :=
   ∀ (ω : CoadjointOrbit) (F G : Functional),

@@ -7,6 +7,7 @@ Authors: Benjamin Stanley Frohman
 module
 
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 public import FrohmanianTether.SymplecticTether
 public import FrohmanianTether.Assumptions
 public import FrohmanianTether.TetherNondegeneracy
@@ -43,7 +44,7 @@ open scoped InnerProductSpace
 /-- The correction is given by a scalar kernel density against the projected
 pairing. The Frohmanian kernel `-κ ‖ω‖² ∫ ⟨Π_u δF, Π_u δG⟩` is the case of the
 spatially constant density `α ω x = -κ ‖ω‖²` (global enstrophy). -/
-public def HasTetherKernelDensity
+@[expose] public def HasTetherKernelDensity
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (α : CoadjointOrbit → T3 → ℝ) : Prop :=
   ∀ (ω : CoadjointOrbit) (F G : Functional),
@@ -508,28 +509,48 @@ public theorem not_pointwiseEnstrophyWeight_tetherKernel :
   not_pointwiseEnstrophyWeight_of_density TetherKernel
     ⟨_, tetherKernel_has_canonical_density⟩
 
-/-- The weight hypothesis in its corrected form (`h_weight`, OPEN): every density of `B` equals
-`-c ‖ω‖²` ALMOST EVERYWHERE, and only at regular vorticities (at non-regular ones every
-derivative is `0`, so the density is invisible). -/
-@[expose] public def AEEnstrophyWeight
+/-- The weight hypothesis as first stated: EVERY density of `B` (no measurability or integrability
+condition) equals `-c ‖ω‖²` almost everywhere at regular vorticities. REFUTED for `TetherKernel`
+(`TetherWeight.not_aeEnstrophyWeightUnrestricted_tetherKernel`): at `ω = 0` the tether vanishes,
+and the indicator of a Vitali-type set is a density there (its products with any function have
+Bochner integral `0`) without vanishing a.e. -/
+@[expose] public def AEEnstrophyWeightUnrestricted
     (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
   ∀ α, HasTetherKernelDensity B α → ∃ c : ℝ, ∀ ω, IsRegularVorticity ω →
     ∀ᵐ x ∂(MeasureTheory.volume : Measure T3), α ω x = -c * Enstrophy ω
 
+/-- The weight hypothesis `h_weight` in its corrected form (OPEN for `TetherKernel`): every
+density of `B` that is LOCALLY INTEGRABLE at each regular vorticity equals `-c ‖ω‖²` almost
+everywhere, at regular vorticities only (at non-regular ones every derivative is `0`, so the
+density is invisible). The integrability condition excludes the non-measurable densities that
+refute `AEEnstrophyWeightUnrestricted`. -/
+@[expose] public def AEEnstrophyWeight
+    (B : CoadjointOrbit → Functional → Functional → ℝ) : Prop :=
+  ∀ α, HasTetherKernelDensity B α →
+    (∀ ω, IsRegularVorticity ω → LocallyIntegrable (α ω) (MeasureTheory.volume : Measure T3)) →
+    ∃ c : ℝ, ∀ ω, IsRegularVorticity ω →
+      ∀ᵐ x ∂(MeasureTheory.volume : Measure T3), α ω x = -c * Enstrophy ω
+
+/-- The canonical density of the tether is spatially constant, hence locally integrable. -/
+public theorem canonicalTetherDensity_locallyIntegrable (ω : CoadjointOrbit) :
+    LocallyIntegrable (canonicalTetherDensity ω) (MeasureTheory.volume : Measure T3) :=
+  locallyIntegrable_const _
+
 /-- **Step 3 (scalar multiple of the canonical density)**: from Step 2, the named density
-hypothesis `h_density` (OPEN for a general `B`: `Q = ∫ α ⟨·,·⟩`, a Schwartz-kernel / isotropy
-statement) and the corrected weight hypothesis `h_weight : AEEnstrophyWeight B` (OPEN: the
-"only |ω|² is invariant" step; the pointwise form is refuted,
-`not_pointwiseEnstrophyWeight_of_density`). At non-regular `ω` both sides vanish because
+hypothesis `h_density` (OPEN for a general `B`: `Q = ∫ α ⟨·,·⟩` with `α ω` locally integrable at
+regular `ω`, a Schwartz-kernel / isotropy statement) and the weight hypothesis
+`h_weight : AEEnstrophyWeight B` (OPEN: the "only |ω|² is invariant" step; the pointwise form
+and the unrestricted a.e. form are refuted). At non-regular `ω` both sides vanish because
 `FunctionalDerivative` is `0` there. -/
 public theorem step3_scalar
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (h2' : FactorsThroughProjection B)
-    (h_density : FactorsThroughProjection B → ∃ α, HasTetherKernelDensity B α)
+    (h_density : FactorsThroughProjection B → ∃ α, HasTetherKernelDensity B α ∧
+      ∀ ω, IsRegularVorticity ω → LocallyIntegrable (α ω) (MeasureTheory.volume : Measure T3))
     (h_weight : AEEnstrophyWeight B) :
     ∃ c : ℝ, HasTetherKernelDensity B (fun ω _x => -c * Enstrophy ω) := by
-  obtain ⟨α, hα⟩ := h_density h2'
-  obtain ⟨c, hc⟩ := h_weight α hα
+  obtain ⟨α, hα, hloc⟩ := h_density h2'
+  obtain ⟨c, hc⟩ := h_weight α hα hloc
   refine ⟨c, fun ω F G => ?_⟩
   rw [hα ω F G]
   by_cases hω : IsRegularVorticity ω
@@ -605,8 +626,8 @@ public theorem step5_eq_tether
   uniqueness_of_kernel_density B canonicalTetherDensity h4 (fun _ _ => rfl)
 
 /-- **Five-step core** (symmetric). Each step consumes the previous step's conclusion.
-Open inputs (properties of the arbitrary `B`): `h_proj`, `h_density`, `h_weight`
-(a.e., regular `ω`). Nondegeneracy is no longer an input: it is PROVED
+Open inputs (properties of the arbitrary `B`): `h_proj`, `h_density` (a density, locally
+integrable at regular `ω`), `h_weight` (a.e., regular `ω`, locally integrable densities). Nondegeneracy is no longer an input: it is PROVED
 (`tether_nondeg_witness`). -/
 public theorem uniqueness_of_minimal_tether_core
     (B : CoadjointOrbit → Functional → Functional → ℝ)
@@ -614,7 +635,8 @@ public theorem uniqueness_of_minimal_tether_core
     (h_proj : ∀ ω (F F' G : Functional),
       Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F ω) =
         Pi_u (velocity_from_vorticity ω) (FunctionalDerivative F' ω) → B ω F G = B ω F' G)
-    (h_density : FactorsThroughProjection B → ∃ α, HasTetherKernelDensity B α)
+    (h_density : FactorsThroughProjection B → ∃ α, HasTetherKernelDensity B α ∧
+      ∀ ω, IsRegularVorticity ω → LocallyIntegrable (α ω) (MeasureTheory.volume : Measure T3))
     (h_weight : AEEnstrophyWeight B)
     (h_sat : SaturatesTetherQuadratic B) :
     ∀ ω F G, B ω F G = TetherKernel ω F G :=

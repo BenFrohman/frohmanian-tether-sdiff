@@ -1,4 +1,4 @@
--- FrohmanianTether/Uniqueness.lean, line 334
+-- FrohmanianTether/Uniqueness.lean, line 335
 public theorem antisymmetric_clause_forces_zero
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (h_antisym : ∀ ω F G, B ω F G = -B ω G F)
