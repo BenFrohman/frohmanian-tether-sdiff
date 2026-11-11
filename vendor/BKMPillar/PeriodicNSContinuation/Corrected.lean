@@ -1,0 +1,140 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+import BKMPillar.FeffermanClayNS
+
+/-!
+# Basic lemmas for periodic solutions on `[0, T]`
+
+The predicates (`IsPeriodicSmoothSolutionOn`, `periodicTstar`, `IsPeriodicMaximalSolution`,
+`PeriodicLocalExistence`, `PeriodicMaximalSolution`, `PeriodicBKMCriterion`,
+`PeriodicBKMIntegrability`) are the corrected ones in `FeffermanClayNS` (commit ebcf109).
+-/
+
+open FeffermanClayNS FeffermanNavierStokes3D Set Filter Topology
+open scoped ContDiff
+
+namespace PeriodicNSContinuation.Corrected
+
+/-- **Classical (energy estimate + Grönwall), named:** two corrected solutions on `[0, T]` from the
+same data have the same velocity on `[0, T]`. Reduced to `PeriodicEnergyDifferenceEstimate` in
+`Uniqueness.lean`. -/
+def PeriodicVelocityUniqueness (ν : ℝ) : Prop :=
+  ∀ (u₀ : VelocityField) (T : ℝ) (u v : TimeDependentVelocity) (p q : TimeDependentPressure),
+    IsPeriodicSmoothSolutionOn ν u₀ (fun _ _ => 0) T u p →
+    IsPeriodicSmoothSolutionOn ν u₀ (fun _ _ => 0) T v q →
+    ∀ t ∈ Icc (0 : ℝ) T, u t = v t
+
+/-! ### Basic lemmas -/
+
+section lemmas
+variable {ν : ℝ} {u₀ : VelocityField}
+
+lemma slice_mapsTo (T : ℝ) (x : T3) :
+    MapsTo (fun s : ℝ => (s, x)) (Icc (0 : ℝ) T) (Icc (0 : ℝ) T ×ˢ (univ : Set T3)) :=
+  fun _ hs => ⟨hs, trivial⟩
+
+lemma hasDerivWithinAt_slice {T : ℝ} {u : TimeDependentVelocity}
+    (hu : ContDiffOn ℝ ∞ (fun q : ℝ × T3 => u q.1 q.2) (Icc (0 : ℝ) T ×ˢ univ))
+    (x : T3) {t : ℝ} (ht : t ∈ Icc (0 : ℝ) T) :
+    HasDerivWithinAt (fun s => u s x) (derivWithin (fun s => u s x) (Icc (0 : ℝ) T) t)
+      (Icc (0 : ℝ) T) t := by
+  have hc : ContDiffOn ℝ ∞ (fun s : ℝ => u s x) (Icc (0 : ℝ) T) :=
+    hu.comp ((contDiff_id.prodMk contDiff_const).contDiffOn) (slice_mapsTo T x)
+  exact ((hc.differentiableOn (by simp)) t ht).hasDerivWithinAt
+
+/-- Restriction to a shorter horizon. -/
+theorem restrict {T T' : ℝ} {u : TimeDependentVelocity} {p : TimeDependentPressure}
+    (h : IsPeriodicSmoothSolutionOn ν u₀ (fun _ _ => 0) T' u p) (hT : 0 < T) (hTT : T ≤ T') :
+    IsPeriodicSmoothSolutionOn ν u₀ (fun _ _ => 0) T u p := by
+  obtain ⟨-, hpu, hpp, hcu, hcp, heq, hdiv, hinit⟩ := h
+  have hsub : Icc (0 : ℝ) T ⊆ Icc 0 T' := Icc_subset_Icc le_rfl hTT
+  refine ⟨hT, fun t ht => hpu t (hsub ht), fun t ht => hpp t (hsub ht),
+    hcu.mono (prod_mono hsub le_rfl), hcp.mono (prod_mono hsub le_rfl), ?_,
+    fun t ht => hdiv t (hsub ht), hinit⟩
+  intro t ht x
+  have hd := (hasDerivWithinAt_slice hcu x (hsub ht)).mono hsub
+  rw [hd.derivWithin ((uniqueDiffOn_Icc hT) t ht)]
+  exact heq t (hsub ht) x
+
+/-- Replace `(u, p)` by a pair that agrees with it on `[0, T]`. -/
+theorem congr {T : ℝ} {u u' : TimeDependentVelocity} {p p' : TimeDependentPressure}
+    (h : IsPeriodicSmoothSolutionOn ν u₀ (fun _ _ => 0) T u p)
+    (hu : ∀ t ∈ Icc (0 : ℝ) T, u' t = u t) (hp : ∀ t ∈ Icc (0 : ℝ) T, p' t = p t) :
+    IsPeriodicSmoothSolutionOn ν u₀ (fun _ _ => 0) T u' p' := by
+  obtain ⟨hT, hpu, hpp, hcu, hcp, heq, hdiv, hinit⟩ := h
+  have h0 : (0 : ℝ) ∈ Icc 0 T := ⟨le_rfl, hT.le⟩
+  refine ⟨hT, fun t ht => (hu t ht).symm ▸ hpu t ht, fun t ht => (hp t ht).symm ▸ hpp t ht,
+    hcu.congr (fun q hq => by simp [hu q.1 hq.1]),
+    hcp.congr (fun q hq => by simp [hp q.1 hq.1]), ?_,
+    fun t ht x => by rw [hu t ht]; exact hdiv t ht x,
+    fun x => by rw [hu 0 h0]; exact hinit x⟩
+  intro t ht x
+  have hd : derivWithin (fun s => u' s x) (Icc (0 : ℝ) T) t =
+      derivWithin (fun s => u s x) (Icc (0 : ℝ) T) t :=
+    derivWithin_congr (fun s hs => by simp only [hu s hs]) (by simp only [hu t ht])
+  rw [hd, hu t ht, hp t ht]
+  exact heq t ht x
+
+/-- Pressure normalised by its value at the origin. -/
+def normP (p : TimeDependentPressure) : TimeDependentPressure := fun t x => p t x - p t 0
+
+lemma gradient_sub_const (g : PressureField) (c : ℝ) (x : T3) :
+    gradient (fun y => g y - c) x = gradient g x := by
+  simp [gradient, fderiv_sub_const]
+
+/-- Normalising the pressure keeps a solution a solution. -/
+theorem normP_sol {T : ℝ} {u : TimeDependentVelocity} {p : TimeDependentPressure}
+    (h : IsPeriodicSmoothSolutionOn ν u₀ (fun _ _ => 0) T u p) :
+    IsPeriodicSmoothSolutionOn ν u₀ (fun _ _ => 0) T u (normP p) := by
+  obtain ⟨hT, hpu, hpp, hcu, hcp, heq, hdiv, hinit⟩ := h
+  refine ⟨hT, hpu, fun t ht y k => by simp [normP, hpp t ht y k], hcu, ?_, ?_, hdiv, hinit⟩
+  · have h2 : ContDiffOn ℝ ∞ (fun q : ℝ × T3 => p q.1 0) (Icc (0 : ℝ) T ×ˢ univ) :=
+      hcp.comp (contDiff_fst.prodMk contDiff_const).contDiffOn (fun q hq => ⟨hq.1, trivial⟩)
+    exact hcp.sub h2
+  · intro t ht x
+    have : pressureGradient (normP p t) x = pressureGradient (p t) x :=
+      gradient_sub_const (p t) (p t 0) x
+    rw [this]; exact heq t ht x
+
+/-- **Proved:** two solutions with the same velocity on `[0, T]` have pressures differing by a
+function of time only; hence equal normalised pressures. -/
+theorem normP_eq_of_velocity_eq {T : ℝ} {u : TimeDependentVelocity} {p q : TimeDependentPressure}
+    (hp : IsPeriodicSmoothSolutionOn ν u₀ (fun _ _ => 0) T u p)
+    (hq : IsPeriodicSmoothSolutionOn ν u₀ (fun _ _ => 0) T u q) :
+    ∀ t ∈ Icc (0 : ℝ) T, normP p t = normP q t := by
+  intro t ht
+  have hdiff : ∀ r : TimeDependentPressure,
+      ContDiffOn ℝ ∞ (fun q : ℝ × T3 => r q.1 q.2) (Icc (0 : ℝ) T ×ˢ univ) →
+      Differentiable ℝ (r t) := by
+    intro r hr
+    have hc : ContDiffOn ℝ ∞ (fun y : T3 => r t y) univ :=
+      hr.comp (contDiff_const.prodMk contDiff_id).contDiffOn (fun _ _ => ⟨ht, trivial⟩)
+    exact fun y => ((contDiffOn_univ.1 hc).differentiable (by simp)) y
+  have hdp := hdiff p hp.2.2.2.2.1
+  have hdq := hdiff q hq.2.2.2.2.1
+  have hgrad : ∀ x, gradient (p t) x = gradient (q t) x := by
+    intro x
+    have e1 := hp.2.2.2.2.2.1 t ht x
+    have e2 := hq.2.2.2.2.2.1 t ht x
+    simp only [pressureGradient] at e1 e2
+    have := e1.symm.trans e2
+    simpa using this
+  have hfd : ∀ x, fderiv ℝ (fun y => p t y - q t y) x = 0 := by
+    intro x
+    rw [fderiv_fun_sub (hdp x) (hdq x)]
+    have := congrArg (InnerProductSpace.toDual ℝ T3) (hgrad x)
+    simp only [gradient, LinearIsometryEquiv.apply_symm_apply] at this
+    rw [this, sub_self]
+  have hconst := is_const_of_fderiv_eq_zero (hdp.sub hdq) hfd
+  funext x
+  have := hconst x 0
+  simp only [Pi.sub_apply] at this
+  simp only [normP]
+  linarith
+
+end lemmas
+
+end PeriodicNSContinuation.Corrected
