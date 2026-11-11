@@ -1,4 +1,4 @@
--- FrohmanianTether/ClayStatements.lean, line 497
+-- FrohmanianTether/ClayStatements.lean, line 527
 public theorem conditional_regularity_nonvacuous_at_zero (ν : ℝ) (hν : 0 < ν) :
     ∃ (u : TimeDependentVelocity),
       (∀ t ≥ (0 : ℝ), ConditionalRegularity.IsSmooth (u t)) ∧

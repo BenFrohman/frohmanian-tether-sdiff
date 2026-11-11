@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherImpliesBKM.lean, line 69
+public theorem periodicBKMIntegrability_of_periodicTetherBound {ν : ℝ} {u₀ : VelocityField}
+    (h : PeriodicTetherBound ν u₀) : PeriodicBKMIntegrability ν u₀ := ...

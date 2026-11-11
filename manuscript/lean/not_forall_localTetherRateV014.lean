@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherDefinitionAudit.lean, line 241
+public theorem not_forall_localTetherRateV014 :
+    ¬ ∀ (u₀ : VelocityField) (ν : ℝ), LocalTetherRateV014 u₀ ν := ...

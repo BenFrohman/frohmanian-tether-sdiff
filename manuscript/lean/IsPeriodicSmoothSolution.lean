@@ -1,4 +1,4 @@
--- FrohmanianTether/ClayStatements.lean, line 247
+-- FrohmanianTether/ClayStatements.lean, line 253
 @[expose] public def IsPeriodicSmoothSolution (ν : ℝ) (u₀ : VelocityField)
     (f : ℝ → T3 → EuclideanSpace ℝ (Fin 3))
     (u : TimeDependentVelocity) (p : TimeDependentPressure) : Prop :=

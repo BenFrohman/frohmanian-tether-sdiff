@@ -1,10 +1,11 @@
--- FrohmanianTether/ConditionalRegularity.lean, line 60
+-- FrohmanianTether/ConditionalRegularity.lean, line 69
 public theorem frohmanian_tether_theorem
     (hKato : ∀ u₀ ν, ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) → 0 < ν →
       KatoLocalWitness u₀ ν)
-    (hcont : ∀ u₀ ν, TetheredLyapunov.BKMGlobalContinuation u₀ ν)
-    (hDI : ∀ u₀ ν, TetheredLyapunov.LocalTetherRate u₀ ν) :
+    (hcont : ∀ u₀ ν, 0 < ν → TetheredLyapunov.BKMGlobalContinuation u₀ ν)
+    (hDI : ∀ u₀ ν, 0 < ν → BddAbove (Set.range fun x => ‖vorticity u₀ x‖) →
+      TetheredLyapunov.LocalTetherRate u₀ ν) :
   ∃ (𝔗_F : CoadjointOrbit → Functional → Functional → ℝ),
     (∀ (B : CoadjointOrbit → Functional → Functional → ℝ)
       (α : CoadjointOrbit → T3 → ℝ),
@@ -16,6 +17,7 @@ public theorem frohmanian_tether_theorem
       (∀ x, div u₀ x = 0) →
       ContDiff ℝ (⊤ : ℕ∞) u₀ →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) →
+      BddAbove (Set.range fun x => ‖vorticity u₀ x‖) →
       ∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
         NS_PDE u p ν ∧
         u 0 = u₀ ∧

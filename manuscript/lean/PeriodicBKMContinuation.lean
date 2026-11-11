@@ -1,4 +1,4 @@
--- FrohmanianTether/ClayStatements.lean, line 557
+-- FrohmanianTether/ClayStatements.lean, line 587
 @[expose] public def PeriodicBKMContinuation (ν : ℝ) : Prop :=
   ∀ u₀ : VelocityField,
     (∀ x, div u₀ x = 0) → ContDiff ℝ (⊤ : ℕ∞) u₀ → IsZ3Periodic u₀ →

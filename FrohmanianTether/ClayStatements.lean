@@ -53,12 +53,17 @@ is the Millennium Problem itself, not a reduction of it. -/
 
 /-- **Local closing bound** (OPEN, category (d); as hard as regularity). The form consumed by
 the restructured chain: for every admissible datum, `TetheredLyapunov.LocalTetherBound` (one
-`‖ω‖_∞` ceiling along every smooth physical solution on every finite interval). -/
+`‖ω‖_∞` ceiling along every smooth physical solution on every finite interval).
+**0.1.5:** the data class also requires bounded initial vorticity. With the `BddAbove` clause now
+part of `LocalTetherBound`, a datum with unbounded `ω₀` can never satisfy it (its degenerate
+solution on `[0, 0]` exists, `TetherDefinitionAudit.exists_isLocalPhysicalSolution_zero_time`),
+so without this premise the target would be false for a trivial reason. -/
 @[expose] public def LocalTetherClosingBound (ν : ℝ) : Prop :=
   ∀ u₀ : VelocityField,
     (∀ x, div u₀ x = 0) → ContDiff ℝ (⊤ : ℕ∞) u₀ →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) →
-        TetheredLyapunov.LocalTetherBound u₀ ν
+        BddAbove (Set.range fun x => ‖vorticity u₀ x‖) →
+          TetheredLyapunov.LocalTetherBound u₀ ν
 
 /-- **BKM closing criterion** (OPEN). Along every solution from admissible data, the
 vorticity supremum is integrable on every `[0, T]`: `∫₀ᵀ ‖ω(t)‖_∞ dt < ∞`.
@@ -159,7 +164,8 @@ public theorem frohmanian_conditional_regularity_of_closing_bound
     (hcont : ∀ u₀ : VelocityField, TetheredLyapunov.BKMGlobalContinuation u₀ ν)
     (huniq : ∀ u₀ : VelocityField, TetheredLyapunov.SmoothPhysicalUniqueness u₀ ν)
     (u₀ : VelocityField) (hdiv : ∀ x, div u₀ x = 0) (hsm : ContDiff ℝ (⊤ : ℕ∞) u₀)
-    (hE : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2)) :
+    (hE : Integrable (fun x : T3 => ‖u₀ x‖ ^ 2))
+    (hω₀ : BddAbove (Set.range fun x => ‖vorticity u₀ x‖)) :
     ∃ (u : TimeDependentVelocity),
       (∀ t ≥ (0 : ℝ), ConditionalRegularity.IsSmooth (u t)) ∧
       (u 0 = u₀) ∧
@@ -171,7 +177,7 @@ public theorem frohmanian_conditional_regularity_of_closing_bound
         (∀ t ≥ (0 : ℝ), ConditionalRegularity.satisfies_NavierStokes v ν) →
         ∀ t ≥ (0 : ℝ), v t = u t) :=
   ConditionalRegularity.conditional_regularity_of_open_hyps (fun _ => u₀) (fun _ x => hdiv x) hsm hE ν hν
-    (hKato u₀ hsm hdiv hE) (hcont u₀) (hclose u₀ hdiv hsm hE) (huniq u₀)
+    (hKato u₀ hsm hdiv hE) (hcont u₀) (hclose u₀ hdiv hsm hE hω₀) (huniq u₀)
 
 
 /-! ## Clay (B) and (D) on `ℝ³/ℤ³`, exactly as in Fefferman's official description
@@ -482,6 +488,30 @@ interval, so `Y = 0` works. -/
 public theorem localTetherBound_zero (ν : ℝ) : TetheredLyapunov.LocalTetherBound 0 ν := by
   refine ⟨0, fun T u _p hu t ht => ?_⟩
   rw [eq_zero_of_isPhysicalNSSolutionOn_zero u T hu.1 hu.2.2.2 t ht, vorticity_sup_norm_zero_field]
+  refine ⟨⟨0, ?_⟩, le_rfl⟩
+  rintro _ ⟨x, rfl⟩
+  simp [vorticity, curl_zero]
+
+/-- `LocalTetherRate 0 ν` holds (0.1.5 right-derivative form): along every local smooth physical
+solution from `0`, `‖ω‖_∞ ≡ 0` on `[0, T]`. Non-vacuity witness for the corrected definition;
+the 0.1.4 two-sided form is false here (`TetherDefinitionAudit.not_localTetherRateV014_zero`). -/
+public theorem localTetherRate_zero (ν : ℝ) : TetheredLyapunov.LocalTetherRate 0 ν := by
+  refine ⟨1, 1, one_pos, one_pos, fun T u _p hu => ?_⟩
+  have hz : ∀ τ ∈ Set.Icc (0 : ℝ) T, vorticity_sup_norm (vorticity (u τ)) = 0 := fun τ hτ => by
+    rw [eq_zero_of_isPhysicalNSSolutionOn_zero u T hu.1 hu.2.2.2 τ hτ,
+      vorticity_sup_norm_zero_field]
+  refine ⟨continuousOn_const.congr hz, fun s hs => ⟨0, ?_, ?_⟩, fun t ht => ?_⟩
+  · have hev : (fun τ => vorticity_sup_norm (vorticity (u τ))) =ᶠ[nhdsWithin s (Set.Ici s)]
+        fun _ => (0 : ℝ) := by
+      filter_upwards [Ico_mem_nhdsGE hs.2] with τ hτ
+      exact hz τ ⟨hs.1.trans hτ.1, hτ.2.le⟩
+    exact (hasDerivWithinAt_const s _ (0 : ℝ)).congr_of_eventuallyEq hev
+      (hz s ⟨hs.1, hs.2.le⟩)
+  · rw [hz s ⟨hs.1, hs.2.le⟩]; norm_num
+  · rw [eq_zero_of_isPhysicalNSSolutionOn_zero u T hu.1 hu.2.2.2 t ht]
+    refine ⟨0, ?_⟩
+    rintro _ ⟨x, rfl⟩
+    simp [vorticity, curl_zero]
 
 /-- `BKMGlobalContinuation 0 ν` holds: the rest state is a global smooth physical solution. -/
 public theorem bkmGlobalContinuation_zero (ν : ℝ) :
@@ -577,6 +607,7 @@ public theorem clay_B_exact_of_periodic_tether_bound
 #print axioms repaired_huniq_at_zero
 #print axioms smoothPhysicalUniqueness_zero
 #print axioms localTetherBound_zero
+#print axioms localTetherRate_zero
 #print axioms bkmGlobalContinuation_zero
 #print axioms stepField_not_physical
 #print axioms clay_B_exact_of_periodic_tether_bound

@@ -1,4 +1,4 @@
--- FrohmanianTether/TetheredLyapunov.lean, line 1582
+-- FrohmanianTether/TetheredLyapunov.lean, line 1631
 public theorem conditional_regularity
     (u₀ : VelocityField) (ν : ℝ)
     (w : KatoLocalWitness u₀ ν)

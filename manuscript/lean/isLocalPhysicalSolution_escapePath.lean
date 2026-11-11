@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherDefinitionAudit.lean, line 173
+public theorem isLocalPhysicalSolution_escapePath (ν : ℝ) :
+    IsLocalPhysicalSolution ν 0 0 escapePath (fun _ _ => 0) := ...

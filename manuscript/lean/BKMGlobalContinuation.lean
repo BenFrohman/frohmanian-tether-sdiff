@@ -1,4 +1,4 @@
--- FrohmanianTether/TetheredLyapunov.lean, line 1541
+-- FrohmanianTether/TetheredLyapunov.lean, line 1590
 @[expose] public def BKMGlobalContinuation (u₀ : VelocityField) (ν : ℝ) : Prop :=
   Nonempty (KatoLocalWitness u₀ ν) → LocalFiniteTimeVorticityBound u₀ ν →
     ∃ (u : TimeDependentVelocity) (p : TimeDependentPressure),

@@ -40,12 +40,21 @@ Hypotheses (each explicit; none is proved here):
 * `hKato` — for every admissible datum a `KatoLocalWitness`: a smooth physical solution on a
   short interval `[0, T]` (equations demanded on `[0, T]` only). Category (b), Kato 1972, with
   the same `H^s` data-class caveat.
-* `hcont : ∀ u₀ ν, BKMGlobalContinuation u₀ ν` — category (b), classical (Kato local existence +
-  uniqueness + Beale–Kato–Majda continuation), not formalized; CAVEAT: the library's data class
-  is wider than Kato's `H^s`.
-* `hDI : ∀ u₀ ν, LocalTetherRate u₀ ν` — category (d), OPEN: the cubic rate
-  `M' ≤ C M² − κ'' M³` for `M(t) = ‖ω(t)‖_∞`, with constants chosen before the interval, along
-  every smooth physical solution on every finite interval. It implies a time-uniform ceiling
+* `hcont : ∀ u₀ ν, 0 < ν → BKMGlobalContinuation u₀ ν` — category (b), classical (Kato local
+  existence + uniqueness + Beale–Kato–Majda continuation), not formalized; CAVEAT: the library's
+  data class is wider than Kato's `H^s`.
+* `hDI : ∀ u₀ ν, 0 < ν → BddAbove (range ‖ω₀‖) → LocalTetherRate u₀ ν` — category (d), OPEN:
+  the cubic rate `M' ≤ C M² − κ'' M³` (right derivative, 0.1.5) for `M(t) = ‖ω(t)‖_∞`, with
+  constants chosen before the interval, along every smooth physical solution on every finite
+  interval.
+
+**0.1.5.** In 0.1.4 the binder was `hDI : ∀ u₀ ν, LocalTetherRate u₀ ν` with the two-sided
+derivative form, which is unsatisfiable (`TetherDefinitionAudit.not_forall_localTetherRateV014`),
+so the 0.1.4 statement held vacuously. With the `BddAbove` clause now part of `LocalTetherRate`,
+a datum with unbounded initial vorticity cannot satisfy it (its degenerate solution on `[0, 0]`
+exists, `TetherDefinitionAudit.exists_isLocalPhysicalSolution_zero_time`), so `hDI` and `hcont`
+are now demanded only for `ν > 0` and data with bounded initial vorticity, and clause (2)
+concludes for exactly those data. It implies a time-uniform ceiling
   (`localTetherBound_of_localTetherRate`, via the finite-interval comparison
   `comparison_ode_stability_Icc`), hence by BKM it is as hard as regularity itself.
 
@@ -61,8 +70,9 @@ public theorem frohmanian_tether_theorem
     (hKato : ∀ u₀ ν, ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) → 0 < ν →
       KatoLocalWitness u₀ ν)
-    (hcont : ∀ u₀ ν, TetheredLyapunov.BKMGlobalContinuation u₀ ν)
-    (hDI : ∀ u₀ ν, TetheredLyapunov.LocalTetherRate u₀ ν) :
+    (hcont : ∀ u₀ ν, 0 < ν → TetheredLyapunov.BKMGlobalContinuation u₀ ν)
+    (hDI : ∀ u₀ ν, 0 < ν → BddAbove (Set.range fun x => ‖vorticity u₀ x‖) →
+      TetheredLyapunov.LocalTetherRate u₀ ν) :
   ∃ (𝔗_F : CoadjointOrbit → Functional → Functional → ℝ),
     (∀ (B : CoadjointOrbit → Functional → Functional → ℝ)
       (α : CoadjointOrbit → T3 → ℝ),
@@ -74,6 +84,7 @@ public theorem frohmanian_tether_theorem
       (∀ x, div u₀ x = 0) →
       ContDiff ℝ (⊤ : ℕ∞) u₀ →
       Integrable (fun x : T3 => ‖u₀ x‖ ^ 2) →
+      BddAbove (Set.range fun x => ‖vorticity u₀ x‖) →
       ∃ (u : ℝ → VelocityField) (p : ℝ → PressureField),
         NS_PDE u p ν ∧
         u 0 = u₀ ∧
@@ -83,10 +94,11 @@ public theorem frohmanian_tether_theorem
   refine ⟨TetherKernel, ?_, ?_⟩
   · intro B α hrepr hα ω F G
     exact uniqueness_of_kernel_density B α hrepr hα ω F G
-  · intro u₀ ν hνpos hdiv hsm hE
+  · intro u₀ ν hνpos hdiv hsm hE hω₀
     obtain ⟨u, p, hNS, hu0, hsm, -, hnn, hdiv⟩ :=
-      TetheredLyapunov.conditional_regularity u₀ ν (hKato u₀ ν hsm hdiv hE hνpos) (hcont u₀ ν)
-        (TetheredLyapunov.localTetherBound_of_localTetherRate (hDI u₀ ν))
+      TetheredLyapunov.conditional_regularity u₀ ν (hKato u₀ ν hsm hdiv hE hνpos)
+        (hcont u₀ ν hνpos)
+        (TetheredLyapunov.localTetherBound_of_localTetherRate (hDI u₀ ν hνpos hω₀))
     exact ⟨u, p, hNS, hu0, hsm, hnn, hdiv⟩
 
 /-! ## Abstract (exact formulation supplied by the author) -/

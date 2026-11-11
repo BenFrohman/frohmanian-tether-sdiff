@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetheredLyapunov.lean, line 1572
+public theorem localTetherBound_of_localTetherRate {u₀ : VelocityField} {ν : ℝ}
+    (h : LocalTetherRate u₀ ν) : LocalTetherBound u₀ ν := ...

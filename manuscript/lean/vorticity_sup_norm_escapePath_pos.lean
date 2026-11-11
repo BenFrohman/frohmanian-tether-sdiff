@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherDefinitionAudit.lean, line 200
+public theorem vorticity_sup_norm_escapePath_pos {t : ℝ} (ht : 0 < t) :
+    vorticity_sup_norm (vorticity (escapePath t)) = t⁻¹ := ...

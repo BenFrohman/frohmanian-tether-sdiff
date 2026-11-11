@@ -1,0 +1,3 @@
+-- FrohmanianTether/TetherDefinitionAudit.lean, line 49
+public theorem vorticity_sup_norm_eq_zero_of_not_bddAbove {w : VorticityField}
+    (h : ¬ BddAbove (Set.range fun x => ‖w x‖)) : vorticity_sup_norm w = 0 := ...

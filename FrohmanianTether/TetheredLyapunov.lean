@@ -1455,19 +1455,28 @@ chosen before the interval: `LocalFiniteTimeVorticityBound` (finite horizon) or 
 `pde` field; they were removed. -/
 
 /-- **Local tether bound** (category (d), OPEN; by BKM as hard as regularity): one ceiling `Y`
-for `‖ω(t)‖_∞` along every smooth physical solution from `u₀` on every interval `[0, T]`. -/
+for `‖ω(t)‖_∞` along every smooth physical solution from `u₀` on every interval `[0, T]`.
+**0.1.5:** the clause `BddAbove (range ‖ω(t, ·)‖)` is part of the bound. `vorticity_sup_norm` is
+a real `iSup`, `0` on unbounded ranges, so without the clause the 0.1.4 form imposed no
+constraint at times where `ω(t)` is unbounded
+(`TetherDefinitionAudit.localTetherBoundV014_constraint_free_of_unbounded`). -/
 @[expose] public def LocalTetherBound (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∃ Y : ℝ, ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
     IsLocalPhysicalSolution ν T u₀ u p →
-      ∀ t ∈ Set.Icc (0 : ℝ) T, vorticity_sup_norm (vorticity (u t)) ≤ Y
+      ∀ t ∈ Set.Icc (0 : ℝ) T,
+        BddAbove (Set.range fun x => ‖vorticity (u t) x‖) ∧
+          vorticity_sup_norm (vorticity (u t)) ≤ Y
 
 /-- **Local finite-horizon vorticity bound** (category (d), OPEN): for every horizon `T₀` one
 constant `C`, chosen before the interval, bounds `‖ω(t)‖_∞` along every smooth physical
-solution from `u₀` on every `[0, T]` with `T ≤ T₀`. -/
+solution from `u₀` on every `[0, T]` with `T ≤ T₀`. **0.1.5:** with the `BddAbove` clause, as in
+`LocalTetherBound`. -/
 @[expose] public def LocalFiniteTimeVorticityBound (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ T₀ : ℝ, ∃ C : ℝ, ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
     T ≤ T₀ → IsLocalPhysicalSolution ν T u₀ u p →
-      ∀ t ∈ Set.Icc (0 : ℝ) T, vorticity_sup_norm (vorticity (u t)) ≤ C
+      ∀ t ∈ Set.Icc (0 : ℝ) T,
+        BddAbove (Set.range fun x => ‖vorticity (u t) x‖) ∧
+          vorticity_sup_norm (vorticity (u t)) ≤ C
 
 public theorem localFiniteTimeVorticityBound_of_localTetherBound
     {u₀ : VelocityField} {ν : ℝ} (h : LocalTetherBound u₀ ν) :
@@ -1505,19 +1514,58 @@ public theorem comparison_ode_stability_Icc
     (a := 0) (b := t) (B := fun _ => Y + ε) (B' := fun _ => (0 : ℝ))
     hyC hyW hy0 hB hcontact ⟨ht.1, le_rfl⟩
 
+/-- **Finite-interval Riccati comparison, right-derivative form** (PROVED): if `y` is continuous
+on `[0, T]` and at every `s ∈ [0, T)` has a right derivative `d ≤ C y(s)² − κ'' y(s)³`, then
+`y ≤ max (y 0) (C/κ'')` on `[0, T]`. Only values of `y` on `[0, T]` enter. -/
+public theorem comparison_ode_stability_Icc_right
+    (C κ'' : ℝ) (hC : 0 < C) (hκ : 0 < κ'') (y : ℝ → ℝ) (T : ℝ)
+    (hcont : ContinuousOn y (Set.Icc (0 : ℝ) T))
+    (hright : ∀ s ∈ Set.Ico (0 : ℝ) T, ∃ d : ℝ,
+      HasDerivWithinAt y d (Set.Ici s) s ∧ d ≤ C * (y s) ^ 2 - κ'' * (y s) ^ 3)
+    (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) T) :
+    y t ≤ max (y 0) (C / κ'') := by
+  set Y := max (y 0) (C / κ'')
+  refine le_of_forall_pos_le_add fun ε hε => ?_
+  have hbarrier : C / κ'' < Y + ε :=
+    lt_of_le_of_lt (le_max_right (y 0) (C / κ'')) (lt_add_of_pos_right _ hε)
+  have hy0 : y 0 ≤ Y + ε :=
+    (le_max_left (y 0) (C / κ'')).trans (le_add_of_nonneg_right hε.le)
+  have hyC : ContinuousOn y (Icc (0 : ℝ) t) := hcont.mono (Icc_subset_Icc le_rfl ht.2)
+  have hslope : ∀ x ∈ Ico (0 : ℝ) t, ∀ r, C * (y x) ^ 2 - κ'' * (y x) ^ 3 < r →
+      ∃ᶠ z in nhdsWithin x (Ioi x), slope y x z < r := by
+    intro x hx r hr
+    obtain ⟨d, hd, hdle⟩ := hright x ⟨hx.1, hx.2.trans_le ht.2⟩
+    exact hd.liminf_right_slope_le (hdle.trans_lt hr)
+  have hB : ∀ x, HasDerivAt (fun _ : ℝ => Y + ε) (0 : ℝ) x := fun x => hasDerivAt_const x (Y + ε)
+  have hcontact : ∀ x ∈ Ico (0 : ℝ) t, y x = Y + ε →
+      C * (y x) ^ 2 - κ'' * (y x) ^ 3 < 0 := by
+    intro x _ hxeq
+    rw [hxeq]
+    exact AnalyticPipeline.majorant_vector_field_neg_of_gt hC hκ hbarrier
+  exact image_le_of_liminf_slope_right_lt_deriv_boundary (f := y)
+    (f' := fun x => C * (y x) ^ 2 - κ'' * (y x) ^ 3)
+    (a := 0) (b := t) (B := fun _ => Y + ε) (B' := fun _ => (0 : ℝ))
+    hyC hslope hy0 hB hcontact ⟨ht.1, le_rfl⟩
+
 /-- **Local tether rate** (category (d), OPEN): constants `C, κ'' > 0`, chosen before the
 interval, such that along every smooth physical solution from `u₀` on every `[0, T]`,
-`M(t) = ‖ω(t)‖_∞` is differentiable and obeys `M' ≤ C M² − κ'' M³` on `[0, T]`. -/
+`M(t) = ‖ω(t)‖_∞` is continuous on `[0, T]`, has at every `s ∈ [0, T)` a right derivative
+`≤ C M(s)² − κ'' M(s)³`, and `ω(t)` is bounded for `t ∈ [0, T]`.
+**0.1.5:** the 0.1.4 form demanded two-sided `DifferentiableAt` at every `s ∈ [0, T]`; at
+`s = T` that reads the path beyond `T`, where a local solution is unconstrained, and the 0.1.4
+form is false already at `u₀ = 0`
+(`TetherDefinitionAudit.not_localTetherRateV014_zero`). The present form reads `u` on `[0, T]`
+only, and holds at `u₀ = 0` (`ClayStatements.localTetherRate_zero`). -/
 @[expose] public def LocalTetherRate (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∃ C κ'' : ℝ, 0 < C ∧ 0 < κ'' ∧
     ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
       IsLocalPhysicalSolution ν T u₀ u p →
-        (∀ s ∈ Set.Icc (0 : ℝ) T,
-          DifferentiableAt ℝ (fun τ => vorticity_sup_norm (vorticity (u τ))) s) ∧
-        (∀ s ∈ Set.Icc (0 : ℝ) T,
-          deriv (fun τ => vorticity_sup_norm (vorticity (u τ))) s ≤
-            C * vorticity_sup_norm (vorticity (u s)) ^ 2 -
-              κ'' * vorticity_sup_norm (vorticity (u s)) ^ 3)
+        ContinuousOn (fun τ => vorticity_sup_norm (vorticity (u τ))) (Set.Icc (0 : ℝ) T) ∧
+        (∀ s ∈ Set.Ico (0 : ℝ) T, ∃ d : ℝ,
+          HasDerivWithinAt (fun τ => vorticity_sup_norm (vorticity (u τ))) d (Set.Ici s) s ∧
+            d ≤ C * vorticity_sup_norm (vorticity (u s)) ^ 2 -
+              κ'' * vorticity_sup_norm (vorticity (u s)) ^ 3) ∧
+        (∀ t ∈ Set.Icc (0 : ℝ) T, BddAbove (Set.range fun x => ‖vorticity (u t) x‖))
 
 /-- **PROVED**: the local rate implies the local bound, with the uniform ceiling
 `max (‖ω(u₀)‖_∞) (C/κ'')` (every solution starts at `u₀`). -/
@@ -1525,9 +1573,10 @@ public theorem localTetherBound_of_localTetherRate {u₀ : VelocityField} {ν : 
     (h : LocalTetherRate u₀ ν) : LocalTetherBound u₀ ν := by
   obtain ⟨C, κ'', hC, hκ, hr⟩ := h
   refine ⟨max (vorticity_sup_norm (vorticity u₀)) (C / κ''), fun T u p hu t ht => ?_⟩
-  obtain ⟨hd, hdi⟩ := hr T u p hu
-  have := comparison_ode_stability_Icc C κ'' hC hκ
-    (fun τ => vorticity_sup_norm (vorticity (u τ))) T hd hdi t ht
+  obtain ⟨hc, hd, hbdd⟩ := hr T u p hu
+  refine ⟨hbdd t ht, ?_⟩
+  have := comparison_ode_stability_Icc_right C κ'' hC hκ
+    (fun τ => vorticity_sup_norm (vorticity (u τ))) T hc hd t ht
   simpa [hu.1] using this
 
 /-- **Kato–BKM global continuation** (category (b): classical, not formalized). If a local smooth
@@ -1697,6 +1746,7 @@ public theorem riccati_ceiling_of_vorticity_di
 #print axioms conditional_regularity
 #print axioms conditional_regularity_of_local_bound
 #print axioms comparison_ode_stability_Icc
+#print axioms comparison_ode_stability_Icc_right
 #print axioms localTetherBound_of_localTetherRate
 #print axioms global_solutions_eq_of_uniqueness
 #print axioms riccati_ceiling_of_vorticity_di
