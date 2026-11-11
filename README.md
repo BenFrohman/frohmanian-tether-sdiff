@@ -1,4 +1,4 @@
-# The Frohmanian Tether on SDiff(𝕋³)
+# The Frohmanian Tether Bound ⇒ Global Smoothness on 𝕋³ (kernel-checked, conditional)
 
 [![Lean certificate](https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/workflows/certify.yml/badge.svg?branch=main)](https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/workflows/certify.yml)
 [![Lean 4](https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/workflows/lean.yml/badge.svg?branch=main)](https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/workflows/lean.yml)
@@ -6,10 +6,9 @@
 [![Mathlib](https://img.shields.io/badge/Mathlib-v4.30.0--rc1-blue.svg)](https://github.com/leanprover-community/mathlib4)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0006--7068--3718-brightgreen.svg)](https://orcid.org/0009-0006-7068-3718)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24120781.svg)](https://doi.org/10.5281/zenodo.24120781)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24122596.svg)](https://doi.org/10.5281/zenodo.24122596)
 
-Lean 4 formalization and manuscript for *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic
-Correction, Its Canonicity, and an Obstruction to Damping* (Benjamin Stanley Frohman).
+Lean 4 formalization and manuscript for *The Frohmanian Tether Bound Implies Global Smoothness on 𝕋³ under Beale–Kato–Majda Continuation, and Implies BKM Integrability: Kernel-Checked Conditional Theorems in Lean 4* (Benjamin Stanley Frohman), version 0.1.5.
 
 ## Scope (read this first)
 
@@ -18,6 +17,39 @@ global regularity of the 3D Navier–Stokes equations and makes no claim toward 
 Problem.** All results about the full program are *conditional
 implications*: every open assumption is an explicit Lean hypothesis (full list by Lean name under
 "Remaining assumptions" below).
+
+## Main results (version 0.1.5)
+
+**Main Theorem (kernel-checked)** — `FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound`:
+
+```lean
+theorem clay_B_exact_of_periodic_tether_bound
+    (hclose : ∀ ν > (0 : ℝ), PeriodicTetherClosingBound ν)
+    (hBKM : ∀ ν > (0 : ℝ), PeriodicBKMContinuation ν) : Clay_B_exact
+```
+
+`PeriodicTetherClosingBound ν` is **the Frohmanian tether bound**: for every smooth divergence-free
+ℤ³-periodic `u₀` there is one `Y` with `‖ω(t)‖_∞ ≤ Y` along every classical periodic solution from `u₀` on
+every `[0, T)`. `PeriodicBKMContinuation ν` is the Beale–Kato–Majda continuation hypothesis (such a
+ceiling yields a global smooth periodic solution). Both are open hypotheses.
+
+**Second theorem (kernel-checked)** — `FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound`:
+`PeriodicTetherBound ν u₀ → PeriodicBKMIntegrability ν u₀`, i.e. `∫⁻ t in Ico 0 T, ofReal ‖ω(t)‖_∞ ≤ ofReal (max Y 0 * max T₀ 0)`
+for every classical periodic solution on `[0, T)`, `T ≤ T₀`.
+
+**Converse (not a theorem here).** BKM integrability ⇒ tether bound is true classical mathematics
+conditional on three pillars — the Beale–Kato–Majda theorem, uniqueness of classical periodic solutions,
+and long-time decay — which are being formalized. See the paper, Section 2.1.
+
+**Corrections in 0.1.5** (module `TetherDefinitionAudit`, all kernel-checked): the 0.1.4
+`LocalTetherBound`/`LocalFiniteTimeVorticityBound` were constraint-free at times of unbounded vorticity
+(junk value `vorticity_sup_norm = 0`; now guarded by `BddAbove`), and the 0.1.4 `LocalTetherRate` is
+refuted (`not_forall_localTetherRateV014`: an explicit local solution from `u₀ = 0` has `‖ω(t)‖_∞ = 1/t`), so
+the 0.1.4 `frohmanian_tether_theorem` held vacuously. The corrected `LocalTetherRate` uses right
+derivatives and holds at zero data (`localTetherRate_zero`). Changed statements: `LocalTetherBound`,
+`LocalFiniteTimeVorticityBound`, `LocalTetherRate`, `LocalTetherClosingBound`,
+`frohmanian_conditional_regularity_of_closing_bound`, `frohmanian_tether_theorem`; exact diffs in the paper
+(Section 3.3) and in [`CERTIFICATE.md`](CERTIFICATE.md).
 
 ## Reproduce (one command)
 
@@ -183,7 +215,7 @@ the stretching estimates at a spatial maximum, and the bridges built on the stra
 `CERTIFICATE.md`. `ConditionalRegularity.frohmanian_tether_theorem` lost its antisymmetric clause and the
 hypotheses `hTlb`, `hInt` and `huniq_shift`. `KatoLocalWitness` now asks for the equations only on
 its interval `[0, T]`. `frohmanian_tether_theorem` now takes `hKato` (local existence),
-`hcont : ∀ u₀ ν, BKMGlobalContinuation u₀ ν` and `hDI : ∀ u₀ ν, LocalTetherRate u₀ ν`.
+`hcont : ∀ u₀ ν, 0 < ν → BKMGlobalContinuation u₀ ν` and `hDI : ∀ u₀ ν, 0 < ν → BddAbove (Set.range fun x => ‖vorticity u₀ x‖) → LocalTetherRate u₀ ν` (0.1.5; in 0.1.4 `hDI` was unsatisfiable).
 
 ## Remaining assumptions (explicit hypotheses; no axioms)
 
@@ -192,12 +224,13 @@ its interval `[0, T]`. `frohmanian_tether_theorem` now takes `hKato` (local exis
   * `BKMGlobalContinuation` (Kato plus Beale–Kato–Majda continuation; the classical theorem uses
     `H^s` data, the library `C^∞ ∩ L²` data on ℝ³).
   * `SmoothPhysicalUniqueness` (uniqueness of smooth solutions; only for uniqueness clauses).
-  * `PeriodicBKMContinuation`, `KatoUniquenessOnExistenceTimes` (auxiliary lemmas) and
+  * `PeriodicBKMContinuation` (hypothesis `hBKM` of the Main Theorem), `KatoUniquenessOnExistenceTimes` (auxiliary lemmas) and
     `IsCoadjointMotion` for the Euler flow (Arnold).
 * **(d) Equivalent in strength to the open problem:**
-  * `LocalTetherRate` (cubic rate for `‖ω‖∞`, also requiring its time-differentiability).
-  * `LocalTetherBound` and `LocalTetherClosingBound`.
-  * `PeriodicTetherClosingBound` and `PeriodicDirectionDepletionBound`.
+  * The Frohmanian tether bound `PeriodicTetherClosingBound` (hypothesis `hclose` of the Main Theorem) and its per-datum form `PeriodicTetherBound`.
+  * `LocalTetherRate` (cubic rate for `‖ω‖∞` as a right-derivative inequality, 0.1.5).
+  * `LocalTetherBound` and `LocalTetherClosingBound` (with bounded vorticity, 0.1.5).
+  * `PeriodicDirectionDepletionBound`.
   * The global-path forms `FrohmanianTetherRate`, `FrohmanianTetherBound`,
     `FrohmanianTetherClosingBound` and `RiccatiMajorantExists` (auxiliary lemmas only).
 
@@ -220,7 +253,7 @@ its interval `[0, T]`. `frohmanian_tether_theorem` now takes `hKato` (local exis
   `Clay_B_exact_with_energy`, `ZeroDerivAlongEnergy`, and the regularity side conditions
   `VorticityTransportRegularity`, `SpatialMaxVorticityEnvelope`, `PeriodicCellPhysicalNSSolution`,
   `VolumePreservingCoadjointAction`.
-* Unchanged by 0.1.4: the explicit flows discharge none of the hypotheses above (they are vacuous at
+* The explicit flows discharge none of the hypotheses above (they are vacuous at
   periodic data, see "Explicit exact solutions").
 
 ## Mathlib names
@@ -253,9 +286,9 @@ lake env lean scripts/AxiomAudit.lean
 lake env lean scripts/PrintAxioms.lean
 ```
 
-Build: 2795 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
-`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 1074 declarations in the 33
-`FrohmanianTether.*` modules, including 760 theorem constants (670 stated in the sources, 90
+Build: 2797 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
+`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 1101 declarations in the 35
+`FrohmanianTether.*` modules, including 782 theorem constants (690 stated in the sources, 92
 auto-generated equation/congruence/injectivity lemmas), and **fails** if any depends on an axiom other
 than `propext`, `Classical.choice`, `Quot.sound` (so `sorryAx` and `native_decide` are rejected). Both
 checks run in CI (`.github/workflows/certify.yml`). See [`CERTIFICATE.md`](CERTIFICATE.md).
@@ -268,7 +301,7 @@ hypothesis.
 
 * `FrohmanianTether/` — Lean modules (originally extracted from the author's NS_Millennium_Proof
   project, branch `sdiff-abstract-action`, commit `0c9cfdb`; this repository is now standalone).
-* `manuscript/main.tex`, `manuscript/main.pdf` — the paper (version 0.1.4 preprint; conditional results). It quotes the Lean statements
+* `manuscript/main.tex`, `manuscript/main.pdf` — the paper (version 0.1.5 preprint; conditional results). It quotes the Lean statements
   verbatim from `manuscript/lean/`, generated by `python3 scripts/extract_statements.py`; build with
   `cd manuscript && tectonic main.tex`.
 * `scripts/verify.sh` (`make verify`) — one-command verification; `scripts/AxiomAudit.lean`,
@@ -278,4 +311,4 @@ hypothesis.
 
 ## License
 
-Apache 2.0 (see `LICENSE`). Cite via `CITATION.cff` or the Zenodo record of version 0.1.4, [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) ([record](https://zenodo.org/records/24120781)), published 2026-11-10 from `main` at `4bcd11c`; it adds the module `ExplicitFlows` (no existing Lean statement changed). Earlier: 0.1.3 [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (DOI-only update of 0.1.2), 0.1.2 [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345). All versions: concept DOI [`10.5281/zenodo.24081999`](https://doi.org/10.5281/zenodo.24081999). The archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)) is version 0.1.1, which still contains the removed hypothesis `KineticEnergyDerivIsVelocity`. Do not cite the older-project DOI `10.5281/zenodo.23717084` (NS_Millennium_Proof) as identifying this repository.
+Apache 2.0 (see `LICENSE`). Cite via `CITATION.cff` or the Zenodo record of version 0.1.5, [`10.5281/zenodo.24122596`](https://doi.org/10.5281/zenodo.24122596) ([record](https://zenodo.org/records/24122596)); it adds the Main Theorem framing, tether ⇒ BKM integrability (module `TetherImpliesBKM`) and the definition audit (module `TetherDefinitionAudit`), and corrects the local tether hypotheses. Earlier: 0.1.4 [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) (module `ExplicitFlows`), 0.1.3 [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (DOI-only update of 0.1.2), 0.1.2 [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345). All versions: concept DOI [`10.5281/zenodo.24081999`](https://doi.org/10.5281/zenodo.24081999). The archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)) is version 0.1.1, which still contains the removed hypothesis `KineticEnergyDerivIsVelocity`.

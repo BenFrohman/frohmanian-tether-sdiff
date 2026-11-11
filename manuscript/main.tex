@@ -20,6 +20,7 @@
 \newcommand{\leanstmt}[1]{\VerbatimInput{lean/#1.lean}}
 \usepackage{seqsplit}
 \newcommand{\lean}[1]{\texttt{\detokenize{#1}}}
+\DeclareUrlCommand\leanbrk{\urlstyle{tt}}\makeatletter\g@addto@macro\UrlBreaks{\do\_}\makeatother
 \DeclareUrlCommand\leanl{\def\UrlBreaks{\do\_\do\.}\urlstyle{tt}}
 \sloppy\setlength{\emergencystretch}{3em}
 
@@ -34,76 +35,59 @@
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 
-\newcommand{\VERSIONDOI}{\href{https://doi.org/10.5281/zenodo.24120781}{10.5281/zenodo.24120781}}
+\newcommand{\VERSIONDOI}{\href{https://doi.org/10.5281/zenodo.24122596}{10.5281/zenodo.24122596}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\T}{\mathbb{T}^3}
 \newcommand{\Tf}{\mathfrak{T}}
 \newcommand{\BS}{\mathrm{BS}}
 
-\title{The Frohmanian Tether on $\mathrm{SDiff}(\mathbb{T}^3)$: A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping\\[0.4em]\large Conditional statements verified in Lean~4}
+\title{The Frohmanian Tether Bound Implies Global Smoothness on $\mathbb{T}^3$ under Beale--Kato--Majda Continuation, and Implies BKM Integrability\\[0.4em]\large Kernel-checked conditional theorems in Lean~4, with the metriplectic tether on $\mathrm{SDiff}(\mathbb{T}^3)$, its canonicity, and an obstruction to damping}
 \author{Benjamin Stanley Frohman\\[0.2em]
 \small Independent Researcher, Texas, United States\\
 \small \href{mailto:frohmanbenjamin@gmail.com}{\texttt{frohmanbenjamin@gmail.com}}\quad
 ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}\\[0.3em]
-\small Companion repository: \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} \\[0.2em]\small Version 0.1.4; this version's DOI: \VERSIONDOI\\[0.3em]\small\textbf{Preprint. Work in progress. All main results are conditional; see Section~\ref{sec:conditional}.}}
+\small Companion repository: \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} \\[0.2em]\small Version 0.1.5; this version's DOI: \VERSIONDOI\\[0.3em]\small\textbf{Preprint. All main results are conditional;}\\\small\textbf{the open hypotheses are collected in Section~\ref{sec:conditional}.}\\\small\textbf{Not a Clay Millennium Problem claim.}}
 \date{10 November 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We describe a Lean~4/Mathlib formalization of the \emph{Frohmanian tether}, a symmetric quadratic
-correction $T(F,G)=-\kappa\,\|\omega\|_{L^2}^2\int\langle\Pi_u\,\delta F/\delta\omega,\Pi_u\,\delta G/\delta\omega\rangle$
-added to the Arnold Lie--Poisson bracket of ideal fluids, where $\Pi_u$ is the $L^2$-orthogonal projection
-away from the velocity $u$ and $\kappa=3/2$. The library proves: the negative-feedback condition (C3)
-unconditionally; a uniqueness (``canonicity'') statement inside a restricted kernel class; and an
-\emph{obstruction to damping}: every symmetric kernel $B$ satisfying the kinetic-energy degeneracy (C2) has
-$B(H,M)=B(M,H)=0$ for every functional $M$, so such a kernel contributes no damping to any functional, in
-particular not to $\|\omega\|_{L^\infty}$. (C2) is not proved for $T$. (C1) with the functionals held
-fixed is refuted for $T$ under a concrete group of measure-preserving maps, using a translation; the
-\emph{transported} (equivariant) form of (C1), in which the functionals move with the vorticity,
-$T(g\cdot\omega;F\circ g^{-1},G\circ g^{-1})=T(\omega;F,G)$, is formalized and \emph{proved} for $T$ under all
-translations (via translation equivariance of the functional gradient and of Biot--Savart); for rotations and
-general volume-preserving diffeomorphisms it is open. Using a new family of smooth, compactly supported,
-divergence-free test fields $\nabla\times(\chi e_2)$ concentrated at any point with any radius, the library
-proves that $T$ satisfies the corrected weight condition of its canonicity theorem (every locally
-integrable density of $T$ equals $-\kappa\|\omega\|^2$ almost everywhere). Version 0.1.2 removes
-every hypothesis of earlier versions that turned out to be false or vacuous, with Lean refutations where
-possible: $\delta H/\delta\omega=u$, transitivity of the action on Casimir levels, the pointwise strain bound
-$\|\nabla u(x)\|\le C\|\omega\|_{L^\infty}$, the invariance hypothesis \texttt{TetherIntegralPreserved}, a
-circular Jacobi lemma, an antisymmetric uniqueness clause that can hold only for $T\equiv0$, and a uniform
-lower bound on local existence times; it also repairs the definition of a physical solution, which in
-earlier versions admitted only solutions constant in time. A further pass rebuilds the functional
-derivative as the unique divergence-free $L^2$ gradient along smooth compactly supported test fields
-(so it is a genuine, choice-free derivative), proves that $T$ is nondegenerate, refutes the unrestricted
-polarization identity for $T$ and the pointwise weight hypothesis of the canonicity theorem, refutes for $T$
-the almost-everywhere weight hypothesis over all (possibly non-measurable) densities and restricts it to
-locally integrable densities, and restricts
-the Kato local-existence witness to its own time interval, which makes the continuation from local to
-global solutions an explicit hypothesis. On the analytic side the library proves a scalar comparison lemma for
-$y'\le Cy^2-\kappa''y^3$ and several conditional implications of the form ``(cubic rate or uniform vorticity
-bound on local solutions) $+$ (Kato local existence) $+$ (Kato--Beale--Kato--Majda continuation) $+$ (uniqueness) $\Rightarrow$
-global smooth solution'', in which every analytic input is an explicit hypothesis. The rate and
-closing-bound hypotheses are open, are not supplied by the tether (its damping coefficient is $0$), and are
-of the same strength as the global regularity problem. Version 0.1.4 adds two explicit moving exact
-solutions, the decaying shear flow $e^{-\nu k^2t}(a\sin kx_2,0,0)$ and the decaying ABC (Beltrami) flow with
-pressure $-|u|^2/2$, proved nonzero and to satisfy the library's Navier--Stokes equations for all $t\ge0$, and,
-for $k=2\pi m$, to be global smooth periodic solutions in the class of the periodic Clay statement for these
-particular data; it also proves that no continuous nonzero $\mathbb{Z}^3$-periodic field has finite energy on
-$\R^3$, so these flows are \emph{not} Kato witnesses (\lean{KatoLocalWitness} is empty for all nonzero periodic
-data) and the $\R^3$-class hypotheses hold only vacuously there. \textbf{Every main result is conditional.} The open
-hypotheses, by Lean name, are: \lean{KatoLocalWitness} (hKato), \lean{BKMGlobalContinuation},
-\lean{SmoothPhysicalUniqueness}, \lean{PeriodicBKMContinuation}, \lean{KatoUniquenessOnExistenceTimes},
-\lean{IsCoadjointMotion} (classical results not in Mathlib); \lean{LocalTetherRate}, \lean{LocalTetherBound},
-\lean{LocalTetherClosingBound}, \lean{PeriodicTetherClosingBound}, \lean{PeriodicDirectionDepletionBound} and the
-global-path forms \lean{FrohmanianTetherRate}, \lean{FrohmanianTetherBound}, \lean{FrohmanianTetherClosingBound},
-\lean{RiccatiMajorantExists} (as strong as the open problem); the kernel-class conditions on a competitor $B$
-in the canonicity theorems; and, for $T$ itself, \lean{DegenerateWRTKineticEnergy} (C2) at regular vorticities.
-\textbf{This work does not prove global regularity of
-the three-dimensional Navier--Stokes equations and makes no claim toward the Clay Millennium Problem.}
-The build (Lean \texttt{v4.30.0-rc1}, Mathlib \texttt{v4.30.0-rc1}, 2795 jobs) contains 760 theorem
-constants (670 stated in the sources and 90 auto-generated equation, congruence and injectivity lemmas) and
-1074 declarations in 33 modules, with no \texttt{sorry}, no \texttt{native\_decide}, no axiom
+We prove, with every step checked by the Lean~4 kernel against Mathlib, that the \emph{Frohmanian tether
+bound}, together with the classical Beale--Kato--Majda continuation hypothesis, implies global smoothness for the
+three-dimensional periodic Navier--Stokes equations, and that the tether bound alone implies Beale--Kato--Majda
+integrability. The tether bound \lean{PeriodicTetherClosingBound ν} asserts that for every smooth,
+divergence-free, $\mathbb{Z}^3$-periodic datum $u_0$ there is one ceiling $Y$ with
+$\|\omega(t)\|_{L^\infty}\le Y$ along every classical periodic solution from $u_0$ on every interval $[0,T)$.
+\textbf{Main Theorem} (\lean{clay_B_exact_of_periodic_tether_bound}): if, for every $\nu>0$,
+\lean{PeriodicTetherClosingBound ν} and the Beale--Kato--Majda continuation hypothesis
+\lean{PeriodicBKMContinuation ν} hold, then the formal version \lean{Clay_B_exact} of Fefferman's statement (B)
+holds. \textbf{Second theorem} (\lean{periodicBKMIntegrability_of_periodicTetherBound}): the tether bound at a
+datum implies Beale--Kato--Majda integrability there, $\int_{[0,T)}\|\omega(t)\|_{L^\infty}\,dt\le
+\max(Y,0)\max(T_0,0)$ for every solution on $[0,T)$, $T\le T_0$. The converse, BKM integrability $\Rightarrow$
+tether bound, is true classical mathematics conditional on three classical pillars (the Beale--Kato--Majda
+theorem, uniqueness of classical periodic solutions, long-time decay); it is described in a separate section,
+is not stated as a theorem, and is being formalized. Both hypotheses of the Main Theorem are open, and the
+tether bound is as strong as statement (B) itself.
+
+Version 0.1.5 also corrects the $\R^3$-class local hypotheses of version 0.1.4, with Lean proofs of both defects:
+the real supremum \lean{vorticity_sup_norm} takes the junk value $0$ on unbounded vorticity, so the 0.1.4
+ceiling imposed no constraint at such times (now guarded by \lean{BddAbove}); and the 0.1.4
+\lean{LocalTetherRate} demanded two-sided differentiability of $\|\omega\|_{L^\infty}$ at the right endpoint,
+which reads the path beyond the interval: an explicit local solution from $u_0=0$ with
+$\|\omega(t)\|_{L^\infty}=t^{-1}$ refutes it, so the 0.1.4 \lean{frohmanian_tether_theorem} held vacuously. The
+corrected rate uses right derivatives and holds at zero data. Every changed statement is listed.
+
+The library further formalizes the tether $T(F,G)=-\kappa\|\omega\|_{L^2}^2\int\langle\Pi_u\,\delta F/\delta\omega,
+\Pi_u\,\delta G/\delta\omega\rangle$, a symmetric correction to the Arnold Lie--Poisson bracket, and proves the
+negative-feedback condition (C3), the transported form of (C1) under translations, canonicity inside a
+restricted kernel class, the corrected weight condition via concentrated divergence-free test fields, an
+\emph{obstruction to damping} (every symmetric kernel satisfying the energy degeneracy (C2) has $B(H,M)=0$ for
+every $M$), and the decaying shear and ABC flows as exact global periodic solutions for their own data.
+\textbf{This work does not prove global regularity of the three-dimensional Navier--Stokes equations and is not a
+Clay Millennium Problem claim.} The build (Lean \texttt{v4.30.0-rc1}, Mathlib \texttt{v4.30.0-rc1}, 2797 jobs) contains 782 theorem
+constants (690 stated in the sources and 92 auto-generated equation, congruence and injectivity lemmas) and
+1101 declarations in 35 modules, with no \texttt{sorry}, no \texttt{native\_decide}, no axiom
 declarations, and every declaration depending only on \texttt{propext}, \texttt{Classical.choice} and
 \texttt{Quot.sound}; this is enforced in continuous integration and reproduced from a fresh clone by
 the single command \texttt{bash scripts/verify.sh} (or \texttt{make verify}).
@@ -127,6 +111,10 @@ This paper reports exactly what the accompanying Lean~4 library proves. The Lean
 source of truth: every result below is stated to match a checked Lean declaration, with every hypothesis
 made explicit, and the exact Lean text is reproduced in Appendix~\ref{app:lean}. The main findings are:
 \begin{enumerate}[label=(\roman*)]
+\item \emph{Main results} (Section~\ref{sec:main}). The Frohmanian tether bound together with periodic BKM
+continuation implies the formal statement (B) (Theorem~\ref{thm:mainA}); the tether bound implies BKM
+integrability datum by datum (Theorem~\ref{thm:mainB}). The converse direction and its three classical pillars are
+described in Section~\ref{sec:converse}. Section~\ref{sec:corr} corrects the local hypotheses of 0.1.4.
 \item The tether $T$ satisfies (C3) unconditionally (Section~\ref{sec:tether}). (C2) is not proved. (C1)
 with fixed functionals is refuted for $T$; the transported form of (C1) is proved for $T$ under translations
 (Section~\ref{sec:c1t}). The identification $\delta H/\delta\omega=u$ assumed for (C2) in earlier versions is false with the
@@ -157,15 +145,19 @@ smoothness or uniqueness of solutions of the three-dimensional Navier--Stokes eq
 conclusion mentions global solutions is an implication from hypotheses that are open. Section~\ref{sec:does}
 lists precisely what the Lean development does and does not prove.
 
-\subsection{The results are conditional}\label{sec:conditional}
+\subsection{Open hypotheses}\label{sec:conditional}
 Every theorem of this paper whose conclusion concerns Navier--Stokes solutions, and the canonicity theorems,
-is an \emph{implication} whose hypotheses are not proved. The complete list of open hypotheses, by Lean name:
+is an \emph{implication} whose hypotheses are not proved. This is the single list of unproved inputs, by Lean
+name; no other section introduces one.
 \begin{itemize}[leftmargin=1.2em]
 \item \emph{Classical results not in Mathlib:} \lean{KatoLocalWitness} (argument \texttt{hKato}),
-\lean{BKMGlobalContinuation}, \lean{SmoothPhysicalUniqueness}, \lean{PeriodicBKMContinuation},
+\lean{BKMGlobalContinuation}, \lean{SmoothPhysicalUniqueness}, \lean{PeriodicBKMContinuation} (hypothesis (ii)
+of the Main Theorem),
 \lean{KatoUniquenessOnExistenceTimes}, \lean{IsCoadjointMotion}.
-\item \emph{As strong as the open problem:} \lean{LocalTetherRate}, \lean{LocalTetherBound},
-\lean{ClayStatements.LocalTetherClosingBound}, \lean{ClayStatements.PeriodicTetherClosingBound},
+\item \emph{As strong as the open problem:} the Frohmanian tether bound \lean{ClayStatements.PeriodicTetherClosingBound}
+(hypothesis (i) of the Main Theorem) and its per-datum form \lean{TetherImpliesBKM.PeriodicTetherBound} (hypothesis of
+Theorem~\ref{thm:mainB}); \lean{LocalTetherRate}, \lean{LocalTetherBound},
+\lean{ClayStatements.LocalTetherClosingBound},
 \lean{PeriodicDirectionDepletionBound}; global-path forms (auxiliary lemmas only) \lean{FrohmanianTetherRate},
 \lean{FrohmanianTetherBound}, \lean{FrohmanianTetherClosingBound}, \lean{RiccatiMajorantExists}.
 \item \emph{Kernel-class conditions on a competitor $B$} (canonicity theorems): symmetry,
@@ -177,11 +169,12 @@ All of them are proved for $B=T$ except (C2) (and except unrestricted polarizati
 a hypothesis in Corollary~\ref{cor:obstr}; transport-invariance of $T$ under rotations and general
 volume-preserving diffeomorphisms (not formalized).
 \end{itemize}
-None of these is an axiom; each is an explicit argument or a named \lean{Prop}.
+None of these is an axiom; each is an explicit argument or a named \lean{Prop}. The classical pillars (P1)--(P3)
+of Section~\ref{sec:converse} are not hypotheses of any theorem; they describe the converse direction, which is
+not claimed.
 
 \paragraph{Version note.} Version 0.1.0 of this manuscript named a different repository
-(\texttt{NS\_Millennium\_Proof}), quoted theorem and job counts of that repository, and cited a Zenodo DOI
-belonging to it. Version 0.1.1 refers only to the standalone repository above and uses the counts
+and quoted theorem and job counts of that repository. Version 0.1.1 refers only to the standalone repository above and uses the counts
 produced by its own build (Appendix~\ref{app:cert}).
 Version 0.1.2 removes the hypothesis \lean{KineticEnergyDerivIsVelocity} ($\delta H/\delta\omega=u$) and
 every theorem that assumed it or its pointwise form (the (C2) theorems
@@ -199,7 +192,208 @@ conditions for $T$ (Section~\ref{sec:canon}), and restricts the Kato witness to 
 for $T$; a fifth pass constructs concentrated divergence-free test fields, proves the corrected weight
 condition for $T$ (Section~\ref{sec:testfields}) and proves the transported (C1) for translations
 (Section~\ref{sec:c1t}).
-Version 0.1.3 (\href{https://doi.org/10.5281/zenodo.24102715}{10.5281/zenodo.24102715}) added only its DOI to 0.1.2 (\href{https://doi.org/10.5281/zenodo.24102345}{10.5281/zenodo.24102345}). This version, 0.1.4 (DOI \VERSIONDOI), adds the module \lean{ExplicitFlows} (Section~\ref{sec:explicit}): the decaying shear and ABC flows as exact solutions, their periodic smoothness, and the proof that no nonzero periodic field can be a \lean{KatoLocalWitness}. No existing Lean statement was changed. All versions are collected under the concept DOI \href{https://doi.org/10.5281/zenodo.24081999}{10.5281/zenodo.24081999}. The Zenodo version DOI of this repository's \texttt{v0.1.1} archive is \href{https://doi.org/10.5281/zenodo.24082000}{10.5281/zenodo.24082000} (GitHub tag \texttt{v0.1.1} / commit \texttt{0722b16}); it still contains the removed hypothesis \lean{KineticEnergyDerivIsVelocity}. The older-project DOI \texttt{10.5281/zenodo.23717084} belongs to \texttt{NS\_Millennium\_Proof} and does \emph{not} identify this repository. This manuscript is not peer-reviewed and is not an unconditional Navier--Stokes proof.
+Version 0.1.3 (\href{https://doi.org/10.5281/zenodo.24102715}{10.5281/zenodo.24102715}) added only its DOI to 0.1.2 (\href{https://doi.org/10.5281/zenodo.24102345}{10.5281/zenodo.24102345}). Version 0.1.4 (\href{https://doi.org/10.5281/zenodo.24120781}{10.5281/zenodo.24120781}) added the module \lean{ExplicitFlows} (Section~\ref{sec:explicit}): the decaying shear and ABC flows as exact solutions, their periodic smoothness, and the proof that no nonzero periodic field can be a \lean{KatoLocalWitness}; no existing Lean statement was changed. This version, 0.1.5 (DOI \VERSIONDOI), adds the modules \lean{TetherImpliesBKM} and \lean{TetherDefinitionAudit} (Section~\ref{sec:main}) and corrects the local hypotheses \lean{LocalTetherBound}, \lean{LocalFiniteTimeVorticityBound} and \lean{LocalTetherRate}; the exact statement changes are listed in Section~\ref{sec:diff}. All versions are collected under the concept DOI \href{https://doi.org/10.5281/zenodo.24081999}{10.5281/zenodo.24081999}. The Zenodo version DOI of this repository's \texttt{v0.1.1} archive is \href{https://doi.org/10.5281/zenodo.24082000}{10.5281/zenodo.24082000} (GitHub tag \texttt{v0.1.1} / commit \texttt{0722b16}); it still contains the removed hypothesis \lean{KineticEnergyDerivIsVelocity}. This manuscript is not peer-reviewed and is not an unconditional Navier--Stokes proof.
+
+%=====================================================================
+\section{Main results of version 0.1.5}\label{sec:main}
+
+Throughout, $M(t)=\|\omega(t)\|_{L^\infty}$ is \lean{vorticity_sup_norm (vorticity (u t))}, and
+\lean{IsPeriodicSmoothSolutionOn ν T u₀ u p} is the class of classical solutions on $[0,T)$: $(u,p)$ jointly
+$C^\infty$ on $[0,T)\times\R^3$, the equations with one-sided time derivative and zero forcing,
+$\operatorname{div}u=0$, $u(0)=u_0$, and $u(t),p(t)$ $\mathbb{Z}^3$-periodic (exact text in
+Appendix~\ref{app:lean:clay}).
+
+\begin{definition}[The Frohmanian tether bound]\label{def:ptb}
+\emph{Lean:} \leanbrk{TetherImpliesBKM.PeriodicTetherBound}.\par\noindent
+For $\nu\in\R$ and a field $u_0$, \lean{PeriodicTetherBound ν u₀} asserts that there is $Y\in\R$ such that
+$M(t)\le Y$ for every $T$, every classical periodic solution $(u,p)$ from $u_0$ on $[0,T)$ and every
+$t\in[0,T)$. The \emph{closing bound} \lean{PeriodicTetherClosingBound ν} asserts \lean{PeriodicTetherBound ν u₀}
+for every smooth divergence-free $\mathbb{Z}^3$-periodic $u_0$; this is a definitional identity
+(\lean{periodicTetherClosingBound_iff}, proved by \lean{Iff.rfl}).
+\end{definition}
+
+\begin{definition}[Periodic Beale--Kato--Majda integrability]
+\emph{Lean:} \leanbrk{TetherImpliesBKM.PeriodicBKMIntegrability}.\par\noindent
+\lean{PeriodicBKMIntegrability ν u₀} asserts: for every horizon $T_0\in\R$ there is $C\in[0,\infty)$ such
+that
+\[
+\int_{[0,T)} M(t)\,dt\;\le\;C
+\]
+for every $T\le T_0$ and every classical periodic solution from $u_0$ on $[0,T)$. The integral is the lower
+Lebesgue integral $\int^{-}_{[0,T)}\mathrm{ofReal}(M(t))\,dt\in[0,\infty]$ (Mathlib's \lean{lintegral} with
+\lean{ENNReal.ofReal}), so no measurability side condition is involved.
+\end{definition}
+
+\begin{theorem}[Main theorem, kernel-checked]\label{thm:mainA}
+\emph{Lean:} \leanbrk{ClayStatements.clay_B_exact_of_periodic_tether_bound}.\par\noindent
+Assume, for every $\nu>0$,
+\begin{enumerate}[label=(\roman*)]
+\item \lean{PeriodicTetherClosingBound ν} (the Frohmanian tether bound, Definition~\ref{def:ptb}), and
+\item \lean{PeriodicBKMContinuation ν}: for every smooth divergence-free $\mathbb{Z}^3$-periodic $u_0$, a single
+ceiling $Y$ for $M$ along all classical periodic solutions from $u_0$ on all intervals $[0,T)$ yields a global
+solution $(u,p)$ satisfying \lean{IsPeriodicSmoothSolution ν u₀ (fun _ _ => 0) u p}.
+\end{enumerate}
+Then \lean{Clay_B_exact} holds: for every $\nu>0$ and every smooth, divergence-free, $\mathbb{Z}^3$-periodic
+$u_0$ there exist $(u,p)$, jointly $C^\infty$ on $[0,\infty)\times\R^3$, solving the Navier--Stokes equations
+with zero forcing, with $u(0)=u_0$ and $u(t),p(t)$ periodic for all $t\ge0$.
+\end{theorem}
+
+Hypothesis (ii) packages three classical results that are not formalized: local existence of classical
+periodic solutions, their uniqueness, and the continuation of a solution whose vorticity stays bounded
+(Beale--Kato--Majda \cite{BKM1984}). Its antecedent is literally the body of (i); the proof of
+Theorem~\ref{thm:mainA} is therefore the composition of (ii) with (i), and the analytic content lies entirely in
+the two hypotheses. Hypothesis (i) is the key estimate. It is open; it is not supplied by the tether kernel of
+Sections~\ref{sec:tether}--\ref{sec:damping}; and it is as strong as statement (B) itself (for $\nu>0$, global
+smoothness on $\T$ together with the decay of the energy gives a time-uniform bound on $M$).
+
+\begin{theorem}[Tether bound $\Rightarrow$ BKM integrability, kernel-checked]\label{thm:mainB}
+\emph{Lean:} \leanbrk{TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound}.\par\noindent
+For every $\nu\in\R$ and every field $u_0$, \lean{PeriodicTetherBound ν u₀} implies
+\lean{PeriodicBKMIntegrability ν u₀}. Explicitly, if $M\le Y$ along every classical periodic solution from
+$u_0$, then for every $T_0$ the constant $C=\max(Y,0)\cdot\max(T_0,0)$ bounds $\int_{[0,T)}M(t)\,dt$ for every
+such solution on $[0,T)$ with $T\le T_0$.
+\end{theorem}
+
+\begin{proof}
+For $t\in[0,T)$, $\mathrm{ofReal}(M(t))\le\mathrm{ofReal}(\max(Y,0))$, so by monotonicity of the lower
+integral on the measurable set $[0,T)$ (\lean{setLIntegral_mono'}), \lean{setLIntegral_const} and
+\lean{Real.volume_Ico}, the integral is at most $\mathrm{ofReal}(\max(Y,0))\cdot\mathrm{ofReal}(T)\le
+\mathrm{ofReal}(\max(Y,0)\max(T_0,0))<\infty$.
+\end{proof}
+
+\begin{corollary}[kernel-checked]
+\emph{Lean:} \leanbrk{TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherClosingBound}.\par\noindent
+\lean{PeriodicTetherClosingBound ν} implies \lean{PeriodicBKMIntegrability ν u₀} for every smooth
+divergence-free $\mathbb{Z}^3$-periodic $u_0$.
+\end{corollary}
+
+\subsection{The converse direction: status (not a theorem of this paper)}\label{sec:converse}
+For $\nu>0$ and a fixed smooth divergence-free periodic $u_0$, the converse implication
+\lean{PeriodicBKMIntegrability ν u₀} $\Rightarrow$ \lean{PeriodicTetherBound ν u₀} is true classical mathematics,
+by the following route; it is \emph{not} proved in Lean, and no statement of this paper asserts it.
+\begin{enumerate}[label=(P\arabic*)]
+\item \emph{Beale--Kato--Majda continuation} \cite{BKM1984}: if $\int_0^{T}M\,dt<\infty$ along the maximal
+classical solution, the solution extends beyond $T$; with BKM integrability on every horizon the solution is
+global.
+\item \emph{Uniqueness of classical periodic solutions} (energy estimate for the difference and Gronwall), so
+that every classical solution on $[0,T)$ is the restriction of the global one.
+\item \emph{Long-time decay}: by the energy inequality $\int_0^\infty\|\nabla u\|_{L^2}^2\,dt<\infty$, so
+$\|\nabla u(t_0)\|_{L^2}$ is small at some $t_0$; small-data global theory and parabolic smoothing then give
+$\sup_{t\ge t_0+1}M(t)<\infty$, and continuity bounds $M$ on $[0,t_0+1]$. (A nonzero mean velocity is removed by
+a Galilean change of frame, which does not change $\omega$.)
+\end{enumerate}
+These three pillars are the formalization targets of the follow-up work; (P2) is the first, and it also discharges
+the uniqueness input contained in \lean{PeriodicBKMContinuation}. With (P1)--(P3) the two bounds are equivalent
+datum by datum. Over all data the two statements are each classically equivalent to statement (B), so the equivalence
+locates the tether bound exactly at Beale--Kato--Majda strength; it does not reduce the open problem.
+
+\paragraph{Boundedness of $\omega(t)$ in the periodic class.} For $t\in[0,T)$ a classical periodic solution has
+$\omega(t)$ continuous and periodic, hence bounded, so the real supremum \lean{vorticity_sup_norm} takes its genuine
+value there. This classical fact is not formalized and is used by no theorem.
+
+%=====================================================================
+\section{Corrections in version 0.1.5: the local tether hypotheses}\label{sec:corr}
+
+The definitions of the $\R^3$-class local hypotheses in version 0.1.4 had two defects, found by a definition
+audit and now proved in Lean (module \lean{TetherDefinitionAudit}, which keeps the 0.1.4 definitions verbatim
+as \lean{LocalTetherBoundV014} and \lean{LocalTetherRateV014}). Both are corrected; the exact statement changes
+are listed in Section~\ref{sec:diff}.
+
+\subsection{The junk value of the supremum}
+\lean{vorticity_sup_norm ω} is the real supremum $\bigsqcup_x\|\omega(x)\|$, which Mathlib defines to be $0$
+when the range is not bounded above.
+
+\begin{theorem}[kernel-checked]
+\emph{Lean:} \leanbrk{vorticity_sup_norm_eq_zero_of_not_bddAbove}, \leanbrk{localTetherBoundV014_constraint_free_of_unbounded}.\par\noindent
+If $x\mapsto\|\omega(x)\|$ is unbounded then \lean{vorticity_sup_norm ω} $=0$. Consequently, at every time $t$
+at which $\omega(t)$ is unbounded, the 0.1.4 ceiling $M(t)\le Y$ holds for every $Y\ge0$.
+\end{theorem}
+
+So the 0.1.4 \lean{LocalTetherBound} and \lean{LocalFiniteTimeVorticityBound} imposed no constraint at such
+times. Smooth divergence-free finite-energy data with unbounded vorticity exist: with a bump $\psi\in C_c^\infty$
+equal to $1$ near $0$ and centres $c_n$ at mutual distance larger than twice the diameter of its support, let
+$A=\sum_n 8^{-n}\sin(4^nx_1)\,\psi(x-c_n)\,e_3$ and $u_0=\nabla\times A$. The sum is locally finite, so $u_0$ is
+smooth and divergence-free; $\|u_0\|_{L^2}^2\lesssim\sum_n(8^{-n}4^n)^2<\infty$; and near $c_n$,
+$\omega_0=\nabla\times\nabla\times A=-\Delta A=8^{-n}16^n\sin(4^nx_1)\,e_3$ reaches size $2^n$. (This
+construction is classical and not formalized.) Every such datum admits a local physical solution on the
+degenerate interval $[0,0]$:
+
+\begin{theorem}[\leanbrk{exists_isLocalPhysicalSolution_zero_time}]
+For every $\nu$ and every smooth divergence-free $u_0$ of finite energy, the affine path
+$u(t)=u_0+t\,v_0$ with $v_0=\nu\Delta u_0-(u_0\cdot\nabla)u_0$ and zero pressure satisfies
+\lean{IsLocalPhysicalSolution ν 0 u₀ u (fun _ => 0)}.
+\end{theorem}
+
+The 0.1.5 definitions add the clause \lean{BddAbove (Set.range fun x => ‖vorticity (u t) x‖)} at every
+$t\in[0,T]$. With it, data with unbounded initial vorticity never satisfy the bound
+(\lean{not_localTetherBound_of_unbounded}, \lean{not_localTetherRate_of_unbounded}); accordingly the closing bound
+\lean{LocalTetherClosingBound} and the theorems that consume a bound for all data now range over data with
+bounded initial vorticity. Whether the 0.1.4 forms were satisfiable by the junk value alone at some datum (which
+would require unbounded vorticity along every local solution at every time) is a question about solutions on
+$\R^3$ that is not settled here; the guard removes the possibility.
+
+\subsection{Two-sided differentiability at the endpoint}
+The 0.1.4 \lean{LocalTetherRate} required \lean{DifferentiableAt ℝ M s} at every $s\in[0,T]$. At $s=T$ this
+depends on the path for $t>T$, where a local solution on $[0,T]$ is unconstrained.
+
+\begin{theorem}[kernel-checked]\label{thm:escape}
+\emph{Lean:} \leanbrk{isLocalPhysicalSolution_escapePath}, \leanbrk{vorticity_sup_norm_escapePath_pos}, \leanbrk{not_localTetherRateV014_zero}, \leanbrk{not_forall_localTetherRateV014}.\par\noindent
+Let $u(t)=0$ for $t\le0$ and $u(t)=t^2\,(\sin(t^{-3}x_2),\cos(t^{-3}x_2),0)$ for $t>0$ (\lean{escapePath}). Then $u$
+is a local physical solution on $[0,0]$ from $u_0=0$ with zero pressure, and $M(t)=t^{-1}$ for $t>0$ while
+$M(0)=0$. Hence $M$ is not differentiable at $0$, \lean{LocalTetherRateV014 0 ν} is false for every $\nu$, and
+$\forall u_0\,\nu$, \lean{LocalTetherRateV014 u₀ ν} is false.
+\end{theorem}
+
+The last statement is the hypothesis \texttt{hDI} of the 0.1.4 \lean{frohmanian_tether_theorem}. \textbf{The
+0.1.4 \lean{frohmanian_tether_theorem} was therefore vacuously true.} The 0.1.5 \lean{LocalTetherRate} asks for
+continuity of $M$ on $[0,T]$, a right derivative $d\le CM(s)^2-\kappa''M(s)^3$
+(\lean{HasDerivWithinAt M d (Set.Ici s) s}) at every $s\in[0,T)$, and the \lean{BddAbove} clause; it reads $u$ on
+$[0,T]$ only, and it holds at $u_0=0$ (\lean{localTetherRate_zero}). The comparison step uses the new
+\lean{comparison_ode_stability_Icc_right}, proved from Mathlib's
+\lean{image_le_of_liminf_slope_right_lt_deriv_boundary} and \lean{HasDerivWithinAt.liminf_right_slope_le}.
+
+\begin{remark}[The global-path rate; not formalized]
+\lean{FrohmanianTetherRate} (global solutions, auxiliary lemmas only; unchanged in 0.1.5) also asks for two-sided
+differentiability of $M$ at $s=0$, where \lean{IsPhysicalNSSolution} continues $u$ affinely,
+$u(t)=u_0+t\,\partial_tu(0^+)$ for $t<0$. If $\|\omega_0\|$ attains its maximum $M_0>0$ at two points $a,b$ with
+$\langle\xi,\partial_t\omega(0^+)\rangle$ equal to $\alpha$ at $a$ and $\beta\neq\alpha$ at $b$ ($\xi=\omega_0/M_0$),
+then $M(t)\ge M_0+t\max(\alpha,\beta)+o(t)$ for $t\downarrow0$ and $M(t)\ge M_0+t\min(\alpha,\beta)+O(t^2)$ for
+$t\uparrow0$, which is incompatible with differentiability at $0$. Thus \lean{FrohmanianTetherRate} fails at any datum
+carrying a global physical solution with such a pair of maxima. No nonzero global finite-energy solution is
+formalized, so this is recorded as a mathematical remark.
+\end{remark}
+
+\subsection{Statement changes (changelog)}\label{sec:diff}
+Re-derived by comparing every declaration header of the Lean sources of 0.1.4 (\texttt{main} at \texttt{8b7bd67})
+and 0.1.5. Changed statements (here $M$ abbreviates \lean{fun τ => vorticity_sup_norm (vorticity (u τ))} and
+$M^k$ the corresponding power at $s$; the full 0.1.4 texts of \lean{LocalTetherBound} and \lean{LocalTetherRate} are
+reproduced verbatim as \lean{LocalTetherBoundV014} and \lean{LocalTetherRateV014}, and the full 0.1.5 texts of all
+six statements, in Appendix~\ref{app:lean}):
+\begin{itemize}[leftmargin=1.2em]
+\item \lean{TetheredLyapunov.LocalTetherBound}: the conclusion \lean{vorticity_sup_norm (vorticity (u t)) ≤ Y}
+became \lean{BddAbove (Set.range fun x => ‖vorticity (u t) x‖) ∧ vorticity_sup_norm (vorticity (u t)) ≤ Y}.
+\item \lean{TetheredLyapunov.LocalFiniteTimeVorticityBound}: the same change, with \lean{C} in place of \lean{Y}.
+\item \lean{TetheredLyapunov.LocalTetherRate}: the clauses
+\lean{∀ s ∈ Set.Icc 0 T, DifferentiableAt ℝ M s} and \lean{∀ s ∈ Set.Icc 0 T, deriv M s ≤ C M² − κ'' M³}
+became \lean{ContinuousOn M (Set.Icc 0 T)}, \lean{∀ s ∈ Set.Ico 0 T, ∃ d, HasDerivWithinAt M d (Set.Ici s) s ∧ d ≤ C M² − κ'' M³}
+and \lean{∀ t ∈ Set.Icc 0 T, BddAbove (Set.range fun x => ‖vorticity (u t) x‖)}.
+\item \lean{ClayStatements.LocalTetherClosingBound}: new premise \lean{BddAbove (Set.range fun x => ‖vorticity u₀ x‖)}.
+\item \lean{ClayStatements.frohmanian_conditional_regularity_of_closing_bound}: new argument
+\lean{(hω₀ : BddAbove (Set.range fun x => ‖vorticity u₀ x‖))}.
+\item \lean{ConditionalRegularity.frohmanian_tether_theorem}: \lean{hcont : ∀ u₀ ν, BKMGlobalContinuation u₀ ν}
+became \lean{∀ u₀ ν, 0 < ν → BKMGlobalContinuation u₀ ν}; \lean{hDI : ∀ u₀ ν, LocalTetherRate u₀ ν} became
+\lean{∀ u₀ ν, 0 < ν → BddAbove (Set.range fun x => ‖vorticity u₀ x‖) → LocalTetherRate u₀ ν}; clause (2) has the
+new premise \lean{BddAbove (Set.range fun x => ‖vorticity u₀ x‖)}.
+\end{itemize}
+Unchanged text, changed meaning through the definitions above: \leanbrk{BKMGlobalContinuation} (its premise
+\leanbrk{LocalFiniteTimeVorticityBound} is stronger, so the hypothesis is weaker), \leanbrk{conditional_regularity},
+\leanbrk{conditional_regularity_of_local_bound}, both \leanbrk{conditional_regularity_of_open_hyps},
+\leanbrk{localFiniteTimeVorticityBound_of_localTetherBound}, \leanbrk{localTetherBound_of_localTetherRate},
+\leanbrk{localTetherBound_zero}, \leanbrk{bkmGlobalContinuation_zero}, \leanbrk{conditional_regularity_nonvacuous_at_zero},
+\leanbrk{localTetherBound_vacuous_of_periodic}, \leanbrk{bkmGlobalContinuation_vacuous_of_periodic}. Added: the modules
+\leanbrk{TetherImpliesBKM} and \leanbrk{TetherDefinitionAudit}, \leanbrk{localTetherRate_zero} and
+\leanbrk{comparison_ode_stability_Icc_right}. No other declaration header changed and none was removed. The periodic
+statements of Theorem~\ref{thm:mainA} are unchanged from 0.1.4.
 
 %=====================================================================
 \section{The formal setting}\label{sec:setting}
@@ -254,7 +448,7 @@ The exact definitions are quoted in Appendix~\ref{app:lean:setting}.
 %=====================================================================
 \section{The tether kernel and conditions (C1)--(C3)}\label{sec:tether}
 
-\begin{definition}[\lean{Pi_u}, \lean{TetherKernel}, \lean{TetheredBracket}]
+\begin{definition}[\leanbrk{Pi_u}, \leanbrk{TetherKernel}, \leanbrk{TetheredBracket}]
 For velocity fields $u,v$ put
 $\Pi_u v=v-\bigl(\int\langle v,u\rangle/\int\|u\|^2\bigr)\,u$ (in Lean, division by $0$ is $0$, so $\Pi_u v=v$
 when $\int\|u\|^2=0$). With $\kappa=3/2$ (\lean{kappa_eq_three_halves}),
@@ -272,7 +466,7 @@ The three conditions are predicates on a kernel $B(\omega;F,G)$:
 (C3) \lean{ProducesControllableNegativeFeedback}:
 $B(\omega;F,F)\le-\kappa\,\mathcal E(\omega)\int\|\Pi_u\,\delta F/\delta\omega\|^2$.
 
-\begin{theorem}[Symmetry and (C3); \lean{tetherKernel_comm}, \lean{tetherKernel_C3}]
+\begin{theorem}[Symmetry and (C3); \leanbrk{tetherKernel_comm}, \leanbrk{tetherKernel_C3}]
 For all $\omega,F,G$: $T(\omega;F,G)=T(\omega;G,F)$, and $T$ satisfies (C3). No hypotheses.
 \end{theorem}
 
@@ -291,7 +485,7 @@ concrete group \lean{ConcreteSDiff.SDiffConcrete} of measure-preserving, measura
 permutations of $\R^3$ acting by $g\cdot\omega=\omega\circ g^{-1}$ (scalar composition, not the geometric
 push-forward $(Dg\,\omega)\circ g^{-1}$), the structure is proved outright (\lean{ConcreteSDiff.sdiffActionHyp}).
 
-\begin{theorem}[\lean{not_tetherKernel_invariant_concrete}]\label{thm:c1ref}
+\begin{theorem}[\leanbrk{not_tetherKernel_invariant_concrete}]\label{thm:c1ref}
 $T$ does not satisfy (C1) for the concrete group: \lean{¬ InvariantUnderCoadjointAction ConcreteSDiff.G TetherKernel}.
 \end{theorem}
 The translations $x\mapsto x+h$ belong to the concrete group (\lean{ConcreteSDiff.translate}). Take $g$ the
@@ -305,11 +499,11 @@ fixed while $\omega$ moves, which is not the physically meaningful notion: the t
 along with $\omega$, is proved for translations in Section~\ref{sec:c1t}.
 
 \subsection{Transported (equivariant) (C1)}\label{sec:c1t}
-\begin{definition}[\lean{InvariantUnderTransportedCoadjointAction}]
+\begin{definition}[\leanbrk{InvariantUnderTransportedCoadjointAction}]
 For a group $S$ acting on \lean{CoadjointOrbit}, a kernel $B$ is \emph{transport-invariant} if
 $B(g\cdot\omega;\,g_*F,\,g_*G)=B(\omega;F,G)$ for all $g,F,G,\omega$, where $(g_*F)(\eta)=F(g^{-1}\cdot\eta)$.
 \end{definition}
-\begin{theorem}[\lean{tetherKernel_transported_invariant}]\label{thm:c1t}
+\begin{theorem}[\leanbrk{tetherKernel_transported_invariant}]\label{thm:c1t}
 $T$ is transport-invariant for the translation subgroup \lean{ConcreteSDiff.transSubgroup} of the concrete
 group (the elements \lean{translate h}, $x\mapsto x+h$, with $(\tau_h\cdot\omega)(x)=\omega(x-h)$,
 \lean{translate_smul_val}).
@@ -470,12 +664,12 @@ derivative (no derivative exists there), not an artefact of an unspecified choic
 %=====================================================================
 \section{The obstruction to damping}\label{sec:damping}
 
-\begin{theorem}[\lean{Combined.left_H_zero_of_C2_symm}]\label{thm:obstr}
+\begin{theorem}[\leanbrk{Combined.left_H_zero_of_C2_symm}]\label{thm:obstr}
 Let $B$ be any kernel that is symmetric, $B(\omega;F,G)=B(\omega;G,F)$, and satisfies (C2). Then
 $B(\omega;H,M)=0$ for every $\omega$ and every functional $M$.
 \end{theorem}
 
-\begin{corollary}[\lean{Combined.tetherKernel_left_H_zero}]\label{cor:obstr}
+\begin{corollary}[\leanbrk{Combined.tetherKernel_left_H_zero}]\label{cor:obstr}
 If $T$ satisfies (C2), then $T(\omega;H,M)=T(\omega;M,H)=0$ for every $\omega$ and $M$.
 \end{corollary}
 
@@ -497,7 +691,7 @@ this shape cannot be invariant under Navier--Stokes scaling.
 %=====================================================================
 \section{Canonicity}\label{sec:canon}
 
-\begin{theorem}[\lean{uniqueness_of_minimal_tether}; delegates to \lean{uniqueness_of_minimal_symmetric_tether}]\label{thm:canon}
+\begin{theorem}[\leanbrk{uniqueness_of_minimal_tether}; delegates to \leanbrk{uniqueness_of_minimal_symmetric_tether}]\label{thm:canon}
 Let a group act on \lean{CoadjointOrbit} and assume \lean{SDiffActionHyp} (proved for the concrete group). Let $B$ be symmetric, satisfy
 (C1), (C2), (C3), \lean{SaturatesTetherQuadratic B} (i.e.\ $B(\omega;F,F)=T(\omega;F,F)$ for all $F,\omega$) and
 \lean{PolarizesOnDifferentiable B} (the polarization identity
@@ -513,7 +707,7 @@ on the diagonal, not a derivation of $T$ from (C1)--(C3). Unrestricted polarizat
 (Section~\ref{sec:removed}).
 \end{remark}
 
-\begin{theorem}[\lean{uniqueness_of_minimal_tether_core}]\label{thm:canoncore}
+\begin{theorem}[\leanbrk{uniqueness_of_minimal_tether_core}]\label{thm:canoncore}
 Let $B$ be symmetric and assume: $B(\omega;F,G)$ depends on $F$ only through $\Pi_u\,\delta F/\delta\omega$
 (\texttt{h\_proj}); if $B$ factors through the projection then it has a density $\alpha$
 (\lean{HasTetherKernelDensity}) with $\alpha(\omega,\cdot)$ locally integrable at every regular $\omega$
@@ -577,7 +771,7 @@ $\lambda\neq0$, supported away from the support of $a,b$, can be subtracted from
 orthogonal to $u$ without changing $\langle a,b\rangle$ pointwise (\lean{good_of_two_correctors}). This works
 near every point except at most two (\lean{bad_finite}), a null set.
 
-\begin{theorem}[\lean{tetherKernel_aeEnstrophyWeight}]\label{thm:weight}
+\begin{theorem}[\leanbrk{tetherKernel_aeEnstrophyWeight}]\label{thm:weight}
 \lean{AEEnstrophyWeight TetherKernel} holds with $c=\kappa$: every density $\alpha$ of $T$ with $\alpha(\omega,\cdot)$
 locally integrable at every regular $\omega$ satisfies $\alpha(\omega,x)=-\kappa\,\mathcal E(\omega)$ for almost every
 $x$, at every regular $\omega$.
@@ -623,17 +817,24 @@ $\nabla\times u_\lambda(x)=\lambda^2(\nabla\times u)(\lambda x)$ under different
 %=====================================================================
 \section{The analytic layer}\label{sec:analytic}
 
-\begin{lemma}[Comparison; \lean{AnalyticPipeline.comparison_ode_stability}]\label{lem:cmp}
+\begin{lemma}[Comparison; \leanbrk{AnalyticPipeline.comparison_ode_stability}]\label{lem:cmp}
 Let $C,\kappa''>0$ and let $y:\R\to\R$ be differentiable at every $s\ge0$ with
 $y'(s)\le Cy(s)^2-\kappa''y(s)^3$ for $s\ge0$. Then $y(t)\le\max(y(0),C/\kappa'')$ for every $t\ge0$.
 \end{lemma}
 
-\begin{lemma}[Finite-interval comparison; \lean{TetheredLyapunov.comparison_ode_stability_Icc}]
+\begin{lemma}[Finite-interval comparison; \leanbrk{comparison_ode_stability_Icc}]
 The same conclusion holds on $[0,T]$: if $y$ is differentiable on $[0,T]$ with $y'\le Cy^2-\kappa''y^3$ there,
 then $y(t)\le\max(y(0),C/\kappa'')$ for $t\in[0,T]$.
 \end{lemma}
 
-\begin{proposition}[\lean{riccati_ceiling_of_vorticity_di}]
+\begin{lemma}[One-sided comparison, new in 0.1.5]\label{lem:cmpright}
+\emph{Lean:} \leanbrk{TetheredLyapunov.comparison_ode_stability_Icc_right}.\par\noindent
+Let $C,\kappa''>0$ and let $y$ be continuous on $[0,T]$ with, at every $s\in[0,T)$, a right derivative
+$d$ (\lean{HasDerivWithinAt y d (Set.Ici s) s}) satisfying $d\le Cy(s)^2-\kappa''y(s)^3$. Then
+$y(t)\le\max(y(0),C/\kappa'')$ for $t\in[0,T]$.
+\end{lemma}
+
+\begin{proposition}[\leanbrk{riccati_ceiling_of_vorticity_di}]
 If $t\mapsto M(t)=\sup_x\|(\nabla\times u(t))(x)\|$ is continuous, differentiable at every $s\ge0$, and
 satisfies $M'(s)\le CM(s)^2-\kappa''M(s)^3$ for $s\ge0$ with $C,\kappa''>0$, then $M$ is bounded on $[0,\infty)$.
 \end{proposition}
@@ -649,15 +850,16 @@ open for general data or are classical theorems that are not formalized:
 \item \lean{KatoLocalWitness u₀ ν}: a time $T>0$ and $(u,p)$ with $u(0)=u_0$, smooth on $[0,T]$, satisfying
 \lean{NS_PDE_On u p ν T} and \lean{IsPhysicalNSSolutionOn u T}. This is the conclusion of Kato's local theorem
 \cite{Kato1984} for the library's data class; it is not formalized, and a witness is an input (hKato).
-\item \lean{LocalTetherRate u₀ ν} (hDI): there are $C,\kappa''>0$, fixed before the interval, such that every
-local physical solution from $u_0$ on every $[0,T]$ has $M$ differentiable on $[0,T]$ with
-$M'\le CM^2-\kappa''M^3$ there. (Differentiability of a sup-norm in time is itself a strong requirement.) By the
-finite-interval comparison lemma it implies \lean{LocalTetherBound u₀ ν}
-(\lean{localTetherBound_of_localTetherRate}).
-\item \lean{LocalTetherBound u₀ ν}: one ceiling $Y$ with $M(t)\le Y$ for every local physical solution from
-$u_0$ on every $[0,T]$ and every $t\in[0,T]$. \lean{ClayStatements.LocalTetherClosingBound ν} asserts this for
-\emph{all} smooth divergence-free finite-energy data. It implies \lean{LocalFiniteTimeVorticityBound u₀ ν}
-(for each $T_0$ one ceiling on intervals $[0,T]$, $T\le T_0$).
+\item \lean{LocalTetherRate u₀ ν} (hDI; corrected in 0.1.5, Section~\ref{sec:corr}): there are $C,\kappa''>0$,
+fixed before the interval, such that every local physical solution from $u_0$ on every $[0,T]$ has $M$
+continuous on $[0,T]$, a right derivative $d\le CM(s)^2-\kappa''M(s)^3$ at every $s\in[0,T)$, and $\omega(t)$
+bounded for $t\in[0,T]$. By Lemma~\ref{lem:cmpright} it implies \lean{LocalTetherBound u₀ ν}
+(\lean{localTetherBound_of_localTetherRate}); it holds at $u_0=0$ (\lean{localTetherRate_zero}).
+\item \lean{LocalTetherBound u₀ ν} (corrected in 0.1.5): one ceiling $Y$ such that, for every local physical
+solution from $u_0$ on every $[0,T]$ and every $t\in[0,T]$, $\omega(t)$ is bounded and $M(t)\le Y$.
+\lean{ClayStatements.LocalTetherClosingBound ν} asserts this for all smooth divergence-free finite-energy data
+with bounded initial vorticity. It implies \lean{LocalFiniteTimeVorticityBound u₀ ν} (for each $T_0$ one
+ceiling, with the same boundedness clause, on intervals $[0,T]$, $T\le T_0$).
 \item \lean{BKMGlobalContinuation u₀ ν} (hcont): if a Kato witness exists and
 \lean{LocalFiniteTimeVorticityBound u₀ ν} holds, then there are $u,p$ with $u(0)=u_0$, \lean{NS_PDE u p ν},
 $u(t)$ smooth for $t\ge0$ and \lean{IsPhysicalNSSolution u}. This packages Kato local existence with the
@@ -672,13 +874,13 @@ The global-path predicates \lean{FrohmanianTetherRate}, \lean{FrohmanianTetherBo
 \lean{BKMContinuationCriterionFor}, \lean{SmoothBelowTstarFor} and \lean{ClosureBlueprint.RiccatiMajorantExists}
 now quantify only over physical solutions.
 
-\begin{theorem}[\lean{TetheredLyapunov.conditional_regularity}; also \lean{ClosureBlueprint.conditional_regularity_of_open_hyps}]\label{thm:blue}
+\begin{theorem}[\leanbrk{TetheredLyapunov.conditional_regularity}; also \leanbrk{ClosureBlueprint.conditional_regularity_of_open_hyps}]\label{thm:blue}
 Let $w$ be a \lean{KatoLocalWitness u₀ ν} and assume \lean{BKMGlobalContinuation u₀ ν} and
 \lean{LocalTetherBound u₀ ν}. Then there exist $u,p$ with \lean{NS_PDE u p ν}, $u(0)=u_0$,
 \lean{IsPhysicalNSSolution u}, and $u(t)$ smooth and divergence-free for every $t\ge0$ (and $M(t)\ge0$).
 \end{theorem}
 
-\begin{theorem}[\lean{ConditionalRegularity.conditional_regularity_of_open_hyps}]\label{thm:cr}
+\begin{theorem}[\leanbrk{ConditionalRegularity.conditional_regularity_of_open_hyps}]\label{thm:cr}
 Under the hypotheses of Theorem~\ref{thm:blue} for $u_0(0)$ (stated for a time-dependent field $u_0(\cdot)$ that is
 divergence-free at all times, with $u_0(0)$ smooth and of finite energy), together with
 \lean{SmoothPhysicalUniqueness (u0 0) ν}, there is a $u$ with $u(0)=u_0(0)$,
@@ -686,25 +888,27 @@ $u(t)$ smooth and satisfying \lean{satisfies_NavierStokes} (physical solution of
 and unique among smooth fields with these properties.
 \end{theorem}
 
-\begin{theorem}[\lean{frohmanian_tether_theorem}]\label{thm:fft}
-Assume, for all $u_0$ and $\nu$: (hKato) a Kato local witness for smooth divergence-free finite-energy $u_0$
-and $\nu>0$; (hcont) \lean{BKMGlobalContinuation u₀ ν}; and (hDI) \lean{LocalTetherRate u₀ ν}. Then there is a
-kernel $\Tf_F$ such that: (1) every kernel with density equal to the canonical tether density equals $\Tf_F$;
-and (2) for every $\nu>0$ and every smooth divergence-free finite-energy $u_0$ there are $u,p$ with
-\lean{NS_PDE u p ν}, $u(0)=u_0$, and $u(t)$ smooth and divergence-free for all $t\ge0$.
+\begin{theorem}[\leanbrk{frohmanian_tether_theorem}]\label{thm:fft}
+Assume: (hKato) a Kato local witness for every smooth divergence-free finite-energy $u_0$ and $\nu>0$;
+(hcont) \lean{BKMGlobalContinuation u₀ ν} for all $u_0$ and all $\nu>0$; and (hDI) \lean{LocalTetherRate u₀ ν}
+for all $\nu>0$ and all $u_0$ with bounded vorticity. Then there is a kernel $\Tf_F$ such that: (1) every kernel
+with density equal to the canonical tether density equals $\Tf_F$; and (2) for every $\nu>0$ and every smooth
+divergence-free finite-energy $u_0$ with bounded vorticity there are $u,p$ with \lean{NS_PDE u p ν}, $u(0)=u_0$,
+and $u(t)$ smooth and divergence-free for all $t\ge0$.
 \end{theorem}
 
 \begin{remark}
 Clause (2) is a global-existence statement \emph{conditional on} (hDI) for all data, which is as strong as
 the open problem, together with the classical inputs (hKato) and (hcont); it is not a regularity
 theorem. The proof goes through the finite-interval comparison lemma (a time-uniform ceiling on all local
-solutions), then the continuation hypothesis.
+solutions), then the continuation hypothesis. In version 0.1.4 the hypothesis (hDI) was unsatisfiable
+(Theorem~\ref{thm:escape}), so the 0.1.4 statement was vacuous; the 0.1.5 statement is not.
 Version 0.1.1 had a clause assuming $\delta H/\delta\omega=u$; draft versions also had an antisymmetric
 clause, the hypotheses \texttt{hTlb}, \texttt{hInt}, \texttt{huniq\_shift}, and then \texttt{hcrit},
 \texttt{huniq} with a globally defined Kato witness. All were removed (Section~\ref{sec:removed}).
 \end{remark}
 
-\begin{theorem}[Non-vacuity at zero data; \lean{conditional_regularity_nonvacuous_at_zero}]
+\begin{theorem}[Non-vacuity at zero data; \leanbrk{conditional_regularity_nonvacuous_at_zero}]
 For every $\nu>0$ there is $u$ with $u(0)=0$, smooth and a physical solution for $t\ge0$, unique among smooth
 physical solutions with zero data. It is proved from \lean{kato_witness_zero} and the zero-data instances
 \lean{smoothPhysicalUniqueness_zero}, \lean{localTetherBound_zero}, \lean{bkmGlobalContinuation_zero}. Also
@@ -726,15 +930,10 @@ solution $(u,p)$ that is $C^\infty$ on $[0,\infty)\times\R^3$, solves the equati
 $u(0)=u_0$, and is periodic for all $t\ge0$. (Fefferman's formulation also contains a bounded-energy
 condition; the formal statement is as quoted in Appendix~\ref{app:lean:clay}.)
 
-\begin{theorem}[\lean{clay_B_exact_of_periodic_tether_bound}]
-If \lean{PeriodicTetherClosingBound ν} and \lean{PeriodicBKMContinuation ν} hold for every $\nu>0$, then
-\lean{Clay_B_exact}.
-\end{theorem}
-
-\lean{PeriodicTetherClosingBound} is a uniform vorticity bound for all periodic smooth data and
-\lean{PeriodicBKMContinuation} says that such a bound yields a global periodic smooth solution. Together they
-are at least as strong as the conclusion; the reduction is a formal bookkeeping step and makes no progress
-on (B).
+The Main Theorem (Theorem~\ref{thm:mainA}, \lean{clay_B_exact_of_periodic_tether_bound}) concludes
+\lean{Clay_B_exact} from \lean{PeriodicTetherClosingBound ν} and \lean{PeriodicBKMContinuation ν} for every
+$\nu>0$. Its two hypotheses are open, and together they are at least as strong as the conclusion; the theorem
+isolates the tether bound as the single estimate that, with classical continuation, yields (B).
 
 %=====================================================================
 \section{Explicit exact solutions: decaying shear and ABC flows}\label{sec:explicit}
@@ -813,18 +1012,24 @@ the canonical density for $T$; the corrected weight condition \lean{AEEnstrophyW
 identity and the scale non-invariance lemma; the zero-data facts and \lean{stepField_not_physical}; the Fourier-symbol identities
 \lean{PlanSteps.bsSymbol_div}, \lean{PlanSteps.bsSymbol_curl} (mode-wise algebra, not connected to the
 real-space Biot--Savart integral); the explicit shear and ABC solutions, their non-triviality and periodic
-smoothness, and the non-existence of Kato witnesses for nonzero periodic data (Section~\ref{sec:explicit}).
+smoothness, and the non-existence of Kato witnesses for nonzero periodic data (Section~\ref{sec:explicit});
+the one-sided comparison Lemma~\ref{lem:cmpright}; the audit results of Section~\ref{sec:corr} (junk value of the
+supremum, the degenerate local solution, the refutation of the 0.1.4 \lean{LocalTetherRate}, and
+\lean{localTetherRate_zero}).
 
 \paragraph{Proved as implications from named, open hypotheses.}
-Canonicity (from saturation and polarization); Casimir conservation (from \lean{IsCoadjointMotion}); the
+The Main Theorem~\ref{thm:mainA} (from the tether bound and periodic BKM continuation) and
+Theorem~\ref{thm:mainB} (BKM integrability from the tether bound); canonicity (from saturation and polarization); Casimir conservation (from \lean{IsCoadjointMotion}); the
 conditional regularity theorems \ref{thm:blue}, \ref{thm:cr}, \ref{thm:fft} (from rate or bound
-hypotheses on local solutions, Kato existence, Kato--BKM continuation and uniqueness); the Clay (B) reduction. The hypotheses are
-listed by category in Section~\ref{sec:assumptions}.
+hypotheses on local solutions, Kato existence, Kato--BKM continuation and uniqueness). The hypotheses are
+those of Section~\ref{sec:conditional}, annotated in Section~\ref{sec:assumptions}.
 
 \paragraph{Not proved, and not claimed.}
 \begin{itemize}[leftmargin=1.2em]
 \item Global existence, smoothness or uniqueness for 3D Navier--Stokes with large data; any part of the Clay
 Millennium Problem.
+\item The Frohmanian tether bound \lean{PeriodicTetherClosingBound} or \lean{PeriodicTetherBound} at any nonzero datum;
+the converse BKM integrability $\Rightarrow$ tether bound and its pillars (P1)--(P3) (Section~\ref{sec:converse}).
 \item The cubic rate \lean{LocalTetherRate} (or \lean{FrohmanianTetherRate}), any closing bound, or any damping mechanism from the tether
 (under (C2) its damping coefficient would be $0$).
 \item (C2) for $T$. The identification $\delta H/\delta\omega=u$ is refuted (Theorem~\ref{thm:keref}); the
@@ -847,20 +1052,24 @@ the constant flows and the shear and ABC flows of Section~\ref{sec:explicit}.)
 The physical motivations of earlier versions (fluid--gravity duality, Onsager's conjecture
 \cite{Isett2018}, metriplectic viscous completion) are not formalized and play no role in any statement here.
 
-\subsection{Remaining assumptions, by category}\label{sec:assumptions}
-Every remaining assumption is an explicit Lean argument or a named \lean{Prop}. None is an axiom.
+\subsection{Annotations to the open hypotheses}\label{sec:assumptions}
+The hypotheses are those listed in Section~\ref{sec:conditional}; this subsection records, for each, where it is
+used and how it relates to the classical literature. Every one is an explicit Lean argument or a named
+\lean{Prop}. None is an axiom.
 \begin{description}[leftmargin=1.2em,style=nextline]
 \item[(b) Classical results not in Mathlib.] (hKato) a \lean{KatoLocalWitness} for smooth divergence-free
 finite-energy data (Kato local existence \cite{Kato1984}, equations on $[0,T]$ only);
 \lean{BKMGlobalContinuation} (Kato local existence with Beale--Kato--Majda continuation \cite{BKM1984}; the
 classical statements are for $H^s$ data); \lean{SmoothPhysicalUniqueness} (uniqueness of smooth solutions;
-uniqueness clauses only); \lean{PeriodicBKMContinuation} (Clay reduction); \lean{KatoUniquenessOnExistenceTimes}
+uniqueness clauses only); \lean{PeriodicBKMContinuation} (hypothesis (ii) of the Main Theorem: local existence,
+uniqueness and Beale--Kato--Majda continuation for classical periodic solutions); \lean{KatoUniquenessOnExistenceTimes}
 (auxiliary lemma \lean{smoothBelowTstar_of_katoUniqueness} only); \lean{IsCoadjointMotion} for the Euler flow
 (Arnold \cite{Arnold1966}).
-\item[(d) Equivalent in strength to the open problem.] \lean{LocalTetherRate} (the cubic rate on every local
-physical solution; it also asks for time-differentiability of $\|\omega(t)\|_{L^\infty}$, which can fail for
-genuine flows); \lean{LocalTetherBound} and \lean{ClayStatements.LocalTetherClosingBound} (uniform vorticity
-bounds on local solutions); \lean{ClayStatements.PeriodicTetherClosingBound} and
+\item[(d) Equivalent in strength to the open problem.] The Frohmanian tether bound
+\lean{ClayStatements.PeriodicTetherClosingBound} (hypothesis (i) of the Main Theorem) and its per-datum form
+\lean{PeriodicTetherBound}; \lean{LocalTetherRate} (the cubic rate on every local physical solution, as a
+right-derivative inequality since 0.1.5); \lean{LocalTetherBound} and \lean{ClayStatements.LocalTetherClosingBound}
+(uniform vorticity bounds on local solutions, with bounded vorticity since 0.1.5);
 \lean{PeriodicDirectionDepletionBound}; the global-path forms \lean{FrohmanianTetherRate},
 \lean{FrohmanianTetherBound}, \lean{FrohmanianTetherClosingBound} and \lean{RiccatiMajorantExists} (auxiliary
 lemmas only). The tether does not supply any of these.
@@ -877,8 +1086,7 @@ for translations is proved (Theorem~\ref{thm:c1t}).
 \paragraph{Vacuity at periodic data.} Because \lean{IsPhysicalNSSolutionOn} requires finite energy on $\R^3$,
 \lean{LocalTetherBound}, \lean{SmoothPhysicalUniqueness} and \lean{BKMGlobalContinuation} hold trivially at every
 continuous nonzero $\mathbb Z^3$-periodic $u_0$ and \lean{KatoLocalWitness} is empty there
-(Section~\ref{sec:explicit}). They are not discharged by the explicit flows; the list above is unchanged by
-version 0.1.4.
+(Section~\ref{sec:explicit}). They are not discharged by the explicit flows.
 \paragraph{Hypotheses of auxiliary lemmas.} Re-derived from the source (every theorem binder whose type is a named
 \lean{Prop} of the library): besides the items above, auxiliary lemmas that are not stated in this paper take
 the following named, unproved \lean{Prop}s as explicit hypotheses: \lean{BKMContinuationCriterion},
@@ -906,7 +1114,11 @@ stated in Sections~\ref{sec:tether}--\ref{sec:explicit}; each is an explicit arg
 \lean{contDiff_piLp}, \lean{Real.sin_add_int_mul_two_pi}, \lean{Real.cos_add_int_mul_two_pi},
 \lean{EuclideanSpace.norm_sq_eq}, \lean{PiLp.norm_single}, \lean{Integrable.measure_norm_ge_lt_top},
 \lean{Measure.addHaar_ball_center}, \lean{Metric.measure_ball_pos}, \lean{Metric.ball_disjoint_ball},
-\lean{measure_iUnion}, \lean{ENNReal.tsum_const_eq_top_of_ne_zero}.
+\lean{measure_iUnion}, \lean{ENNReal.tsum_const_eq_top_of_ne_zero}. Modules \lean{TetherImpliesBKM} and
+\lean{TetherDefinitionAudit} (0.1.5): \lean{lintegral}, \lean{setLIntegral_mono'}, \lean{setLIntegral_const},
+\lean{Real.volume_Ico}, \lean{Real.iSup_of_not_bddAbove}, \lean{image_le_of_liminf_slope_right_lt_deriv_boundary},
+\lean{HasDerivWithinAt.liminf_right_slope_le}, \lean{hasDerivAt_iff_isLittleO}, \lean{Asymptotics.isLittleO_pow_id},
+\lean{tendsto_inv_nhdsGT_zero}.
 \paragraph{Project-local names proved equal to Mathlib declarations} (module \lean{MathlibAgreement}, all by
 \texttt{rfl}): \lean{NavierStokes3D.volume} $=$ \lean{MeasureTheory.volume}; \lean{pairing} $=$ the real inner
 product; \lean{eb i} $=$ \lean{EuclideanSpace.single i 1}; \lean{pd} $=$ \lean{fderiv} along a basis vector;
@@ -933,6 +1145,28 @@ unchanged.
 \section{Exact Lean statements}\label{app:lean}
 Quoted verbatim from the repository by \texttt{scripts/extract\_statements.py}; proof bodies are replaced by
 \texttt{...}. Each block starts with its file and line.
+
+\subsection{Main results (Section~\ref{sec:main})}\label{app:lean:main}
+\leanstmt{clay_B_exact_of_periodic_tether_bound}
+\leanstmt{PeriodicTetherBound}
+\leanstmt{PeriodicBKMIntegrability}
+\leanstmt{periodicTetherClosingBound_iff}
+\leanstmt{periodicBKMIntegrability_of_periodicTetherBound}
+\leanstmt{periodicBKMIntegrability_of_periodicTetherClosingBound}
+
+\subsection{Definition audit of version 0.1.4 (Section~\ref{sec:corr})}\label{app:lean:audit}
+\leanstmt{vorticity_sup_norm_eq_zero_of_not_bddAbove}
+\leanstmt{LocalTetherBoundV014}
+\leanstmt{localTetherBoundV014_constraint_free_of_unbounded}
+\leanstmt{exists_isLocalPhysicalSolution_zero_time}
+\leanstmt{not_localTetherBound_of_unbounded}
+\leanstmt{LocalTetherRateV014}
+\leanstmt{escapePath}
+\leanstmt{isLocalPhysicalSolution_escapePath}
+\leanstmt{vorticity_sup_norm_escapePath_pos}
+\leanstmt{not_localTetherRateV014_zero}
+\leanstmt{not_forall_localTetherRateV014}
+\leanstmt{localTetherRate_zero}
 
 \subsection{Setting}\label{app:lean:setting}
 \leanstmt{CoadjointOrbit}
@@ -1040,8 +1274,10 @@ Quoted verbatim from the repository by \texttt{scripts/extract\_statements.py}; 
 \subsection{Analytic layer}\label{app:lean:analytic}
 \leanstmt{comparison_ode_stability}
 \leanstmt{comparison_ode_stability_Icc}
+\leanstmt{comparison_ode_stability_Icc_right}
 \leanstmt{riccati_ceiling_of_vorticity_di}
 \leanstmt{LocalTetherRate}
+\leanstmt{localTetherBound_of_localTetherRate}
 \leanstmt{LocalTetherBound}
 \leanstmt{LocalFiniteTimeVorticityBound}
 \leanstmt{LocalTetherClosingBound}
@@ -1055,6 +1291,7 @@ Quoted verbatim from the repository by \texttt{scripts/extract\_statements.py}; 
 \leanstmt{conditional_regularity_of_open_hyps_blueprint}
 \leanstmt{conditional_regularity_of_open_hyps_main}
 \leanstmt{frohmanian_tether_theorem}
+\leanstmt{frohmanian_conditional_regularity_of_closing_bound}
 \leanstmt{conditional_regularity_nonvacuous_at_zero}
 \leanstmt{stepField_not_physical}
 
@@ -1065,7 +1302,6 @@ Quoted verbatim from the repository by \texttt{scripts/extract\_statements.py}; 
 \leanstmt{Clay_B_exact}
 \leanstmt{PeriodicTetherClosingBound}
 \leanstmt{PeriodicBKMContinuation}
-\leanstmt{clay_B_exact_of_periodic_tether_bound}
 
 \subsection{Explicit exact solutions}\label{app:lean:explicit}
 \leanstmt{tp}
@@ -1117,14 +1353,14 @@ Quoted verbatim from the repository by \texttt{scripts/extract\_statements.py}; 
 \begin{center}
 \begin{tabular}{>{\raggedright\arraybackslash}p{0.3\textwidth}>{\raggedright\arraybackslash}p{0.62\textwidth}}
 \toprule
-Repository & \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} (version 0.1.4, DOI \VERSIONDOI)\\
-Verified commit & \texttt{749ddf8e8cb6ba330caaab701896ece96680efd4} (Lean sources; later commits change only documentation, the manuscript and metadata)\\
+Repository & \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} (version 0.1.5, DOI \VERSIONDOI)\\
+Verified commit & \texttt{5d7c9d0fe1f418063e57a7289dbb71105d73e8b4} (Lean sources; later commits change only documentation, the manuscript and metadata)\\
 Lean toolchain & \texttt{leanprover/lean4:v4.30.0-rc1} (pinned in \texttt{lean-toolchain})\\
 Mathlib & \texttt{v4.30.0-rc1}, rev \texttt{0c154d67103f74be3a0f2c509f72ccbf5be9f2a7} (pinned in \texttt{lake-manifest.json})\\
-Build & \texttt{lake build}: 2795 jobs, success\\
-Modules & 33 (\texttt{FrohmanianTether} and 32 submodules)\\
-Theorems audited & 760 (670 stated in the sources, 90 auto-generated)\\
-Declarations audited & 1074 (theorems, definitions, structures, instances)\\
+Build & \texttt{lake build}: 2797 jobs, success\\
+Modules & 35 (\texttt{FrohmanianTether} and 34 submodules)\\
+Theorems audited & 782 (690 stated in the sources, 92 auto-generated)\\
+Declarations audited & 1101 (theorems, definitions, structures, instances)\\
 Axioms & only \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\\
 \texttt{sorry} / \texttt{admit} / \texttt{native\_decide} & none (\texttt{scripts/check\_no\_sorry.py}: \texttt{OK})\\
 Axiom declarations & none\\
@@ -1178,8 +1414,20 @@ strings.
 'ExplicitFlows.curl_abcProfile' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ExplicitFlows.not_integrable_sq_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ExplicitFlows.isEmpty_katoLocalWitness_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
-AUDIT SUMMARY: theorems audited: 760 (670 stated in the sources, 90 auto-generated
-  equation/congruence/injectivity lemmas); declarations audited: 1074; violations: 0
+'FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.localTetherBoundV014_constraint_free_of_unbounded' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.exists_isLocalPhysicalSolution_zero_time' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.isLocalPhysicalSolution_escapePath' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_localTetherRateV014_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_forall_localTetherRateV014' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetheredLyapunov.comparison_ode_stability_Icc_right' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetheredLyapunov.localTetherBound_of_localTetherRate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.localTetherRate_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.localTetherBound_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherClosingBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+AUDIT SUMMARY: theorems audited: 782 (690 stated in the sources, 92 auto-generated
+  equation/congruence/injectivity lemmas); declarations audited: 1101; violations: 0
 AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations
 \end{Verbatim}
 

@@ -1,6 +1,6 @@
 # Verification certificate
 
-**Paper:** *The Frohmanian Tether on SDiff(𝕋³): A Metriplectic Correction, Its Canonicity, and an Obstruction to Damping — Conditional statements verified in Lean 4*, version 0.1.4 (preprint, work in progress; Zenodo DOI 10.5281/zenodo.24120781). Version 0.1.4 adds the Lean module `ExplicitFlows` (explicit shear and ABC solutions; no Kato witness for nonzero periodic data); no existing Lean statement was changed (see "Changes in 0.1.4").
+**Paper:** *The Frohmanian Tether Bound Implies Global Smoothness on 𝕋³ under Beale–Kato–Majda Continuation, and Implies BKM Integrability: Kernel-checked conditional theorems in Lean 4*, version 0.1.5 (preprint; Zenodo DOI 10.5281/zenodo.24122596). Version 0.1.5 adds the modules `TetherImpliesBKM` (tether bound ⇒ BKM integrability) and `TetherDefinitionAudit` (Lean proofs of two defects of the 0.1.4 local hypotheses), and corrects `LocalTetherBound`, `LocalFiniteTimeVorticityBound` and `LocalTetherRate`; every changed statement is listed under "Changes in 0.1.5".
 **Author:** Benjamin Stanley Frohman (Independent Researcher, Texas, United States; frohmanbenjamin@gmail.com, ORCID 0009-0006-7068-3718)
 **PDF:** `manuscript/main.pdf` (source `manuscript/main.tex`)
 
@@ -10,17 +10,17 @@ theorems are implications from hypotheses that are not proved; the complete list
 
 | Item | Value |
 |---|---|
-| Verified commit | `749ddf8e8cb6ba330caaab701896ece96680efd4` (Lean sources; later commits change only documentation, manuscript and metadata) |
+| Verified commit | `5d7c9d0fe1f418063e57a7289dbb71105d73e8b4` (Lean sources; later commits change only documentation, manuscript and metadata) |
 | Lean toolchain | `leanprover/lean4:v4.30.0-rc1` (pinned in `lean-toolchain`) |
 | Mathlib | `v4.30.0-rc1`, rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` (pinned in `lake-manifest.json`) |
 | One-command verification | `bash scripts/verify.sh` (or `make verify`) from a fresh clone |
-| Build | `lake build`: 2795 jobs, success |
-| CI runs (branch `real-ns-witnesses`, verified commit) | Lean certificate passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42909211506 ; Lean 4 (workflow_dispatch) passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42909284785 |
-| CI runs on `main` (merge commit `1890051`) | Lean certificate passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42910656109 ; Lean 4 passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42910656114 |
-| Zenodo archive | 0.1.4: [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) (record https://zenodo.org/records/24120781; new version of 0.1.3). 0.1.3: [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (record https://zenodo.org/records/24102715; adds only the DOI to the paper). 0.1.2: [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) (record https://zenodo.org/records/24102345, published 2026-11-10 from main at `2c424a8`; concept DOI `10.5281/zenodo.24081999`). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
-| Modules | 33 (`FrohmanianTether` and 32 submodules) |
-| Declarations audited | 1074 |
-| Theorem constants audited | 760 (670 stated in the sources, 90 auto-generated equation/congruence/injectivity lemmas) |
+| Build | `lake build`: 2797 jobs, success (fresh clone of the verified commit, `bash scripts/verify.sh` → `VERIFY OK`) |
+| CI runs for 0.1.4 (branch `real-ns-witnesses`, commit `749ddf8`) | Lean certificate passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42909211506 ; Lean 4 (workflow_dispatch) passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42909284785 |
+| CI runs for 0.1.4 on `main` (merge commit `1890051`) | Lean certificate passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42910656109 ; Lean 4 passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42910656114 |
+| Zenodo archive | 0.1.5: [`10.5281/zenodo.24122596`](https://doi.org/10.5281/zenodo.24122596) (record https://zenodo.org/records/24122596; new version of 0.1.4). 0.1.4: [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) (record https://zenodo.org/records/24120781; new version of 0.1.3). 0.1.3: [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (record https://zenodo.org/records/24102715; adds only the DOI to the paper). 0.1.2: [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) (record https://zenodo.org/records/24102345, published 2026-11-10 from main at `2c424a8`; concept DOI `10.5281/zenodo.24081999`). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
+| Modules | 35 (`FrohmanianTether` and 34 submodules) |
+| Declarations audited | 1101 |
+| Theorem constants audited | 782 (690 stated in the sources, 92 auto-generated equation/congruence/injectivity lemmas) |
 | Axioms used | only `propext`, `Classical.choice`, `Quot.sound` (some declarations use a subset) |
 | `sorry` / `admit` / `native_decide` | none (`python3 scripts/check_no_sorry.py`: `OK: no sorry/admit/native_decide, no axiom declarations`) |
 | `axiom` declarations | none |
@@ -71,6 +71,50 @@ bash scripts/verify.sh        # or: make verify
 'ExplicitFlows.not_integrable_sq_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ExplicitFlows.isEmpty_katoLocalWitness_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
+
+## Changes in 0.1.5 (main theorem framing; tether ⇒ BKM integrability; definition audit)
+
+**Main Theorem (unchanged statement, kernel-checked):** `FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound (hclose : ∀ ν > 0, PeriodicTetherClosingBound ν) (hBKM : ∀ ν > 0, PeriodicBKMContinuation ν) : Clay_B_exact`.
+
+**New, kernel-checked (module `TetherImpliesBKM`):** `PeriodicTetherBound`, `PeriodicBKMIntegrability`,
+`periodicTetherClosingBound_iff` (`Iff.rfl`), `periodicBKMIntegrability_of_periodicTetherBound`
+(constant `ofReal (max Y 0 * max T₀ 0)`), `periodicBKMIntegrability_of_periodicTetherClosingBound`.
+The converse (BKM integrability ⇒ tether bound) is not claimed; it rests on the Beale–Kato–Majda theorem,
+uniqueness of classical periodic solutions and long-time decay, none formalized.
+
+**Defects of 0.1.4 proved in Lean (module `TetherDefinitionAudit`; 0.1.4 definitions kept verbatim as
+`LocalTetherBoundV014`, `LocalTetherRateV014`):**
+- `vorticity_sup_norm_eq_zero_of_not_bddAbove`, `localTetherBoundV014_constraint_free_of_unbounded`:
+  the 0.1.4 ceiling is no constraint at times of unbounded vorticity (junk value 0).
+- `exists_isLocalPhysicalSolution_zero_time`: every smooth divergence-free finite-energy datum has a
+  local physical solution on `[0, 0]`; hence with the 0.1.5 guard, `not_localTetherBound_of_unbounded`,
+  `not_localTetherRate_of_unbounded`.
+- `escapePath`, `isLocalPhysicalSolution_escapePath`, `vorticity_sup_norm_escapePath_pos` (`= t⁻¹`),
+  `not_differentiableAt_vorticity_sup_norm_escapePath`, `not_localTetherRateV014_zero`,
+  `not_forall_localTetherRateV014`: the 0.1.4 `LocalTetherRate` is false at `u₀ = 0`, so the hypothesis
+  `hDI` of the 0.1.4 `frohmanian_tether_theorem` was unsatisfiable and that theorem was **vacuous**.
+
+**Changed statements (re-derived by comparing every declaration header of `main@8b7bd67` with 0.1.5):**
+
+| Declaration | 0.1.4 | 0.1.5 |
+|---|---|---|
+| `TetheredLyapunov.LocalTetherBound` | `∀ t ∈ Set.Icc 0 T, vorticity_sup_norm (vorticity (u t)) ≤ Y` | `∀ t ∈ Set.Icc 0 T, BddAbove (Set.range fun x => ‖vorticity (u t) x‖) ∧ vorticity_sup_norm (vorticity (u t)) ≤ Y` |
+| `TetheredLyapunov.LocalFiniteTimeVorticityBound` | `… ≤ C` | `BddAbove (…) ∧ … ≤ C` |
+| `TetheredLyapunov.LocalTetherRate` | `(∀ s ∈ Set.Icc 0 T, DifferentiableAt ℝ M s) ∧ (∀ s ∈ Set.Icc 0 T, deriv M s ≤ C M² − κ'' M³)` | `ContinuousOn M (Set.Icc 0 T) ∧ (∀ s ∈ Set.Ico 0 T, ∃ d, HasDerivWithinAt M d (Set.Ici s) s ∧ d ≤ C M² − κ'' M³) ∧ (∀ t ∈ Set.Icc 0 T, BddAbove (Set.range fun x => ‖vorticity (u t) x‖))` |
+| `ClayStatements.LocalTetherClosingBound` | `… → Integrable … → LocalTetherBound u₀ ν` | `… → Integrable … → BddAbove (Set.range fun x => ‖vorticity u₀ x‖) → LocalTetherBound u₀ ν` |
+| `ClayStatements.frohmanian_conditional_regularity_of_closing_bound` | — | new argument `(hω₀ : BddAbove (Set.range fun x => ‖vorticity u₀ x‖))` |
+| `ConditionalRegularity.frohmanian_tether_theorem` | `hcont : ∀ u₀ ν, BKMGlobalContinuation u₀ ν`; `hDI : ∀ u₀ ν, LocalTetherRate u₀ ν`; clause (2) without bounded-vorticity premise | `hcont : ∀ u₀ ν, 0 < ν → BKMGlobalContinuation u₀ ν`; `hDI : ∀ u₀ ν, 0 < ν → BddAbove (Set.range fun x => ‖vorticity u₀ x‖) → LocalTetherRate u₀ ν`; clause (2) has the premise `BddAbove (Set.range fun x => ‖vorticity u₀ x‖)` |
+
+(`M` = `fun τ => vorticity_sup_norm (vorticity (u τ))`.) Unchanged text, changed meaning through these
+definitions: `BKMGlobalContinuation` (stronger premise, weaker hypothesis), `conditional_regularity`,
+`conditional_regularity_of_local_bound`, both `conditional_regularity_of_open_hyps`,
+`localFiniteTimeVorticityBound_of_localTetherBound`, `localTetherBound_of_localTetherRate` (new proof via
+`comparison_ode_stability_Icc_right`), `localTetherBound_zero`, `bkmGlobalContinuation_zero`,
+`conditional_regularity_nonvacuous_at_zero`, `localTetherBound_vacuous_of_periodic`,
+`bkmGlobalContinuation_vacuous_of_periodic`. Added: `comparison_ode_stability_Icc_right`,
+`localTetherRate_zero`. Nothing removed. `FrohmanianTetherRate` (global-path, auxiliary lemmas only) is
+unchanged; the paper (Remark 3.4) records a non-formalized argument that its two-sided differentiability
+at `s = 0` fails at data whose vorticity maximum is attained at two points with different stretching rates.
 
 ## Changes in 0.1.4 (explicit exact solutions; module `ExplicitFlows`)
 
@@ -389,15 +433,19 @@ exactly what the headline theorems take.
   - `TetheredLyapunov.SmoothPhysicalUniqueness` (uniqueness of smooth solutions on a common
     interval). Used only by the uniqueness clause of `conditional_regularity_of_open_hyps` and
     `frohmanian_conditional_regularity_of_closing_bound`.
-  - `PeriodicBKMContinuation` (for `clay_B_exact_of_periodic_tether_bound` and
+  - `PeriodicBKMContinuation` (`hBKM` of the Main Theorem `clay_B_exact_of_periodic_tether_bound`, and
     `clay_B_exact_of_torus_direction_depletion`).
   - `KatoUniquenessOnExistenceTimes` (only for `smoothBelowTstar_of_katoUniqueness`).
   - `IsCoadjointMotion` for the Euler flow (`PlanSteps`).
 - **(d) Equivalent in strength to the open problem:**
-  - `LocalTetherRate` (`hDI` of `frohmanian_tether_theorem`). It includes time-differentiability
-    of `‖ω(t)‖∞`.
-  - `LocalTetherBound` (`hRiccati`) and `ClayStatements.LocalTetherClosingBound`.
-  - `PeriodicTetherClosingBound` and `PeriodicDirectionDepletionBound`.
+  - The Frohmanian tether bound `PeriodicTetherClosingBound` (`hclose` of the Main Theorem
+    `clay_B_exact_of_periodic_tether_bound`) and its per-datum form `TetherImpliesBKM.PeriodicTetherBound`
+    (hypothesis of `periodicBKMIntegrability_of_periodicTetherBound`).
+  - `LocalTetherRate` (`hDI` of `frohmanian_tether_theorem`; since 0.1.5 a right-derivative inequality
+    with continuity and bounded vorticity).
+  - `LocalTetherBound` (`hRiccati`) and `ClayStatements.LocalTetherClosingBound` (bounded vorticity
+    since 0.1.5).
+  - `PeriodicDirectionDepletionBound`.
   - `FrohmanianTetherRate`, `FrohmanianTetherBound`, `FrohmanianTetherClosingBound` and
     `ClosureBlueprint.RiccatiMajorantExists`. These are the global-path forms, kept for auxiliary
     lemmas only.
@@ -422,7 +470,7 @@ exactly what the headline theorems take.
 - **Vacuous at nonzero periodic data** (0.1.4): `LocalTetherBound`, `SmoothPhysicalUniqueness`,
   `BKMGlobalContinuation` hold trivially there and `KatoLocalWitness` is empty, because
   `IsPhysicalNSSolutionOn` requires finite energy on ℝ³. They are not counted as discharged.
-- **Hypotheses of auxiliary lemmas only** (re-derived in 0.1.4 from every theorem binder whose type is
+- **Hypotheses of auxiliary lemmas only** (re-derived in 0.1.4, rechecked in 0.1.5, from every theorem binder whose type is
   a named `Prop`; not used by the headline theorems): `BKMContinuationCriterion`,
   `BKMContinuationCriterionFor`, `LocalExistenceTime`, `SmoothBelowTstar`, `SmoothBelowTstarFor`,
   `PathBKMIntegrable`, `TstarIsTop`, `KatoUniformRestart`, `UniformVorticityCeiling`,
@@ -448,7 +496,48 @@ exactly what the headline theorems take.
 | batteries | `v4.30.0-rc1` | `bf597c77bf9b8e66720d724928207f5911533113` |
 | Cli | `v4.30.0-rc1` | `f7d0ca7c926cdde0562af20394dd25d028b839a5` |
 
-## Axiom report (`lake env lean scripts/AxiomAudit.lean`, local run on the verified commit `749ddf8e8cb6ba330caaab701896ece96680efd4`)
+## `#print axioms` for the headline theorems (`lake env lean scripts/PrintAxioms.lean`, fresh clone of `5d7c9d0`)
+
+```
+'ConditionalRegularity.frohmanian_tether_theorem' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetheredLyapunov.conditional_regularity' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.frohmanian_conditional_regularity_of_closing_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.conditional_regularity_nonvacuous_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.tetherKernel_C3' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.pairsToZero_of_C2' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.uniqueness_of_minimal_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.uniqueness_of_minimal_symmetric_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.uniqueness_of_minimal_tether_core' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherNondegeneracy.tetherKernel_nondegenerate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherWeight.not_aeEnstrophyWeightUnrestricted_tetherKernel' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherWeightProof.tetherKernel_aeEnstrophyWeight' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherWeightProof.tetherKernel_core_inputs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.not_tetherKernel_invariant_concrete' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.not_tetherKernel_invariant_transSubgroup' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.tetherKernel_transported_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.not_transported_invariant_pointEval' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.curl_abcProfile' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.not_integrable_sq_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.isEmpty_katoLocalWitness_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.localTetherBoundV014_constraint_free_of_unbounded' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.exists_isLocalPhysicalSolution_zero_time' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.isLocalPhysicalSolution_escapePath' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_localTetherRateV014_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_forall_localTetherRateV014' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetheredLyapunov.comparison_ode_stability_Icc_right' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetheredLyapunov.localTetherBound_of_localTetherRate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.localTetherRate_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.localTetherBound_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherClosingBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+## Axiom report (`lake env lean scripts/AxiomAudit.lean`, fresh clone of the verified commit `5d7c9d0fe1f418063e57a7289dbb71105d73e8b4`)
 
 ```
 'AnalyticPipeline.bkm_integrableOn_of_uniform_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -697,6 +786,7 @@ exactly what the headline theorems take.
 'FrohmanianTether.ClayStatements.isZ3Periodic_iff_unit_shifts' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.library_huniq_unsatisfiable_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.localTetherBound_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.localTetherRate_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.repaired_huniq_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.smoothPhysicalUniqueness_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.ClayStatements.stepField.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -715,6 +805,25 @@ exactly what the headline theorems take.
 'FrohmanianTether.Step1Hyp.deriv_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.Step1Hyp.sub_left' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.Step1Hyp.zero_deriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.escapePath.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.escapePath_of_nonpos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.exists_isLocalPhysicalSolution_zero_time' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.hasDerivAt_escapePath_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.isLocalPhysicalSolution_escapePath' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.localTetherBoundV014_constraint_free_of_unbounded' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.norm_abcProfile_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.norm_escapePath_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_differentiableAt_vorticity_sup_norm_escapePath' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_forall_localTetherRateV014' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_localTetherBound_of_unbounded' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_localTetherRateV014_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_localTetherRate_of_unbounded' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.vorticity_sup_norm_eq_zero_of_not_bddAbove' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.vorticity_sup_norm_escapePath_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.vorticity_sup_norm_escapePath_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherClosingBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherImpliesBKM.periodicTetherClosingBound_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.TetherKernel.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.TorusStrainExclusion.aligned_vorticity_stretching_integrand_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.TorusStrainExclusion.biot_savart_det_aligned_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -966,6 +1075,7 @@ exactly what the headline theorems take.
 'NavierStokes3D.transported_scalar_maximum_principle' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.uniqueness_of_existence_times_of_energy_gronwall' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.volume.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NavierStokes3D.vorticity.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.vorticity_sup_norm_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.vorticity_transport' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NavierStokes3D.vorticity_transport_at' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -1162,6 +1272,7 @@ exactly what the headline theorems take.
 'TetheredLyapunov.comparison_ode_exists' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.comparison_ode_local_exists' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.comparison_ode_stability_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetheredLyapunov.comparison_ode_stability_Icc_right' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity_of_local_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
 'TetheredLyapunov.conditional_regularity_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -1211,6 +1322,7 @@ exactly what the headline theorems take.
 'crossProduct.eq_1' depends on axioms: [propext, Quot.sound]
 'fderivInnerCLM.eq_1' depends on axioms: [propext, Classical.choice, Quot.sound]
 'gradient.congr_simp' depends on axioms: [propext, Classical.choice, Quot.sound]
-AUDIT SUMMARY: theorems audited: 760 (670 stated in the sources, 90 auto-generated equation/congruence/injectivity lemmas); declarations audited: 1074; violations: 0
+AUDIT SUMMARY: theorems audited: 782 (690 stated in the sources, 92 auto-generated equation/congruence/injectivity lemmas); declarations audited: 1101; violations: 0
 AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations
+AUDIT SUMMARY: theorems audited: 782 (690 stated in the sources, 92 auto-generated equation/congruence/injectivity lemmas); declarations audited: 1101; violations: 0
 ```
