@@ -61,3 +61,16 @@ repository-wide audit of every declaration is `scripts/AxiomAudit.lean`. -/
 -- headline: conditional only on the OPEN PeriodicTetherClosingBound
 #print axioms FrohmanianTether.Pillars.clay_B_exact_of_periodic_tether_closing_bound
 #print axioms FrohmanianTether.Pillars.clay_B_exact_unique_of_periodic_tether_closing_bound
+-- refutation of FrohmanianTetherRate / FrohmanianTetherBound (junk-derivative loophole)
+#print axioms Takagi.not_differentiableAt_takagi
+#print axioms TetherRateCounterexample.not_forall_frohmanianTetherRate
+#print axioms TetherRateCounterexample.not_frohmanianTetherRate_U
+#print axioms TetherRateCounterexample.not_frohmanianTetherBound_U
+#print axioms TetherRatePeriodicVacuity.frohmanianTetherRate_of_periodic
+-- Fefferman Problem (A): conditional reduction and nonvacuity
+#print axioms FeffermanClayA.clay_A_fefferman_of_frohmanianTetherRateSmooth
+#print axioms FeffermanClayA.frohmanianTetherRateSmooth_zero
+#print axioms FeffermanClayA.r3BKMContinuationAt_zero
+#print axioms FeffermanClayA.feffermanDecay_zero
+#print axioms FeffermanClayA.clay_A_fefferman_instance_zero
+#print axioms FeffermanClayA.frohmanianTetherRateSmoothGlobal_of_no_global_solution

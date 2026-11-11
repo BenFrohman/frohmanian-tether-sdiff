@@ -10,6 +10,7 @@ import FrohmanianTether.ConcreteSDiff
 import FrohmanianTether.ConditionalRegularity
 import FrohmanianTether.CubicSourceCertificate
 import FrohmanianTether.ExplicitFlows
+import FrohmanianTether.FeffermanClayA
 import FrohmanianTether.ForMathlib.Projection
 import FrohmanianTether.HighSetDepletionAndBKM
 import FrohmanianTether.IndependentMajorant
@@ -22,11 +23,14 @@ import FrohmanianTether.ScalingIdentities
 import FrohmanianTether.StrainBoundRefutation
 import FrohmanianTether.SymplecticConstraint
 import FrohmanianTether.SymplecticTether
+import FrohmanianTether.Takagi
 import FrohmanianTether.TestFieldFamily
 import FrohmanianTether.TetherC1
 import FrohmanianTether.TetherDefinitionAudit
 import FrohmanianTether.TetherEquivariantC1
 import FrohmanianTether.TetherNondegeneracy
+import FrohmanianTether.TetherRateCounterexample
+import FrohmanianTether.TetherRatePeriodicVacuity
 import FrohmanianTether.TetherWeight
 import FrohmanianTether.TetherWeightProof
 import FrohmanianTether.TetheredLyapunov

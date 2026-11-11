@@ -5,6 +5,13 @@ on:
   pull_request:
   workflow_dispatch:
 
+# One in-flight certificate per branch, whether triggered by push or pull_request.
+# Prevents a redundant push run and a PR run from racing on the same SHA
+# (and from colliding on artifact names).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   certify:
     runs-on: ubuntu-latest
@@ -31,11 +38,18 @@ jobs:
           grep "^AUDIT SUMMARY" axioms.txt
       - name: One-command verification (scripts/verify.sh, as documented in README and paper)
         run: bash scripts/verify.sh
+      # Upload is bookkeeping only. The Lean/axiom steps above remain required and
+      # fail the job on any kernel or audit failure. A GitHub artifact-API outage
+      # (HTML error page instead of JSON, as in run 43093930648) must not fail a
+      # already-certified build.
       - name: Upload axiom report
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: axioms
+          name: axioms-${{ github.event_name }}-${{ github.run_id }}
           path: |
             axioms.txt
             print_axioms.txt
+          if-no-files-found: warn
+          overwrite: true
