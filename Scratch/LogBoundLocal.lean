@@ -473,6 +473,32 @@ lemma high_Gs_le {B : ℕ → ℝ}
         · exact h1.trans (by gcongr)
         · exact h2.trans (by gcongr)
 
+include hf hL in
+open NavierStokes3D in
+/-- **Pointwise frequency-truncated bound for smooth divergence-free fields** (all `N`, `L ≥ 1`). -/
+lemma pt_bound {B : ℕ → ℝ}
+    (hB : ∀ i y, ‖iteratedFDeriv ℝ i (fun ξ : E3 => LogBound.ρ ξ) y‖ ≤ B i) (hL1 : 1 ≤ L)
+    (hdiv : ∀ y, div f y = 0) {F Ω : ℝ} (hF : ∀ y m, |f y m| ≤ F)
+    (hΩ : ∀ y, ‖vorticity f y‖ ≤ Ω) (k l : Fin 3) (N : ℕ) :
+    ENNReal.ofReal |df f l k x₀| ≤
+      LogBound.Clow * (∫⁻ y, ‖f y‖ₑ ^ 2) ^ (1 / 2 : ℝ) +
+      ENNReal.ofReal (N * (LogBound.Akern * (3 * (Ω + 2 * (B 1 * L⁻¹) * F) +
+        3 * ((B 1 * L⁻¹) * F)))) +
+      (ENNReal.ofReal (Real.sqrt ((2 : ℝ) ^ N))⁻¹ * LogBound.Kh) ^ (1 / 2 : ℝ) *
+      ((ENNReal.ofReal (27 * (4 * B 1 + 6 * B 2 + 3 * B 3) ^ 2) *
+          R3BKM.sobolevEnergy 3 f) ^ (1 / 2 : ℝ) +
+      (ENNReal.ofReal (27 * (4 * B 0 + 6 * B 1 + 3 * B 2) ^ 2) *
+          R3BKM.sobolevEnergy 3 f) ^ (1 / 2 : ℝ)) := by
+  have hmain := LogBound.schwartz_log_bound (fun m => Gs hf x₀ hL m) k l N
+    (Bω := Ω + 2 * (B 1 * L⁻¹) * F) (Bd := 3 * ((B 1 * L⁻¹) * F))
+    (fun m y => curl_Gs_le hf x₀ hL hB hF hΩ l m y) (fun y => div_Gs_le hf x₀ hL hB hdiv hF y) x₀
+  rw [D_Gs_at hf x₀ hL k l, ← ofReal_norm_eq_enorm, Complex.norm_real, Real.norm_eq_abs] at hmain
+  refine hmain.trans ?_
+  have h1 := ENNReal.rpow_le_rpow (l2_Gs_le hf x₀ hL l) (by norm_num : (0 : ℝ) ≤ 1 / 2)
+  refine add_le_add (add_le_add (mul_le_mul_right ?_ _) le_rfl)
+    (mul_le_mul_right (high_Gs_le hf x₀ hL hB hL1 k l) _)
+  exact h1
+
 end Localize
 
 end LogBoundLocal
