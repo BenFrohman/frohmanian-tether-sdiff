@@ -18,6 +18,23 @@ Problem.** All results about the full program are *conditional
 implications*: every open assumption is an explicit Lean hypothesis (full list by Lean name under
 "Remaining assumptions" below).
 
+## Unreleased: Fefferman Problem (A) reduction and tether-rate refutation (branch `feat/fefferman-clay-a-reduction`)
+
+**Conditional only. Clay (A) is not proved.** Kernel-checked at commit `4010251` (Lean
+`v4.30.0-rc1`, Mathlib `0c154d67`; axioms only `propext`, `Classical.choice`, `Quot.sound`;
+rebuild: `bash scripts/verify.sh`). Full details and `#print axioms` output are in `CERTIFICATE.md`.
+
+* `TetherRateCounterexample.not_forall_frohmanianTetherRate`: `FrohmanianTetherRate` (and
+  `FrohmanianTetherBound`) as written is **false**. A steady finite-energy field with a
+  nowhere-differentiable Takagi component satisfies `NS_PDE` through Mathlib's zero junk
+  derivative, while its vorticity is unbounded.
+* `TetherRatePeriodicVacuity.frohmanianTetherRate_of_periodic`: on periodic data it holds only
+  vacuously.
+* `FeffermanClayA.clay_A_fefferman_of_frohmanianTetherRateSmooth`:
+  `(∀ ν > 0, ∀ Fefferman data u₀, FrohmanianTetherRateSmooth u₀ ν) → (∀ ν > 0, R3BKMContinuation ν) → Clay_A_Fefferman`.
+  `Clay_A_Fefferman` states Fefferman's official Problem (A) literally. Both hypotheses are
+  **open** for general data and are shown satisfiable at `u₀ = 0`.
+
 ## Main results (version 0.1.5)
 
 **Main Theorem (kernel-checked)** — `FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound`:
