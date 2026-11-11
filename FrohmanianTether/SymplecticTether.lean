@@ -387,7 +387,11 @@ unbounded non-L² parasitic fields. -/
 The last conjunct (`BddAbove` of `x ↦ ‖ω(τ,x)‖` at every `τ ≥ 0`) is essential:
 `vorticity_sup_norm` is a real `iSup`, which Mathlib sets to `0` on unbounded ranges, so
 without it an unbounded field would satisfy the bound vacuously.
-OPEN for general data; kernel-verified satisfiable at `u₀ = 0` (`frohmanianTetherBound_zero`). -/
+Kernel-verified satisfiable at `u₀ = 0` (`frohmanianTetherBound_zero`).
+**DISPROVED as written for unrestricted data** (`TetherRateCounterexample.not_frohmanianTetherBound_U`):
+`NS_PDE`/`IsPhysicalNSSolution` impose no spatial differentiability and Mathlib's `fderiv` is `0`
+at non-differentiable points (junk-derivative loophole), so a steady finite-energy field with a
+nowhere-differentiable (Takagi) component "solves" `NS_PDE` with unbounded vorticity. -/
 @[expose] public abbrev FrohmanianTetherBound (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
     NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u →
@@ -398,8 +402,16 @@ OPEN for general data; kernel-verified satisfiable at `u₀ = 0` (`frohmanianTet
 
 /-- **Frohmanian tether rate** (the `hDI` binder of `frohmanian_tether_theorem`):
 along every physically admissible solution, `M(t) = ‖ω(t)‖_∞` is differentiable and obeys
-`M' ≤ C M² - κ'' M³` with `C, κ'' > 0`. OPEN for general data; kernel-verified satisfiable
-at `u₀ = 0` (`frohmanianTetherRate_zero`). -/
+`M' ≤ C M² - κ'' M³` with `C, κ'' > 0`. Kernel-verified satisfiable at `u₀ = 0`
+(`frohmanianTetherRate_zero`).
+**DISPROVED as written** (`TetherRateCounterexample.not_forall_frohmanianTetherRate`,
+`not_frohmanianTetherRate_U`): `NS_PDE`/`IsPhysicalNSSolution` impose no spatial
+differentiability and Mathlib's `fderiv` is `0` at non-differentiable points (junk-derivative
+loophole), so the steady finite-energy field `U` with a nowhere-differentiable (Takagi)
+component "solves" `NS_PDE` for every `ν` while `‖ω(U)‖` is unbounded, violating the `BddAbove`
+conjunct. On nonzero continuous `ℤ³`-periodic data it holds only vacuously
+(`TetherRatePeriodicVacuity`). The repaired statement on Fefferman's smooth class is
+`FeffermanClayA.FrohmanianTetherRateSmooth` (open for general data). -/
 @[expose] public abbrev FrohmanianTetherRate (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
     0 < ν → NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u →
