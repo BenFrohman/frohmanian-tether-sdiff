@@ -279,3 +279,7 @@ hypothesis.
 ## License
 
 Apache 2.0 (see `LICENSE`). Cite via `CITATION.cff` or the Zenodo record of version 0.1.4, [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) ([record](https://zenodo.org/records/24120781)), published 2026-11-10 from `main` at `4bcd11c`; it adds the module `ExplicitFlows` (no existing Lean statement changed). Earlier: 0.1.3 [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (DOI-only update of 0.1.2), 0.1.2 [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345). All versions: concept DOI [`10.5281/zenodo.24081999`](https://doi.org/10.5281/zenodo.24081999). The archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)) is version 0.1.1, which still contains the removed hypothesis `KineticEnergyDerivIsVelocity`. Do not cite the older-project DOI `10.5281/zenodo.23717084` (NS_Millennium_Proof) as identifying this repository.
+
+## Copyright
+
+© 2026 Benjamin Stanley Frohman.
