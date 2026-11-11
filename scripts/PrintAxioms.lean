@@ -32,7 +32,8 @@ repository-wide audit of every declaration is `scripts/AxiomAudit.lean`. -/
 #print axioms ExplicitFlows.curl_abcProfile
 #print axioms ExplicitFlows.not_integrable_sq_of_periodic
 #print axioms ExplicitFlows.isEmpty_katoLocalWitness_of_periodic
--- 0.1.5: definition audit (0.1.4 defects) and tether ⇒ BKM integrability
+-- 0.1.5: main theorem, tether ⇒ BKM integrability, definition audit (0.1.4 defects)
+#print axioms FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound
 #print axioms FrohmanianTether.TetherDefinitionAudit.localTetherBoundV014_constraint_free_of_unbounded
 #print axioms FrohmanianTether.TetherDefinitionAudit.exists_isLocalPhysicalSolution_zero_time
 #print axioms FrohmanianTether.TetherDefinitionAudit.isLocalPhysicalSolution_escapePath
