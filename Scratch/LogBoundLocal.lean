@@ -1,6 +1,7 @@
 import Scratch.LogBound
 import Scratch.GradBound
 import Scratch.SobolevBridge
+import Mathlib.Analysis.Complex.ExponentialBounds
 
 /-! # Localized BKM log bound: from Schwartz fields to smooth finite-`H³` fields -/
 
@@ -501,6 +502,233 @@ lemma pt_bound {B : ℕ → ℝ}
 
 end Localize
 
+
+/-! ## Arithmetic of the truncation parameters -/
+
+lemma two_pow_ceil_ge (E : ℝ) (hE : 0 ≤ E) :
+    (1 + E) ^ 2 ≤ (2 : ℝ) ^ (⌈3 * Real.log (1 + E)⌉₊) := by
+  set N := ⌈3 * Real.log (1 + E)⌉₊
+  have hlog : 0 ≤ Real.log (1 + E) := Real.log_nonneg (by linarith)
+  have hN : 3 * Real.log (1 + E) ≤ N := Nat.le_ceil _
+  have hl2 := Real.log_two_gt_d9
+  have h1 : (1 + E) ^ 2 = Real.exp (2 * Real.log (1 + E)) := by
+    rw [show (2 : ℝ) * Real.log (1 + E) = Real.log ((1 + E) ^ 2) by
+      rw [Real.log_pow]; norm_num, Real.exp_log (by positivity)]
+  have h2 : (2 : ℝ) ^ N = Real.exp (N * Real.log 2) := by
+    rw [← Real.log_rpow (by norm_num), Real.exp_log (by positivity), Real.rpow_natCast]
+  rw [h1, h2, Real.exp_le_exp]
+  nlinarith
+
+lemma sqrt_le_one_add {x : ℝ} (hx : 0 ≤ x) : Real.sqrt x ≤ 1 + x := by
+  rcases le_total x 1 with h | h
+  · have := Real.sqrt_le_one.mpr h; linarith
+  · have : Real.sqrt x ≤ x := (Real.sqrt_le_left (by linarith)).2 (by nlinarith)
+    linarith
+
+
+open NavierStokes3D in
+lemma norm_vort_le {f : E3 → E3} (hf : Differentiable ℝ f) (y : E3) :
+    ‖vorticity f y‖ ≤ 6 * ‖fderiv ℝ f y‖ := by
+  have hd : ∀ a b : Fin 3, |fderiv ℝ (fun z => f z a) y (EuclideanSpace.single b 1)| ≤
+      ‖fderiv ℝ f y‖ := fun a b => abs_dc_le (hf y) a b
+  have hs : ∀ a b c d : Fin 3, |fderiv ℝ (fun z => f z a) y (EuclideanSpace.single b 1) -
+      fderiv ℝ (fun z => f z c) y (EuclideanSpace.single d 1)| ≤ 2 * ‖fderiv ℝ f y‖ :=
+    fun a b c d => (abs_sub _ _).trans (by linarith [hd a b, hd c d])
+  refine (GradBound.norm_le_sum_coord _).trans ?_
+  rw [Fin.sum_univ_three]
+  simp only [vorticity, curl, directionalCoord, PiLp.add_apply, PiLp.single_apply]
+  simp
+  linarith [hs 2 1 1 2, hs 0 2 2 0, hs 1 0 0 1]
+
+
+/-! ## The BKM logarithmic inequality, as stated at `R3BKMContinuation.lean:58` -/
+
+lemma rpow_half_le_one_add (x : ℝ) (hx : 0 ≤ x) :
+    (ENNReal.ofReal x) ^ (1 / 2 : ℝ) ≤ ENNReal.ofReal (1 + x) := by
+  rw [ENNReal.ofReal_rpow_of_nonneg hx (by norm_num), ← Real.sqrt_eq_rpow]
+  exact ENNReal.ofReal_le_ofReal (sqrt_le_one_add hx)
+
+open NavierStokes3D in
+/-- Core pointwise estimate with explicit absolute constants. -/
+lemma pt_final {B : ℕ → ℝ}
+    (hB : ∀ i y, ‖iteratedFDeriv ℝ i (fun ξ : E3 => LogBound.ρ ξ) y‖ ≤ B i)
+    {f : E3 → E3} (hf : ContDiff ℝ ∞ f) (hdiv : ∀ y, div f y = 0)
+    (hE : R3BKM.sobolevEnergy 3 f < ⊤) {Ω : ℝ} (hΩ0 : 0 ≤ Ω) (hΩ : ∀ y, ‖vorticity f y‖ ≤ Ω)
+    (k l : Fin 3) (x₀ : E3) :
+    |df f l k x₀| ≤ LogBound.Clow.toReal * (1 + R3BKM.l2Sq f) +
+      9 * LogBound.Akern * (Ω * (1 + Real.log (1 + R3BKM.hsSq 3 f))) +
+      9 * LogBound.Akern * B 1 +
+      (LogBound.Kh ^ (1 / 2 : ℝ) *
+        (ENNReal.ofReal (27 * (4 * B 1 + 6 * B 2 + 3 * B 3) ^ 2) ^ (1 / 2 : ℝ) +
+         ENNReal.ofReal (27 * (4 * B 0 + 6 * B 1 + 3 * B 2) ^ 2) ^ (1 / 2 : ℝ))).toReal := by
+  set E := R3BKM.hsSq 3 f
+  have hE0 : 0 ≤ E := ENNReal.toReal_nonneg
+  have hEe : R3BKM.sobolevEnergy 3 f = ENNReal.ofReal E := (ENNReal.ofReal_toReal hE.ne).symm
+  set l2 := R3BKM.l2Sq f
+  have hl20 : 0 ≤ l2 := ENNReal.toReal_nonneg
+  have hl2e : (∫⁻ y, ‖f y‖ₑ ^ 2) = ENNReal.ofReal l2 :=
+    (ENNReal.ofReal_toReal ((l2_le_energy f).trans_lt hE).ne).symm
+  have hB0 : ∀ i, 0 ≤ B i := fun i => (norm_nonneg _).trans (hB i 0)
+  set F := 8 * Real.sqrt E
+  have hF0 : 0 ≤ F := by positivity
+  have hF : ∀ y m, |f y m| ≤ F := fun y m => by
+    have := SobolevBridge.abs_component_le_sobolevEnergy hf m y
+    rw [hEe, ENNReal.ofReal_rpow_of_nonneg hE0 (by norm_num), ← Real.sqrt_eq_rpow,
+      show (8 : ℝ≥0∞) = ENNReal.ofReal 8 by simp, ← ENNReal.ofReal_mul (by norm_num)] at this
+    exact (ENNReal.ofReal_le_ofReal_iff (by positivity)).1 this
+  set N := ⌈3 * Real.log (1 + E)⌉₊
+  set L : ℝ := 1 + N * F
+  have hL1 : 1 ≤ L := by have : (0 : ℝ) ≤ N * F := by positivity
+                         linarith
+  have hL : 0 < L := by linarith
+  have hpt := pt_bound hf x₀ hL hB hL1 hdiv hF hΩ k l N
+  set A := LogBound.Akern
+  have hA : 0 ≤ A := by
+    unfold A LogBound.Akern
+    exact Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ =>
+      integral_nonneg fun _ => norm_nonneg _
+  -- low term
+  have hT1 : LogBound.Clow * (∫⁻ y, ‖f y‖ₑ ^ 2) ^ (1 / 2 : ℝ) ≤
+      ENNReal.ofReal (LogBound.Clow.toReal * (1 + l2)) := by
+    rw [hl2e, ENNReal.ofReal_mul ENNReal.toReal_nonneg,
+      ENNReal.ofReal_toReal LogBound.Clow_ne_top]
+    exact mul_le_mul_right (rpow_half_le_one_add l2 hl20) _
+  -- middle term
+  have hlog : 0 ≤ Real.log (1 + E) := Real.log_nonneg (by linarith)
+  have hN : (N : ℝ) ≤ 3 * (1 + Real.log (1 + E)) := by
+    have := Nat.ceil_lt_add_one (show 0 ≤ 3 * Real.log (1 + E) by positivity)
+    linarith
+  have hNF : (N : ℝ) * F * L⁻¹ ≤ 1 := by
+    rw [mul_inv_le_iff₀ hL, one_mul]; linarith
+  have hT2 : (N : ℝ) * (A * (3 * (Ω + 2 * (B 1 * L⁻¹) * F) + 3 * ((B 1 * L⁻¹) * F))) ≤
+      9 * A * (Ω * (1 + Real.log (1 + E))) + 9 * A * B 1 := by
+    have e : (N : ℝ) * (A * (3 * (Ω + 2 * (B 1 * L⁻¹) * F) + 3 * ((B 1 * L⁻¹) * F))) =
+        3 * A * Ω * N + 9 * A * B 1 * (N * F * L⁻¹) := by ring
+    rw [e]
+    have h1 : 3 * A * Ω * N ≤ 3 * A * Ω * (3 * (1 + Real.log (1 + E))) :=
+      mul_le_mul_of_nonneg_left hN (by positivity)
+    have h2 : 9 * A * B 1 * (N * F * L⁻¹) ≤ 9 * A * B 1 * 1 :=
+      mul_le_mul_of_nonneg_left hNF (by have := hB0 1; positivity)
+    nlinarith
+  -- high term
+  set c1 := ENNReal.ofReal (27 * (4 * B 1 + 6 * B 2 + 3 * B 3) ^ 2)
+  set c2 := ENNReal.ofReal (27 * (4 * B 0 + 6 * B 1 + 3 * B 2) ^ 2)
+  set Ch := LogBound.Kh ^ (1 / 2 : ℝ) * (c1 ^ (1 / 2 : ℝ) + c2 ^ (1 / 2 : ℝ))
+  have hCh : Ch ≠ ⊤ := by
+    refine ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg (by norm_num) LogBound.Kh_ne_top)
+      (ENNReal.add_ne_top.2 ⟨ENNReal.rpow_ne_top_of_nonneg (by norm_num) ENNReal.ofReal_ne_top,
+        ENNReal.rpow_ne_top_of_nonneg (by norm_num) ENNReal.ofReal_ne_top⟩)
+  have hsmall : (Real.sqrt ((2 : ℝ) ^ N))⁻¹ * E ≤ 1 := by
+    have h2N := two_pow_ceil_ge E hE0
+    have hs : E ≤ Real.sqrt ((2 : ℝ) ^ N) := by
+      rw [Real.le_sqrt hE0 (by positivity)]
+      nlinarith
+    have hpos : 0 < Real.sqrt ((2 : ℝ) ^ N) := Real.sqrt_pos.2 (by positivity)
+    rw [inv_mul_le_iff₀ hpos, mul_one]; exact hs
+  have hT3 : (ENNReal.ofReal (Real.sqrt ((2 : ℝ) ^ N))⁻¹ * LogBound.Kh) ^ (1 / 2 : ℝ) *
+      ((c1 * R3BKM.sobolevEnergy 3 f) ^ (1 / 2 : ℝ) +
+        (c2 * R3BKM.sobolevEnergy 3 f) ^ (1 / 2 : ℝ)) ≤ Ch := by
+    set a := ENNReal.ofReal (Real.sqrt ((2 : ℝ) ^ N))⁻¹
+    have hh : (0 : ℝ) ≤ 1 / 2 := by norm_num
+    rw [ENNReal.mul_rpow_of_nonneg _ _ hh, ENNReal.mul_rpow_of_nonneg _ _ hh,
+      ENNReal.mul_rpow_of_nonneg _ _ hh]
+    have hae : a ^ (1 / 2 : ℝ) * R3BKM.sobolevEnergy 3 f ^ (1 / 2 : ℝ) ≤ 1 := by
+      rw [← ENNReal.mul_rpow_of_nonneg _ _ hh, hEe, ← ENNReal.ofReal_mul (by positivity)]
+      refine ENNReal.rpow_le_one ?_ hh
+      rw [← ENNReal.ofReal_one]; exact ENNReal.ofReal_le_ofReal hsmall
+    calc a ^ (1 / 2 : ℝ) * LogBound.Kh ^ (1 / 2 : ℝ) *
+          (c1 ^ (1 / 2 : ℝ) * R3BKM.sobolevEnergy 3 f ^ (1 / 2 : ℝ) +
+            c2 ^ (1 / 2 : ℝ) * R3BKM.sobolevEnergy 3 f ^ (1 / 2 : ℝ))
+        = Ch * (a ^ (1 / 2 : ℝ) * R3BKM.sobolevEnergy 3 f ^ (1 / 2 : ℝ)) := by
+          simp only [Ch]; ring
+      _ ≤ Ch * 1 := mul_le_mul_right hae _
+      _ = Ch := mul_one _
+  have htot := hpt.trans (add_le_add (add_le_add hT1 (ENNReal.ofReal_le_ofReal hT2)) hT3)
+  rw [← ENNReal.ofReal_toReal hCh, ← ENNReal.ofReal_add (by positivity) (by
+      have := hB0 1; positivity), ← ENNReal.ofReal_add (by
+      have := hB0 1; have := LogBound.Clow.toReal; positivity) ENNReal.toReal_nonneg] at htot
+  have := (ENNReal.ofReal_le_ofReal_iff (by
+    have := hB0 1; positivity)).1 htot
+  linarith
+
+
+open NavierStokes3D in
+/-- **The BKM logarithmic inequality** (`R3BKM.BKMLogInequality`, `R3BKMContinuation.lean:58`),
+proved as stated: for smooth divergence-free `f` with finite `H³` energy, `∇f` is bounded and
+`‖∇f‖_∞ ≤ C (1 + ‖f‖₂² + ‖curl f‖_∞ (1 + log (1 + ‖f‖²_{H³})))`. -/
+theorem bkmLogInequality : R3BKM.BKMLogInequality := by
+  obtain ⟨B, hB⟩ := exists_bump_bounds
+  have hB0 : ∀ i, 0 ≤ B i := fun i => (norm_nonneg _).trans (hB i 0)
+  have hA : 0 ≤ LogBound.Akern := Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ =>
+      integral_nonneg fun _ => norm_nonneg _
+  set Chr := (LogBound.Kh ^ (1 / 2 : ℝ) *
+        (ENNReal.ofReal (27 * (4 * B 1 + 6 * B 2 + 3 * B 3) ^ 2) ^ (1 / 2 : ℝ) +
+         ENNReal.ofReal (27 * (4 * B 0 + 6 * B 1 + 3 * B 2) ^ 2) ^ (1 / 2 : ℝ))).toReal
+  set C0 : ℝ := LogBound.Clow.toReal + 9 * LogBound.Akern + 9 * LogBound.Akern * B 1 + Chr + 1
+  have hC0 : 0 < C0 := by
+    have := hB0 1
+    have : 0 ≤ Chr := ENNReal.toReal_nonneg
+    have : 0 ≤ LogBound.Clow.toReal := ENNReal.toReal_nonneg
+    positivity
+  refine ⟨9 * C0, by positivity, fun f hf hdiv hE => ⟨GradBound.bddAbove_norm_fderiv hf hE, ?_⟩⟩
+  obtain ⟨M, hM⟩ := GradBound.bddAbove_norm_fderiv hf hE
+  have hfd : Differentiable ℝ f := hf.differentiable (by simp)
+  have hωb : BddAbove (Set.range fun y => ‖vorticity f y‖) :=
+    ⟨6 * M, by
+      rintro _ ⟨y, rfl⟩
+      exact (norm_vort_le hfd y).trans (by linarith [hM ⟨y, rfl⟩])⟩
+  set Ω := vorticity_sup_norm (vorticity f)
+  have hΩ : ∀ y, ‖vorticity f y‖ ≤ Ω := fun y => le_ciSup hωb y
+  have hΩ0 : 0 ≤ Ω := vorticity_sup_norm_nonneg _
+  set X := 1 + R3BKM.l2Sq f + Ω * (1 + Real.log (1 + R3BKM.hsSq 3 f))
+  have hl2 : 0 ≤ R3BKM.l2Sq f := ENNReal.toReal_nonneg
+  have hlog : 0 ≤ Real.log (1 + R3BKM.hsSq 3 f) :=
+    Real.log_nonneg (by have := R3BKM.hsSq_nonneg 3 f; linarith)
+  have hX : 1 ≤ X := by have : 0 ≤ Ω * (1 + Real.log (1 + R3BKM.hsSq 3 f)) := by positivity
+                        linarith
+  have hpt : ∀ k l x₀, |df f l k x₀| ≤ C0 * X := fun k l x₀ => by
+    have h := pt_final hB hf hdiv hE hΩ0 hΩ k l x₀
+    have h1 : LogBound.Clow.toReal * (1 + R3BKM.l2Sq f) ≤ LogBound.Clow.toReal * X :=
+      mul_le_mul_of_nonneg_left (by
+        have : 0 ≤ Ω * (1 + Real.log (1 + R3BKM.hsSq 3 f)) := by positivity
+        linarith) ENNReal.toReal_nonneg
+    have h2 : 9 * LogBound.Akern * (Ω * (1 + Real.log (1 + R3BKM.hsSq 3 f))) ≤
+        9 * LogBound.Akern * X := mul_le_mul_of_nonneg_left (by
+          have : 0 ≤ Ω * (1 + Real.log (1 + R3BKM.hsSq 3 f)) := by positivity
+          linarith) (by positivity)
+    have h3 : 9 * LogBound.Akern * B 1 ≤ 9 * LogBound.Akern * B 1 * X :=
+      le_mul_of_one_le_right (by have := hB0 1; positivity) hX
+    have h4 : Chr ≤ Chr * X := le_mul_of_one_le_right ENNReal.toReal_nonneg hX
+    have h5 : 0 ≤ X := by linarith
+    calc _ ≤ _ := h
+      _ ≤ LogBound.Clow.toReal * X + 9 * LogBound.Akern * X + 9 * LogBound.Akern * B 1 * X +
+          Chr * X := by linarith
+      _ ≤ C0 * X := by simp only [C0]; nlinarith
+  refine ciSup_le fun x₀ => ?_
+  refine (GradBound.norm_clm_le _).trans ?_
+  calc _ ≤ ∑ k : Fin 3, ∑ l : Fin 3, |df f l k x₀| := Finset.sum_le_sum fun k _ => by
+        refine (GradBound.norm_le_sum_coord _).trans (le_of_eq (Finset.sum_congr rfl fun l _ => ?_))
+        rw [df, comp_fderiv (hfd x₀)]
+    _ ≤ ∑ _k : Fin 3, ∑ _l : Fin 3, C0 * X :=
+        Finset.sum_le_sum fun k _ => Finset.sum_le_sum fun l _ => hpt k l x₀
+    _ = 9 * C0 * X := by simp; ring
+    _ = _ := by ring
+
+open NavierStokes3D FrohmanianTether RepairedTether R3BKM in
+/-- `Clay_A_Fefferman` now needs only the tether rate and the Kato maximal solution. -/
+theorem clay_A_fefferman_of_rate_of_kato
+    (hrate : ∀ ν > (0 : ℝ), ∀ u₀ : VelocityField, ContDiff ℝ ∞ u₀ → (∀ x, div u₀ x = 0) →
+      FeffermanDecay u₀ → FrohmanianTetherRateSmooth u₀ ν)
+    (hK : ∀ ν > (0 : ℝ), ∀ u₀ : VelocityField, ContDiff ℝ ∞ u₀ → (∀ x, div u₀ x = 0) →
+      FeffermanDecay u₀ → KatoMaximalSolution ν u₀) :
+    Clay_A_Fefferman :=
+  clay_A_fefferman_of_rate_of_kato_of_log hrate bkmLogInequality hK
+
 end LogBoundLocal
 
+#print axioms LogBoundLocal.clay_A_fefferman_of_rate_of_kato
 #print axioms LogBoundLocal.leibniz_L2
+#print axioms LogBoundLocal.high_Gs_le
+#print axioms LogBoundLocal.pt_bound
+#print axioms LogBoundLocal.pt_final
+#print axioms LogBoundLocal.bkmLogInequality

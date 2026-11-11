@@ -556,3 +556,4 @@ theorem schwartz_log_bound (g : Fin 3 → 𝓢(E3, ℂ)) (k l : Fin 3) (N : ℕ)
 end LogBound
 
 #print axioms LogBound.schwartz_log_bound
+#print axioms LogBound.schwartz_log_bound
