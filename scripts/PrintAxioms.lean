@@ -1,4 +1,5 @@
 import FrohmanianTether
+import FrohmanianTether.Pillars
 
 /-! `#print axioms` for the headline statements (run by `scripts/verify.sh`). The strict
 repository-wide audit of every declaration is `scripts/AxiomAudit.lean`. -/
@@ -34,6 +35,12 @@ repository-wide audit of every declaration is `scripts/AxiomAudit.lean`. -/
 #print axioms ExplicitFlows.isEmpty_katoLocalWitness_of_periodic
 -- 0.1.5: main theorem, tether ⇒ BKM integrability, definition audit (0.1.4 defects)
 #print axioms FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound
+-- proved pillar: uniqueness of classical periodic solutions (periodic-navier-stokes-smooth-uniqueness @ de92662)
+#print axioms FrohmanianTether.Pillars.isPeriodicSmoothSolutionOn_eq_sdiff
+#print axioms FrohmanianTether.Pillars.periodicSmoothSolutionOn_unique
+#print axioms FrohmanianTether.Pillars.periodicSmoothSolution_unique
+#print axioms FrohmanianTether.Pillars.clay_B_exact_unique_iff
+#print axioms FrohmanianTether.Pillars.clay_B_exact_unique_of_periodic_tether_bound
 #print axioms FrohmanianTether.TetherDefinitionAudit.localTetherBoundV014_constraint_free_of_unbounded
 #print axioms FrohmanianTether.TetherDefinitionAudit.exists_isLocalPhysicalSolution_zero_time
 #print axioms FrohmanianTether.TetherDefinitionAudit.isLocalPhysicalSolution_escapePath
