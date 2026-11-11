@@ -85,6 +85,61 @@ from `periodicLocalExistence_of_nonneg`, the maximal solution (`periodicMaximalS
 `Icc 0 T*`" needs the measurability of `t ↦ vorticity_sup_norm (vorticity (u t))` on `[0, T*)`. With (c) the
 Main Theorem would need only `hclose`; that is not proved yet.
 
+## Branch `feat/fefferman-clay-a-reduction` (unreleased; not in a Zenodo version)
+
+**Status: unreleased, under review in a pull request. Conditional only. Fefferman's Problem (A) is
+not proved, and neither is any Clay Millennium Problem.**
+
+| Item | Value |
+|---|---|
+| Verified commit | `4010251510ebe00d866006227c60374efe487453` (Lean sources; parent `95d17ce` = `main` after PR #3) |
+| Lean toolchain | `leanprover/lean4:v4.30.0-rc1` |
+| Mathlib | `v4.30.0-rc1`, rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` |
+| Rebuild (one command) | `bash scripts/verify.sh` |
+| Build | `lake build`: 8317 jobs, success |
+| Strict audit | `AUDIT SUMMARY: theorems audited: 895 (791 stated in the sources, 104 auto-generated equation/congruence/injectivity lemmas); declarations audited: 1237; violations: 0` / `AUDIT PASS` |
+| Source scan | `OK: no sorry/admit/native_decide, no axiom declarations` |
+
+New modules (all in the default target `FrohmanianTether`):
+
+* `FrohmanianTether.Takagi`: the Takagi function is continuous and nowhere differentiable.
+* `FrohmanianTether.TetherRateCounterexample`: **`FrohmanianTetherRate` and
+  `FrohmanianTetherBound` are false as written.** `NS_PDE` and `IsPhysicalNSSolution` impose no
+  spatial differentiability, and Mathlib's `fderiv` is `0` at non-differentiable points. So a
+  steady finite-energy field `U` with a nowhere-differentiable (Takagi) component satisfies
+  `NS_PDE` for every `ν`, while `‖ω(U)‖` is unbounded. `U` is not a classical Navier–Stokes
+  solution. This exposes a defect in the solution class (the junk-derivative loophole).
+* `FrohmanianTether.TetherRatePeriodicVacuity`: on nonzero continuous `ℤ³`-periodic data,
+  `FrohmanianTetherRate` holds only vacuously, because such data are not `L²(ℝ³)`.
+* `FrohmanianTether.FeffermanClayA`: `Clay_A_Fefferman` (Fefferman's official Problem (A):
+  smooth, divergence-free data with decay (4) of all derivatives, `ν > 0`, `f = 0`; a joint
+  `C^∞(ℝ³ × [0,∞))` solution `(p, u)` with bounded energy (7)), the repaired rate
+  `FrohmanianTetherRateSmooth`, the classical continuation hypothesis `R3BKMContinuation`, and
+  the **conditional** theorem `clay_A_fefferman_of_frohmanianTetherRateSmooth`. Every hypothesis
+  and the conclusion are shown satisfiable at `u₀ = 0`. **Open:** the smooth rate for all
+  Fefferman data, and `R3BKMContinuation` (the classical BKM continuation theorem on ℝ³; not yet
+  formalized here).
+
+`#print axioms` (`lake env lean scripts/PrintAxioms.lean`, commit `4010251`):
+
+```
+'Takagi.not_differentiableAt_takagi' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateCounterexample.not_forall_frohmanianTetherRate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateCounterexample.not_frohmanianTetherRate_U' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateCounterexample.not_frohmanianTetherBound_U' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRatePeriodicVacuity.frohmanianTetherRate_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanClayA.clay_A_fefferman_of_frohmanianTetherRateSmooth' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FeffermanClayA.frohmanianTetherRateSmooth_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanClayA.r3BKMContinuationAt_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanClayA.feffermanDecay_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanClayA.clay_A_fefferman_instance_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanClayA.frohmanianTetherRateSmoothGlobal_of_no_global_solution' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+```
+
 ## Reproduction
 
 ```
