@@ -6,13 +6,13 @@ open Lean Elab Command
 # Strict axiom audit for `FrohmanianTether.*`
 
 For every non-internal declaration (theorems, definitions, structures, instances, ...) defined
-in a module under `FrohmanianTether`, compute the axioms it depends on (`collectAxioms`) and
+in a module under `FrohmanianTether` or under the vendored pillar `BKMPillar`, compute the axioms it depends on (`collectAxioms`) and
 print one line per theorem in the same format as `#print axioms`.
 
 The command raises an **error** (so `lake env lean scripts/AxiomAudit.lean` exits non-zero) if
 * any declaration depends on an axiom other than `propext`, `Classical.choice`, `Quot.sound`
   (this includes `sorryAx` and `Lean.ofReduceBool`, i.e. `sorry` and `native_decide`), or
-* any `axiom` declaration is made inside the `FrohmanianTether` modules.
+* any `axiom` declaration is made inside the `FrohmanianTether` or `BKMPillar` modules.
 -/
 
 elab "#strict_axiom_audit" : command => do
@@ -26,7 +26,7 @@ elab "#strict_axiom_audit" : command => do
   for (c, ci) in env.constants.toList do
     let some idx := env.getModuleIdxFor? c | continue
     let mod := env.header.moduleNames[idx.toNat]!
-    unless (`FrohmanianTether).isPrefixOf mod do continue
+    unless (`FrohmanianTether).isPrefixOf mod || (`BKMPillar).isPrefixOf mod do continue
     if c.isInternal then continue
     nDecl := nDecl + 1
     if ci matches .axiomInfo _ then

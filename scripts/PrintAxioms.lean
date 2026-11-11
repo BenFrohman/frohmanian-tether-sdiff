@@ -52,6 +52,15 @@ repository-wide audit of every declaration is `scripts/AxiomAudit.lean`. -/
 #print axioms FrohmanianTether.ClayStatements.localTetherBound_zero
 #print axioms FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound
 #print axioms FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherClosingBound
+-- proved pillar: classical periodic BKM continuation (periodic-ns-classical-continuation @ 502ff17, vendored)
+#print axioms FrohmanianTether.Pillars.isPeriodicSmoothSolutionOn_of_fefferman
+#print axioms FrohmanianTether.Pillars.isPeriodicSmoothSolution_of_fefferman
+#print axioms PeriodicNSContinuation.periodicBKMCriterion
+#print axioms PeriodicNSContinuation.periodicLocalExistence_of_nonneg
+#print axioms FrohmanianTether.Pillars.periodicBKMContinuation_of_classical
+-- headline: conditional only on the OPEN PeriodicTetherClosingBound
+#print axioms FrohmanianTether.Pillars.clay_B_exact_of_periodic_tether_closing_bound
+#print axioms FrohmanianTether.Pillars.clay_B_exact_unique_of_periodic_tether_closing_bound
 -- refutation of FrohmanianTetherRate / FrohmanianTetherBound (junk-derivative loophole)
 #print axioms Takagi.not_differentiableAt_takagi
 #print axioms TetherRateCounterexample.not_forall_frohmanianTetherRate
