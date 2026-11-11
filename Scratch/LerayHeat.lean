@@ -226,4 +226,206 @@ theorem leray_grad {f : L2V} {c : E3 → ℂ} (h : ∀ᵐ ξ, ((𝓕 f : L2V) : 
   rw [leray, this]
   exact map_zero (Lp.fourierTransformₗᵢ E3 V).symm
 
+
+/-! ## The heat semigroup `e^{τΔ}` on `L²(ℝ³; ℂ³)` (`τ = ν t`; identity for `τ ≤ 0`) -/
+
+/-- Gaussian factor `e^{-4π² τ⁺ |ξ|²}`. -/
+def gauss (τ : ℝ) (ξ : E3) : ℝ := Real.exp (-(4 * Real.pi ^ 2 * max τ 0 * ‖ξ‖ ^ 2))
+
+lemma gauss_pos (τ : ℝ) (ξ : E3) : 0 < gauss τ ξ := Real.exp_pos _
+
+lemma gauss_le_one (τ : ℝ) (ξ : E3) : gauss τ ξ ≤ 1 := by
+  unfold gauss
+  rw [Real.exp_le_one_iff, neg_nonpos]
+  have := le_max_right τ 0
+  positivity
+
+lemma continuous_gauss (τ : ℝ) : Continuous (gauss τ) := by unfold gauss; fun_prop
+
+lemma gauss_mul {σ τ : ℝ} (hσ : 0 ≤ σ) (hτ : 0 ≤ τ) (ξ : E3) :
+    gauss σ ξ * gauss τ ξ = gauss (σ + τ) ξ := by
+  unfold gauss
+  rw [← Real.exp_add, max_eq_left hσ, max_eq_left hτ, max_eq_left (add_nonneg hσ hτ)]
+  ring_nf
+
+lemma gauss_of_nonpos {τ : ℝ} (hτ : τ ≤ 0) (ξ : E3) : gauss τ ξ = 1 := by
+  unfold gauss; rw [max_eq_right hτ]; simp
+
+/-- Heat symbol `e^{-4π²τ⁺|ξ|²} · id`. -/
+def heatSym (τ : ℝ) (ξ : E3) : V →L[ℂ] V := ((gauss τ ξ : ℝ) : ℂ) • ContinuousLinearMap.id ℂ V
+
+lemma heatSym_apply (τ : ℝ) (ξ : E3) (v : V) : heatSym τ ξ v = ((gauss τ ξ : ℝ) : ℂ) • v := rfl
+
+lemma heatSym_meas (τ : ℝ) (g : E3 → V) (hg : AEStronglyMeasurable g) :
+    AEStronglyMeasurable (fun ξ => heatSym τ ξ (g ξ)) := by
+  simp only [heatSym_apply]
+  exact (Complex.continuous_ofReal.comp (continuous_gauss τ)).aestronglyMeasurable.smul hg
+
+lemma heatSym_norm (τ : ℝ) (ξ : E3) : ‖heatSym τ ξ‖ ≤ 1 := by
+  refine ContinuousLinearMap.opNorm_le_bound _ zero_le_one fun v => ?_
+  rw [heatSym_apply, norm_smul, Complex.norm_real, Real.norm_of_nonneg (gauss_pos τ ξ).le, one_mul]
+  exact mul_le_of_le_one_left (norm_nonneg _) (gauss_le_one τ ξ)
+
+/-- Fourier-side heat multiplier. -/
+def heatF (τ : ℝ) : L2V →L[ℂ] L2V := pmul (heatSym τ) (heatSym_meas τ) (heatSym_norm τ)
+
+/-- **Heat semigroup** `e^{τΔ} = 𝓕⁻ e^{-4π²τ|ξ|²} 𝓕`. -/
+def heat (τ : ℝ) (f : L2V) : L2V := 𝓕⁻ (heatF τ (𝓕 f))
+
+lemma fourier_heat (τ : ℝ) (f : L2V) : 𝓕 (heat τ f) = heatF τ (𝓕 f) := by
+  rw [heat, fourier_fourierInv_eq]
+
+/-- Fourier side of `e^{τΔ} f`. -/
+theorem coeFn_fourier_heat (τ : ℝ) (f : L2V) :
+    ((𝓕 (heat τ f) : L2V) : E3 → V) =ᵐ[volume]
+      fun ξ => ((gauss τ ξ : ℝ) : ℂ) • ((𝓕 f : L2V) : E3 → V) ξ := by
+  rw [fourier_heat]; exact coeFn_pmul _ _ _ _
+
+theorem norm_heat_le (τ : ℝ) (f : L2V) : ‖heat τ f‖ ≤ ‖f‖ := by
+  rw [heat, norm_fourierInv]
+  exact (norm_pmul_le _ _ _ _).trans (le_of_eq (Lp.norm_fourier_eq f))
+
+lemma heat_add_fun (τ : ℝ) (f g : L2V) : heat τ (f + g) = heat τ f + heat τ g := by
+  simp only [heat, FourierAdd.fourier_add, map_add, FourierInvAdd.fourierInv_add]
+
+lemma heat_sub (τ : ℝ) (f g : L2V) : heat τ (f - g) = heat τ f - heat τ g := by
+  change (Lp.fourierTransformₗᵢ E3 V).symm (heatF τ (Lp.fourierTransformₗᵢ E3 V (f - g))) =
+    (Lp.fourierTransformₗᵢ E3 V).symm (heatF τ (Lp.fourierTransformₗᵢ E3 V f)) -
+    (Lp.fourierTransformₗᵢ E3 V).symm (heatF τ (Lp.fourierTransformₗᵢ E3 V g))
+  simp only [map_sub]
+
+/-- `e^{τΔ} = id` for `τ ≤ 0` (in particular `e^{0Δ} = id`). -/
+theorem heat_of_nonpos {τ : ℝ} (hτ : τ ≤ 0) (f : L2V) : heat τ f = f := by
+  have : heatF τ (𝓕 f) = 𝓕 f := pmul_eq_of_ae _ _ _ (Filter.Eventually.of_forall fun ξ => by
+    rw [heatSym_apply, gauss_of_nonpos hτ]; simp)
+  rw [heat, this, fourierInv_fourier_eq]
+
+/-- **Semigroup law** `e^{σΔ} e^{τΔ} = e^{(σ+τ)Δ}` for `σ, τ ≥ 0`. -/
+theorem heat_heat {σ τ : ℝ} (hσ : 0 ≤ σ) (hτ : 0 ≤ τ) (f : L2V) :
+    heat σ (heat τ f) = heat (σ + τ) f := by
+  rw [heat, fourier_heat]
+  unfold heatF
+  rw [pmul_pmul (heatSym σ) (heatSym τ) (heatSym (σ + τ)) (heatSym_meas σ) (heatSym_norm σ)
+    (heatSym_meas τ) (heatSym_norm τ) (heatSym_meas (σ + τ)) (heatSym_norm (σ + τ))
+    (fun ξ v => by rw [heatSym_apply, heatSym_apply, heatSym_apply, smul_smul, ← Complex.ofReal_mul,
+      gauss_mul hσ hτ])]
+  rfl
+
+/-- `e^{τΔ}` commutes with the Leray projector. -/
+theorem heat_leray (τ : ℝ) (f : L2V) : heat τ (leray f) = leray (heat τ f) := by
+  rw [heat, leray, fourier_fourierInv_eq, leray, fourier_heat]
+  unfold heatF lerayF
+  rw [pmul_pmul (heatSym τ) lerSym (fun ξ => (heatSym τ ξ).comp (lerSym ξ)) (heatSym_meas τ)
+    (heatSym_norm τ) lerSym_meas lerSym_norm
+    (fun g hg => by simpa using heatSym_meas τ _ (lerSym_meas g hg))
+    (fun ξ => (ContinuousLinearMap.opNorm_comp_le _ _).trans
+      (by nlinarith [heatSym_norm τ ξ, lerSym_norm ξ, norm_nonneg (heatSym τ ξ),
+        norm_nonneg (lerSym ξ)]))
+    (fun ξ v => rfl),
+    pmul_pmul lerSym (heatSym τ) (fun ξ => (heatSym τ ξ).comp (lerSym ξ)) lerSym_meas lerSym_norm
+    (heatSym_meas τ) (heatSym_norm τ)
+    (fun g hg => by simpa using heatSym_meas τ _ (lerSym_meas g hg))
+    (fun ξ => (ContinuousLinearMap.opNorm_comp_le _ _).trans
+      (by nlinarith [heatSym_norm τ ξ, lerSym_norm ξ, norm_nonneg (heatSym τ ξ),
+        norm_nonneg (lerSym ξ)]))
+    (fun ξ v => by rw [ContinuousLinearMap.comp_apply, heatSym_apply, heatSym_apply, map_smul])]
+
+lemma heat_max (τ : ℝ) (f : L2V) : heat τ f = heat (max τ 0) f := by
+  have : heatSym τ = heatSym (max τ 0) := by
+    funext ξ; simp only [heatSym, gauss, max_eq_left (le_max_right τ 0)]
+  simp only [heat, heatF, this]
+
+/-- Fourier-side strong continuity at `τ = 0`. -/
+theorem tendsto_heatF_zero (g : L2V) :
+    Filter.Tendsto (fun τ => heatF τ g) (nhds 0) (nhds g) := by
+  rw [Lp.tendsto_Lp_iff_tendsto_eLpNorm']
+  have key : ∀ τ, (⇑(heatF τ g) - ⇑g) =ᵐ[volume]
+      fun ξ => (((gauss τ ξ - 1 : ℝ)) : ℂ) • (g : E3 → V) ξ := by
+    intro τ
+    filter_upwards [coeFn_pmul (heatSym τ) (heatSym_meas τ) (heatSym_norm τ) g] with ξ h
+    rw [Pi.sub_apply, show (heatF τ g : E3 → V) ξ = _ from h, heatSym_apply, Complex.ofReal_sub,
+      sub_smul, Complex.ofReal_one, one_smul]
+  have hg : Measurable (g : E3 → V) := (Lp.stronglyMeasurable g).measurable
+  have hlim : Filter.Tendsto (fun τ => ∫⁻ ξ, ‖(((gauss τ ξ - 1 : ℝ)) : ℂ) • (g : E3 → V) ξ‖ₑ ^
+      ((2 : ENNReal).toReal)) (nhds 0) (nhds 0) := by
+    have := MeasureTheory.tendsto_lintegral_filter_of_dominated_convergence (μ := volume)
+      (l := nhds (0 : ℝ)) (f := fun _ => 0)
+      (F := fun τ ξ => ‖(((gauss τ ξ - 1 : ℝ)) : ℂ) • (g : E3 → V) ξ‖ₑ ^ ((2 : ENNReal).toReal))
+      (fun ξ => ‖(g : E3 → V) ξ‖ₑ ^ ((2 : ENNReal).toReal))
+      (Filter.Eventually.of_forall fun τ => by
+        have hc : Continuous fun ξ => (((gauss τ ξ - 1 : ℝ)) : ℂ) :=
+          Complex.continuous_ofReal.comp ((continuous_gauss τ).sub continuous_const)
+        exact ((hc.measurable.smul hg).enorm).pow_const _)
+      (Filter.Eventually.of_forall fun τ => Filter.Eventually.of_forall fun ξ => by
+        refine ENNReal.rpow_le_rpow ?_ (by norm_num)
+        rw [enorm_smul]
+        refine mul_le_of_le_one_left' ?_
+        rw [← ofReal_norm_eq_enorm, ENNReal.ofReal_le_one, Complex.norm_real, Real.norm_eq_abs,
+          abs_le]
+        constructor <;> linarith [gauss_pos τ ξ, gauss_le_one τ ξ])
+      (lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top two_ne_zero ENNReal.ofNat_ne_top
+        (Lp.eLpNorm_lt_top g)).ne
+      (Filter.Eventually.of_forall fun ξ => by
+        have hc : Continuous fun τ => ‖(((gauss τ ξ - 1 : ℝ)) : ℂ) • (g : E3 → V) ξ‖ₑ ^
+            ((2 : ENNReal).toReal) := by
+          refine ENNReal.continuous_rpow_const.comp (continuous_enorm.comp ?_)
+          refine Continuous.smul (Complex.continuous_ofReal.comp ?_) continuous_const
+          unfold gauss; fun_prop
+        have h0 := hc.tendsto 0
+        simpa [gauss_of_nonpos le_rfl] using h0)
+    simpa using this
+  have h2 := (ENNReal.continuous_rpow_const (y := 1 / (2 : ENNReal).toReal)).tendsto 0 |>.comp hlim
+  have h3 : (0 : ENNReal) ^ (1 / (2 : ENNReal).toReal) = 0 := ENNReal.zero_rpow_of_pos (by norm_num)
+  rw [h3] at h2
+  refine h2.congr fun τ => ?_
+  simp only [Function.comp_apply]
+  rw [eLpNorm_congr_ae (key τ),
+    eLpNorm_eq_lintegral_rpow_enorm_toReal two_ne_zero ENNReal.ofNat_ne_top]
+
+/-- Strong continuity of `e^{τΔ}` at `τ = 0`. -/
+theorem tendsto_heat_zero (f : L2V) : Filter.Tendsto (fun τ => heat τ f) (nhds 0) (nhds f) := by
+  have hc : Continuous (fun g : L2V => 𝓕⁻ g) := (Lp.fourierTransformₗᵢ E3 V).symm.continuous
+  have := (hc.tendsto _).comp (tendsto_heatF_zero (𝓕 f))
+  rw [fourierInv_fourier_eq] at this
+  exact this
+
+lemma norm_heat_sub_le {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (f : L2V) :
+    ‖heat a f - heat b f‖ ≤ ‖heat |a - b| f - f‖ := by
+  rcases le_total b a with h | h
+  · have e : heat a f = heat b (heat (a - b) f) := by
+      rw [heat_heat hb (sub_nonneg.2 h)]; congr 1; ring
+    rw [e, ← heat_sub, abs_of_nonneg (sub_nonneg.2 h)]
+    exact norm_heat_le _ _
+  · have e : heat b f = heat a (heat (b - a) f) := by
+      rw [heat_heat ha (sub_nonneg.2 h)]; congr 1; ring
+    rw [e, norm_sub_rev, ← heat_sub, abs_sub_comm, abs_of_nonneg (sub_nonneg.2 h)]
+    exact norm_heat_le _ _
+
+/-- **Strong continuity** of the heat semigroup: `τ ↦ e^{τΔ} f` is continuous `ℝ → L²`. -/
+theorem continuous_heat (f : L2V) : Continuous (fun τ => heat τ f) := by
+  rw [continuous_iff_continuousAt]
+  intro t
+  rw [ContinuousAt, tendsto_iff_norm_sub_tendsto_zero]
+  have hh : Filter.Tendsto (fun s => |max s 0 - max t 0|) (nhds t) (nhds 0) := by
+    have : Continuous fun s : ℝ => |max s 0 - max t 0| := by fun_prop
+    simpa using this.tendsto t
+  have hT := (tendsto_iff_norm_sub_tendsto_zero.1 (tendsto_heat_zero f)).comp hh
+  refine squeeze_zero (fun _ => norm_nonneg _) (fun s => ?_) hT
+  rw [heat_max s, heat_max t]
+  exact norm_heat_sub_le (le_max_right _ _) (le_max_right _ _) f
+
 end LerayHeat
+
+#print axioms LerayHeat.norm_leray_le
+#print axioms LerayHeat.leray_leray
+#print axioms LerayHeat.inner_leray
+#print axioms LerayHeat.leray_divFree
+#print axioms LerayHeat.leray_eq_self
+#print axioms LerayHeat.leray_grad
+#print axioms LerayHeat.coeFn_fourier_heat
+#print axioms LerayHeat.norm_heat_le
+#print axioms LerayHeat.heat_of_nonpos
+#print axioms LerayHeat.heat_heat
+#print axioms LerayHeat.heat_leray
+#print axioms LerayHeat.tendsto_heat_zero
+#print axioms LerayHeat.continuous_heat
