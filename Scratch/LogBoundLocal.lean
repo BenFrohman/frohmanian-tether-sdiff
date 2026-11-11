@@ -260,6 +260,221 @@ lemma norm_iter_dir_le {φ : E3 → ℝ} (hφ : ContDiff ℝ ∞ φ) (v : E3) (i
   exact ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg v) fun T => by
     rw [ContinuousLinearMap.apply_apply, mul_comm]; exact T.le_opNorm v
 
+
+/-! ## The localized Schwartz field `G_m = φ_L · f_m` -/
+
+open LineDeriv
+
+section Localize
+variable {f : E3 → E3} (hf : ContDiff ℝ ∞ f) (x₀ : E3) {L : ℝ} (hL : 0 < L)
+
+include hf in
+lemma contDiff_comp (m : Fin 3) : ContDiff ℝ ∞ (fun y => f y m) :=
+  (PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin 3 => ℝ) m).contDiff.comp hf
+
+/-- Smooth compactly supported real function → complex Schwartz function. -/
+def toS {q : E3 → ℝ} (hq : ContDiff ℝ ∞ q) (hs : HasCompactSupport q) : 𝓢(E3, ℂ) :=
+  (hs.comp_left (g := fun r : ℝ => (r : ℂ)) (by simp)).toSchwartzMap
+    (Complex.ofRealCLM.contDiff.comp hq)
+
+lemma toS_apply {q : E3 → ℝ} (hq : ContDiff ℝ ∞ q) (hs : HasCompactSupport q) (y : E3) :
+    toS hq hs y = (q y : ℂ) := rfl
+
+lemma lineDeriv_toS {q : E3 → ℝ} (hq : ContDiff ℝ ∞ q) (hs : HasCompactSupport q) (v y : E3) :
+    (∂_{v} (toS hq hs)) y = (fderiv ℝ q y v : ℂ) := by
+  rw [SchwartzMap.lineDerivOp_apply_eq_fderiv]
+  have h1 : (⇑(toS hq hs)) = Complex.ofRealCLM ∘ q := rfl
+  rw [h1, fderiv_comp y Complex.ofRealCLM.differentiableAt
+    ((hq.differentiable (by simp)) y), ContinuousLinearMap.fderiv]
+  rfl
+
+include hf in
+lemma contDiff_q (m : Fin 3) : ContDiff ℝ ∞ (fun y => φL x₀ L y * f y m) :=
+  (contDiff_φL x₀ L).mul (contDiff_comp hf m)
+
+include hL in
+lemma hasCompactSupport_q (m : Fin 3) : HasCompactSupport (fun y => φL x₀ L y * f y m) :=
+  (hasCompactSupport_φL x₀ hL).mul_right
+
+/-- Localized component `G_m = φ_L f_m` as a complex Schwartz function. -/
+def Gs (m : Fin 3) : 𝓢(E3, ℂ) := toS (contDiff_q hf x₀ m) (hasCompactSupport_q x₀ hL m)
+
+/-- `∂_a φ_L` and `∂_a f_m`. -/
+def dφ (x₀ : E3) (L : ℝ) (a : Fin 3) (y : E3) : ℝ := fderiv ℝ (φL x₀ L) y (LogBound.eb a)
+def df (f : E3 → E3) (m a : Fin 3) (y : E3) : ℝ := fderiv ℝ (fun z => f z m) y (LogBound.eb a)
+
+lemma D_Gs (a m : Fin 3) (y : E3) :
+    (∂_{LogBound.eb a} (Gs hf x₀ hL m)) y = ((dφ x₀ L a y * f y m + φL x₀ L y * df f m a y : ℝ) : ℂ) := by
+  rw [Gs.eq_def, lineDeriv_toS]
+  congr 1
+  rw [fderiv_fun_mul ((contDiff_φL x₀ L).differentiable (by simp) y)
+    ((contDiff_comp hf m).differentiable (by simp) y)]
+  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul, dφ, df]
+  ring
+
+include hL in
+lemma dφ_at (a : Fin 3) : dφ x₀ L a x₀ = 0 := by
+  unfold dφ
+  rw [(φL_eventually_one x₀ hL).fderiv_eq]; simp
+
+include hL in
+lemma norm_dφ_le {B : ℕ → ℝ}
+    (hB : ∀ i y, ‖iteratedFDeriv ℝ i (fun ξ : E3 => LogBound.ρ ξ) y‖ ≤ B i)
+    (a : Fin 3) (y : E3) : |dφ x₀ L a y| ≤ B 1 * L⁻¹ := by
+  have h := norm_iter_φL_le hB x₀ hL 1 y
+  rw [norm_iteratedFDeriv_one, pow_one] at h
+  unfold dφ
+  rw [← Real.norm_eq_abs]
+  refine ((fderiv ℝ (φL x₀ L) y).le_opNorm _).trans ?_
+  rw [PiLp.norm_single, norm_one, mul_one]
+  exact h
+
+lemma D_Gs_at (k l : Fin 3) :
+    (∂_{LogBound.eb k} (Gs hf x₀ hL l)) x₀ = ((df f l k x₀ : ℝ) : ℂ) := by
+  rw [D_Gs, dφ_at x₀ hL, φL_eq_one x₀ hL (by simp; exact hL.le)]
+  simp
+
+open NavierStokes3D in
+lemma curl_Gs_le {B : ℕ → ℝ}
+    (hB : ∀ i y, ‖iteratedFDeriv ℝ i (fun ξ : E3 => LogBound.ρ ξ) y‖ ≤ B i)
+    {F Ω : ℝ} (hF : ∀ y m, |f y m| ≤ F) (hΩ : ∀ y, ‖vorticity f y‖ ≤ Ω) (l m : Fin 3) (y : E3) :
+    ‖(∂_{LogBound.eb m} (Gs hf x₀ hL l) - ∂_{LogBound.eb l} (Gs hf x₀ hL m)) y‖ ≤
+      Ω + 2 * (B 1 * L⁻¹) * F := by
+  rw [SchwartzMap.sub_apply, D_Gs, D_Gs, ← Complex.ofReal_sub, Complex.norm_real,
+    Real.norm_eq_abs]
+  have e : dφ x₀ L m y * f y l + φL x₀ L y * df f l m y -
+      (dφ x₀ L l y * f y m + φL x₀ L y * df f m l y) =
+      dφ x₀ L m y * f y l - dφ x₀ L l y * f y m + φL x₀ L y * (df f l m y - df f m l y) := by
+    ring
+  rw [e]
+  have h1 := norm_dφ_le x₀ hL hB m y
+  have h2 := norm_dφ_le x₀ hL hB l y
+  have h3 : |df f l m y - df f m l y| ≤ Ω := (abs_curl_pair_le f y m l).trans (hΩ y)
+  have hφ0 := φL_nonneg x₀ L y; have hφ1 := φL_le_one x₀ L y
+  have hF0 : 0 ≤ F := (abs_nonneg _).trans (hF y 0)
+  have hb0 : 0 ≤ B 1 * L⁻¹ := (abs_nonneg _).trans h1
+  calc _ ≤ |dφ x₀ L m y * f y l| + |dφ x₀ L l y * f y m| +
+        |φL x₀ L y * (df f l m y - df f m l y)| := by
+        refine (abs_add_le _ _).trans ?_
+        gcongr
+        exact abs_sub _ _
+    _ ≤ (B 1 * L⁻¹) * F + (B 1 * L⁻¹) * F + 1 * Ω := by
+        rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg hφ0]
+        gcongr
+        · exact hF y l
+        · exact hF y m
+    _ = _ := by ring
+
+open NavierStokes3D in
+lemma div_Gs_le {B : ℕ → ℝ}
+    (hB : ∀ i y, ‖iteratedFDeriv ℝ i (fun ξ : E3 => LogBound.ρ ξ) y‖ ≤ B i)
+    (hdiv : ∀ y, div f y = 0) {F : ℝ} (hF : ∀ y m, |f y m| ≤ F) (y : E3) :
+    ‖(∑ m : Fin 3, ∂_{LogBound.eb m} (Gs hf x₀ hL m) : 𝓢(E3, ℂ)) y‖ ≤ 3 * ((B 1 * L⁻¹) * F) := by
+  rw [SchwartzMap.sum_apply]
+  simp only [D_Gs]
+  rw [← Complex.ofReal_sum, Complex.norm_real, Real.norm_eq_abs]
+  have hd : ∑ m : Fin 3, df f m m y = 0 := by
+    have := hdiv y; simpa [div, df] using this
+  have e : ∑ m : Fin 3, (dφ x₀ L m y * f y m + φL x₀ L y * df f m m y) =
+      ∑ m : Fin 3, dφ x₀ L m y * f y m := by
+    rw [Finset.sum_add_distrib, ← Finset.mul_sum, hd, mul_zero, add_zero]
+  rw [e]
+  refine (Finset.abs_sum_le_sum_abs _ _).trans ?_
+  calc _ ≤ ∑ _m : Fin 3, (B 1 * L⁻¹) * F := Finset.sum_le_sum fun m _ => by
+        rw [abs_mul]
+        exact mul_le_mul (norm_dφ_le x₀ hL hB m y) (hF y m) (abs_nonneg _)
+          ((abs_nonneg _).trans (norm_dφ_le x₀ hL hB m y))
+    _ = _ := by simp
+
+lemma l2_Gs_le (l : Fin 3) :
+    ∫⁻ y, ‖Gs hf x₀ hL l y‖ₑ ^ (2 : ℝ) ≤ ∫⁻ y, ‖f y‖ₑ ^ 2 := by
+  refine lintegral_mono fun y => ?_
+  rw [show ((2 : ℝ)) = ((2 : ℕ) : ℝ) by norm_num, ENNReal.rpow_natCast]
+  gcongr
+  rw [Gs.eq_def, toS_apply, ← ofReal_norm_eq_enorm, ← ofReal_norm_eq_enorm, Complex.norm_real]
+  refine ENNReal.ofReal_le_ofReal ?_
+  rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (φL_nonneg x₀ L y)]
+  calc _ ≤ 1 * |f y l| := mul_le_mul_of_nonneg_right (φL_le_one x₀ L y) (abs_nonneg _)
+    _ = ‖f y l‖ := by rw [one_mul, Real.norm_eq_abs]
+    _ ≤ ‖f y‖ := PiLp.norm_apply_le _ _
+
+lemma contDiff_dφ (a : Fin 3) : ContDiff ℝ ∞ (dφ x₀ L a) :=
+  ((contDiff_φL x₀ L).fderiv_right (m := ∞) le_rfl).clm_apply contDiff_const
+
+include hL in
+lemma hasCompactSupport_dφ (a : Fin 3) : HasCompactSupport (dφ x₀ L a) :=
+  ((hasCompactSupport_φL x₀ hL).fderiv (𝕜 := ℝ)).comp_left
+    (g := fun T : E3 →L[ℝ] ℝ => T (LogBound.eb a)) (by simp)
+
+include hf in
+lemma contDiff_df (m a : Fin 3) : ContDiff ℝ ∞ (df f m a) :=
+  ((contDiff_comp hf m).fderiv_right (m := ∞) le_rfl).clm_apply contDiff_const
+
+/-- The two Leibniz pieces of `∂_k G_l`. -/
+def S1 (k l : Fin 3) : 𝓢(E3, ℂ) :=
+  toS ((contDiff_dφ x₀ k).mul (contDiff_comp hf l)) (hasCompactSupport_dφ x₀ hL k).mul_right
+def S2 (k l : Fin 3) : 𝓢(E3, ℂ) :=
+  toS ((contDiff_φL x₀ L).mul (contDiff_df hf l k)) (hasCompactSupport_φL x₀ hL).mul_right
+
+lemma D_eq_S (k l : Fin 3) :
+    ∂_{LogBound.eb k} (Gs hf x₀ hL l) = S1 hf x₀ hL k l + S2 hf x₀ hL k l := by
+  ext y
+  rw [D_Gs, SchwartzMap.add_apply, S1, S2, toS_apply, toS_apply]
+  push_cast; ring
+
+lemma sub_lap_add (a b : 𝓢(E3, ℂ)) :
+    (a + b) - Laplacian.laplacian (a + b) =
+      (a - Laplacian.laplacian a) + (b - Laplacian.laplacian b) := by
+  rw [← SchwartzMap.laplacianCLM_eq' (a + b), map_add, SchwartzMap.laplacianCLM_eq',
+    SchwartzMap.laplacianCLM_eq']
+  abel
+
+/-- **`‖(1-Δ)∂_k G_l‖₂ ≲ ‖f‖_{H³}`, uniformly in `L ≥ 1`.** -/
+lemma high_Gs_le {B : ℕ → ℝ}
+    (hB : ∀ i y, ‖iteratedFDeriv ℝ i (fun ξ : E3 => LogBound.ρ ξ) y‖ ≤ B i) (hL1 : 1 ≤ L)
+    (k l : Fin 3) :
+    (∫⁻ y, ‖(∂_{LogBound.eb k} (Gs hf x₀ hL l) -
+        Laplacian.laplacian (∂_{LogBound.eb k} (Gs hf x₀ hL l))) y‖ₑ ^ (2 : ℝ)) ^ (1 / 2 : ℝ) ≤
+      (ENNReal.ofReal (27 * (4 * B 1 + 6 * B 2 + 3 * B 3) ^ 2) *
+          R3BKM.sobolevEnergy 3 f) ^ (1 / 2 : ℝ) +
+      (ENNReal.ofReal (27 * (4 * B 0 + 6 * B 1 + 3 * B 2) ^ 2) *
+          R3BKM.sobolevEnergy 3 f) ^ (1 / 2 : ℝ) := by
+  have hLi : L⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hL1
+  have hLi0 : 0 ≤ L⁻¹ := (inv_pos.2 hL).le
+  have hpow : ∀ i : ℕ, (L⁻¹) ^ i ≤ 1 := fun i => pow_le_one₀ hLi0 hLi
+  have hB0 : ∀ i, 0 ≤ B i := fun i => (norm_nonneg _).trans (hB i 0)
+  have hφB : ∀ i y, ‖iteratedFDeriv ℝ i (φL x₀ L) y‖ ≤ B i := fun i y =>
+    (norm_iter_φL_le hB x₀ hL i y).trans (mul_le_of_le_one_right (hB0 i) (hpow i))
+  have hdφB : ∀ i y, ‖iteratedFDeriv ℝ i (dφ x₀ L k) y‖ ≤ B (i + 1) := fun i y => by
+    have := norm_iter_dir_le (contDiff_φL x₀ L) (LogBound.eb k) i y
+    rw [PiLp.norm_single, norm_one, one_mul] at this
+    exact this.trans (hφB (i + 1) y)
+  have h1 := leibniz_L2 (contDiff_dφ x₀ k) (contDiff_comp hf l) (fun i => B (i + 1)) hdφB
+    (S1 hf x₀ hL k l) rfl
+  have h2 := leibniz_L2 (contDiff_φL x₀ L) (contDiff_df hf l k) B hφB (S2 hf x₀ hL k l) rfl
+  have e1 : energyR 2 (fun y => f y l) ≤ R3BKM.sobolevEnergy 3 f := energyR_comp_le hf l
+  have hdkj : df f l k = GradBound.dkj f k l := by
+    funext y
+    exact comp_fderiv ((hf.differentiable (by simp)) y) l _
+  have e2 : energyR 2 (df f l k) ≤ R3BKM.sobolevEnergy 3 f := by
+    rw [hdkj]; exact GradBound.energyR_dkj_le hf k l
+  rw [D_eq_S, sub_lap_add]
+  set A := S1 hf x₀ hL k l - Laplacian.laplacian (S1 hf x₀ hL k l)
+  set C := S2 hf x₀ hL k l - Laplacian.laplacian (S2 hf x₀ hL k l)
+  have hmA : AEMeasurable (fun y => ‖A y‖ₑ) := A.continuous.enorm.measurable.aemeasurable
+  have hmC : AEMeasurable (fun y => ‖C y‖ₑ) := C.continuous.enorm.measurable.aemeasurable
+  calc _ ≤ (∫⁻ y, ((fun y => ‖A y‖ₑ) + fun y => ‖C y‖ₑ) y ^ (2 : ℝ)) ^ (1 / 2 : ℝ) := by
+        gcongr with y
+        rw [SchwartzMap.add_apply]
+        exact enorm_add_le _ _
+    _ ≤ _ := ENNReal.lintegral_Lp_add_le hmA hmC (by norm_num)
+    _ ≤ _ := by
+        gcongr
+        · exact h1.trans (by gcongr)
+        · exact h2.trans (by gcongr)
+
+end Localize
+
 end LogBoundLocal
 
 #print axioms LogBoundLocal.leibniz_L2
