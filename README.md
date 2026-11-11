@@ -37,9 +37,38 @@ ceiling yields a global smooth periodic solution). Both are open hypotheses.
 `PeriodicTetherBound ν u₀ → PeriodicBKMIntegrability ν u₀`, i.e. `∫⁻ t in Ico 0 T, ofReal ‖ω(t)‖_∞ ≤ ofReal (max Y 0 * max T₀ 0)`
 for every classical periodic solution on `[0, T)`, `T ≤ T₀`.
 
+**Proved pillar: uniqueness (kernel-checked, unconditional; after 0.1.5, not yet in a Zenodo version)** —
+library `FrohmanianTetherPillars`, module `FrohmanianTether.Pillars.Uniqueness`. Uniqueness of classical
+ℤ³-periodic solutions is imported from
+[`BenFrohman/periodic-navier-stokes-smooth-uniqueness`](https://github.com/BenFrohman/periodic-navier-stokes-smooth-uniqueness)
+at commit `de92662d45e8a0f47ce0c196f6dbcfe44ddb4b3b` (Lake dependency `NSTorusUniqueness`, same toolchain and
+Mathlib rev). Its mirrored definitions are checked against the sdiff definitions by `rfl`
+(`isPeriodicSmoothSolutionOn_eq_sdiff` and seven more), so it applies to the sdiff classes directly:
+
+```lean
+theorem periodicSmoothSolutionOn_unique (hν : 0 ≤ ν)
+    (hu : IsPeriodicSmoothSolutionOn ν T u₀ u p) (hv : IsPeriodicSmoothSolutionOn ν T u₀ v q) :
+    ∀ t ∈ Set.Ico (0 : ℝ) T, u t = v t
+theorem periodicSmoothSolution_unique (hν : 0 ≤ ν)
+    (hu : IsPeriodicSmoothSolution ν u₀ (fun _ _ => 0) u p)
+    (hv : IsPeriodicSmoothSolution ν u₀ (fun _ _ => 0) v q) : ∀ t ≥ (0 : ℝ), u t = v t
+theorem clay_B_exact_unique_iff : Clay_B_exact_unique ↔ Clay_B_exact
+theorem clay_B_exact_unique_of_periodic_tether_bound
+    (hclose : ∀ ν > (0 : ℝ), PeriodicTetherClosingBound ν)
+    (hBKM : ∀ ν > (0 : ℝ), PeriodicBKMContinuation ν) : Clay_B_exact_unique
+```
+
+`Clay_B_exact_unique` is Statement (B) plus uniqueness of the global velocity; both sides of the `iff` are
+open. The Main Theorem keeps the same two hypotheses: the uniqueness pillar adds the uniqueness conclusion
+but discharges neither `hclose` nor `hBKM`. The Beale–Kato–Majda criterion and Kato local existence proved
+in `BenFrohman/periodic-ns-classical-continuation` (`502ff17`) are **not** wired in: they are stated over
+the `NavierStokes3D` definitions of the package `FeffermanClayNS`, which redeclares the same names as this
+library and so cannot be imported alongside it, and over a different solution class. Details and the
+proposed bridge: [`CERTIFICATE.md`](CERTIFICATE.md), section "Proved pillars".
+
 **Converse (not a theorem here).** BKM integrability ⇒ tether bound is true classical mathematics
-conditional on three pillars — the Beale–Kato–Majda theorem, uniqueness of classical periodic solutions,
-and long-time decay — which are being formalized. See the paper, Section 2.1.
+conditional on three pillars — the Beale–Kato–Majda theorem, uniqueness of classical periodic solutions
+(now proved and imported, above), and long-time decay; the other two are not formalized in this library. See the paper, Section 2.1.
 
 **Corrections in 0.1.5** (module `TetherDefinitionAudit`, all kernel-checked): the 0.1.4
 `LocalTetherBound`/`LocalFiniteTimeVorticityBound` were constraint-free at times of unbounded vorticity
@@ -223,8 +252,10 @@ its interval `[0, T]`. `frohmanian_tether_theorem` now takes `hKato` (local exis
   * `hKato`: a `KatoLocalWitness` (Kato local existence, equations on `[0, T]` only).
   * `BKMGlobalContinuation` (Kato plus Beale–Kato–Majda continuation; the classical theorem uses
     `H^s` data, the library `C^∞ ∩ L²` data on ℝ³).
-  * `SmoothPhysicalUniqueness` (uniqueness of smooth solutions; only for uniqueness clauses).
-  * `PeriodicBKMContinuation` (hypothesis `hBKM` of the Main Theorem), `KatoUniquenessOnExistenceTimes` (auxiliary lemmas) and
+  * `SmoothPhysicalUniqueness` (uniqueness of smooth solutions on the ℝ³ class `IsLocalPhysicalSolution`;
+    only for uniqueness clauses). Not discharged by the uniqueness pillar, which is about the periodic class
+    `IsPeriodicSmoothSolutionOn`; the ℝ³ class requires `L²(ℝ³)` and differs.
+  * `PeriodicBKMContinuation` (hypothesis `hBKM` of the Main Theorem; still assumed, see "Proved pillar" above), `KatoUniquenessOnExistenceTimes` (auxiliary lemmas) and
     `IsCoadjointMotion` for the Euler flow (Arnold).
 * **(d) Equivalent in strength to the open problem:**
   * The Frohmanian tether bound `PeriodicTetherClosingBound` (hypothesis `hclose` of the Main Theorem) and its per-datum form `PeriodicTetherBound`.

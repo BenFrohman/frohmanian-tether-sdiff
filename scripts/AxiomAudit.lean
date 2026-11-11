@@ -1,4 +1,5 @@
 import FrohmanianTether
+import FrohmanianTether.Pillars
 open Lean Elab Command
 
 /-!
