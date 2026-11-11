@@ -31,7 +31,9 @@ theorem clay_B_exact_of_periodic_tether_bound
 `PeriodicTetherClosingBound ν` is **the Frohmanian tether bound**: for every smooth divergence-free
 ℤ³-periodic `u₀` there is one `Y` with `‖ω(t)‖_∞ ≤ Y` along every classical periodic solution from `u₀` on
 every `[0, T)`. `PeriodicBKMContinuation ν` is the Beale–Kato–Majda continuation hypothesis (such a
-ceiling yields a global smooth periodic solution). Both are open hypotheses.
+ceiling yields a global smooth periodic solution). In version 0.1.5 both are hypotheses. On `main`,
+`PeriodicBKMContinuation` is now **proved** ("Proved pillar: BKM continuation" below), so only the tether bound
+remains open.
 
 **Second theorem (kernel-checked)** — `FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound`:
 `PeriodicTetherBound ν u₀ → PeriodicBKMIntegrability ν u₀`, i.e. `∫⁻ t in Ico 0 T, ofReal ‖ω(t)‖_∞ ≤ ofReal (max Y 0 * max T₀ 0)`
@@ -59,12 +61,39 @@ theorem clay_B_exact_unique_of_periodic_tether_bound
 ```
 
 `Clay_B_exact_unique` is Statement (B) plus uniqueness of the global velocity; both sides of the `iff` are
-open. The Main Theorem keeps the same two hypotheses: the uniqueness pillar adds the uniqueness conclusion
-but discharges neither `hclose` nor `hBKM`. The Beale–Kato–Majda criterion and Kato local existence proved
-in `BenFrohman/periodic-ns-classical-continuation` (`502ff17`) are **not** wired in: they are stated over
-the `NavierStokes3D` definitions of the package `FeffermanClayNS`, which redeclares the same names as this
-library and so cannot be imported alongside it, and over a different solution class. Details and the
-proposed bridge: [`CERTIFICATE.md`](CERTIFICATE.md), section "Proved pillars".
+open. The uniqueness pillar adds the uniqueness conclusion; it discharges no hypothesis by itself.
+
+**Proved pillar: BKM continuation (kernel-checked; after 0.1.5, not yet in a Zenodo version)** —
+module `FrohmanianTether.Pillars.BKMContinuation`. The hypothesis `hBKM` of the Main Theorem is now a
+theorem:
+
+```lean
+theorem periodicBKMContinuation_of_classical {ν : ℝ} (hν : 0 < ν) : PeriodicBKMContinuation ν
+theorem clay_B_exact_of_periodic_tether_closing_bound
+    (hclose : ∀ ν > (0 : ℝ), PeriodicTetherClosingBound ν) : Clay_B_exact
+theorem clay_B_exact_unique_of_periodic_tether_closing_bound
+    (hclose : ∀ ν > (0 : ℝ), PeriodicTetherClosingBound ν) : Clay_B_exact_unique
+```
+
+It is proved from the classical periodic theory of
+[`BenFrohman/periodic-ns-classical-continuation`](https://github.com/BenFrohman/periodic-ns-classical-continuation)
+at `502ff17`: Kato local existence (`periodicLocalExistence_of_nonneg`), the maximal solution
+(`periodicMaximalSolution_of_uniqueness`), the Beale–Kato–Majda criterion (`periodicBKMCriterion`), continuity
+of `t ↦ ‖ω(t)‖_∞` below the lifespan (`continuousOn_vorticity_Ico`) and `periodicGlobalOfTstarTop`.
+That repository (with its dependency `fefferman-clay-navier-stokes` @ `ebcf109`) declares the same
+`NavierStokes3D.*` names as this library, so it cannot be imported next to it. It is therefore vendored in
+[`vendor/BKMPillar`](vendor/BKMPillar/VENDOR.md) with one mechanical rename (`NavierStokes3D` →
+`FeffermanNavierStokes3D`, module prefix `BKMPillar.`), checked file by file against the upstream commits by
+`bash scripts/check_vendor.sh`. The operators are equal to this library's by `rfl`
+(`fef_convective_eq`, `fef_laplacian_eq`, `fef_div_eq`, `fef_pressureGradient_eq`, `fef_curl_eq`,
+`fef_vorticity_eq`, `fef_vorticity_sup_norm_eq`), and the different solution classes are bridged by proved
+conversions (`isPeriodicSmoothSolutionOn_of_fefferman`: a solution on `[0, T]` in the Fefferman class is an
+sdiff solution on `[0, T)`; `isPeriodicSmoothSolution_of_fefferman` for global solutions). The vendored
+modules are covered by the strict axiom audit.
+
+**So the Main Theorem now has exactly one hypothesis, the open Frohmanian tether bound `hclose`.** It is the
+whole difficulty: by Beale–Kato–Majda it is as hard as Statement (B). Prodi–Serrin is not used. This is still
+a conditional theorem and not a proof of Statement (B) or of the Clay Millennium Problem.
 
 **Converse (not a theorem here).** BKM integrability ⇒ tether bound is true classical mathematics
 conditional on three pillars — the Beale–Kato–Majda theorem, uniqueness of classical periodic solutions
@@ -255,7 +284,10 @@ its interval `[0, T]`. `frohmanian_tether_theorem` now takes `hKato` (local exis
   * `SmoothPhysicalUniqueness` (uniqueness of smooth solutions on the ℝ³ class `IsLocalPhysicalSolution`;
     only for uniqueness clauses). Not discharged by the uniqueness pillar, which is about the periodic class
     `IsPeriodicSmoothSolutionOn`; the ℝ³ class requires `L²(ℝ³)` and differs.
-  * `PeriodicBKMContinuation` (hypothesis `hBKM` of the Main Theorem; still assumed, see "Proved pillar" above), `KatoUniquenessOnExistenceTimes` (auxiliary lemmas) and
+  * `PeriodicBKMContinuation` (hypothesis `hBKM` of the Main Theorem): **now proved** for every `ν > 0`
+    (`FrohmanianTether.Pillars.periodicBKMContinuation_of_classical`, see "Proved pillar: BKM continuation"
+    above); `clay_B_exact_of_periodic_tether_closing_bound` needs only `hclose`.
+  * `KatoUniquenessOnExistenceTimes` (auxiliary lemmas) and
     `IsCoadjointMotion` for the Euler flow (Arnold).
 * **(d) Equivalent in strength to the open problem:**
   * The Frohmanian tether bound `PeriodicTetherClosingBound` (hypothesis `hclose` of the Main Theorem) and its per-datum form `PeriodicTetherBound`.
@@ -317,11 +349,16 @@ lake env lean scripts/AxiomAudit.lean
 lake env lean scripts/PrintAxioms.lean
 ```
 
-Build: 2797 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
+Build (version 0.1.5, verified commit `5d7c9d0`): 2797 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
 `axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 1101 declarations in the 35
 `FrohmanianTether.*` modules, including 782 theorem constants (690 stated in the sources, 92
 auto-generated equation/congruence/injectivity lemmas), and **fails** if any depends on an axiom other
-than `propext`, `Classical.choice`, `Quot.sound` (so `sorryAx` and `native_decide` are rejected). Both
+than `propext`, `Classical.choice`, `Quot.sound` (so `sorryAx` and `native_decide` are rejected).
+On `main` with both proved pillars (verified commit `89e9dfa831f54a7e229aeba2eaf336046e3f0dd5`, same toolchain
+`leanprover/lean4:v4.30.0-rc1` and Mathlib `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7`): 8385 jobs; the audit covers
+2427 declarations in the 38 `FrohmanianTether.*` and 52 vendored `BKMPillar.*` modules, including 1789 theorem
+constants (1589 stated, 200 auto-generated), all on the three standard axioms;
+`bash scripts/check_vendor.sh` checks the vendored copy against upstream. Both
 checks run in CI (`.github/workflows/certify.yml`). See [`CERTIFICATE.md`](CERTIFICATE.md).
 
 Every hypothesis named above is an explicit Lean argument or a named `Prop`; the repository declares no
@@ -338,6 +375,8 @@ hypothesis.
 * `scripts/verify.sh` (`make verify`) — one-command verification; `scripts/AxiomAudit.lean`,
   `scripts/check_no_sorry.py`, `scripts/PrintAxioms.lean` — the strict audit, source scan and headline
   `#print axioms`.
+* `vendor/BKMPillar/` — vendored, namespace-renamed copy of the proved classical-continuation pillar
+  (`VENDOR.md`; checked by `bash scripts/check_vendor.sh`).
 * `CERTIFICATE.md` — verified commit, toolchain, Mathlib revision and the full axiom report.
 
 ## License
