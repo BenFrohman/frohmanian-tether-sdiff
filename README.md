@@ -371,10 +371,10 @@ Build (version 0.1.5, verified commit `5d7c9d0`): 2797 jobs. `python3 scripts/ch
 `FrohmanianTether.*` modules, including 782 theorem constants (690 stated in the sources, 92
 auto-generated equation/congruence/injectivity lemmas), and **fails** if any depends on an axiom other
 than `propext`, `Classical.choice`, `Quot.sound` (so `sorryAx` and `native_decide` are rejected).
-On `main` with both proved pillars (verified commit `89e9dfa831f54a7e229aeba2eaf336046e3f0dd5`, same toolchain
-`leanprover/lean4:v4.30.0-rc1` and Mathlib `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7`): 8385 jobs; the audit covers
-2427 declarations in the 38 `FrohmanianTether.*` and 52 vendored `BKMPillar.*` modules, including 1789 theorem
-constants (1589 stated, 200 auto-generated), all on the three standard axioms;
+On `main` with both proved pillars (verified commit `4625ce3adfc04cf31ee2310c406cb2c95763b1d0`, same toolchain
+`leanprover/lean4:v4.30.0-rc1` and Mathlib `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7`): 8389 jobs; the audit covers
+2546 declarations in the 42 `FrohmanianTether.*` and 52 vendored `BKMPillar.*` modules, including 1886 theorem
+constants (1674 stated, 212 auto-generated), all on the three standard axioms;
 `bash scripts/check_vendor.sh` checks the vendored copy against upstream. Both
 checks run in CI (`.github/workflows/certify.yml`). See [`CERTIFICATE.md`](CERTIFICATE.md).
 

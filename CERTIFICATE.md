@@ -34,16 +34,16 @@ written in the module system and a `module` file may only import modules. `scrip
 `scripts/PrintAxioms.lean` import them, so the strict audit covers them (module prefixes
 `FrohmanianTether` and `BKMPillar`).
 
-| Item (state of `main` with both pillars) | Value |
+| Item (state of `main` with both pillars and the Fefferman (A) reduction of PR #4) | Value |
 |---|---|
-| Verified commit (Lean sources) | `89e9dfa831f54a7e229aeba2eaf336046e3f0dd5` |
+| Verified commit (Lean sources) | `4625ce3adfc04cf31ee2310c406cb2c95763b1d0` |
 | Lean toolchain / Mathlib | `leanprover/lean4:v4.30.0-rc1`, Mathlib rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` (unchanged) |
 | Lake dependencies added | `TorusFourierNS` @ `e63af4ea9bd3849ee7a0e6d9a7b64a0751d12fbe`, `WeightedEnstrophy` @ `1df4652d1a40430055ba6480904db5ab270497c3` (as pinned upstream by `periodic-ns-classical-continuation` @ `502ff17`) |
 | One-command verification | `bash scripts/verify.sh` (vendored copy: `bash scripts/check_vendor.sh` → `VENDOR OK (52 files ...)`) |
-| Build | `lake build`: 8385 jobs, success |
-| Modules audited | 38 `FrohmanianTether.*` + 52 vendored `BKMPillar.*` |
-| Declarations audited | 2427 |
-| Theorem constants audited | 1789 (1589 stated in the sources, 200 auto-generated equation/congruence/injectivity lemmas) |
+| Build | `lake build`: 8389 jobs, success |
+| Modules audited | 42 `FrohmanianTether.*` + 52 vendored `BKMPillar.*` |
+| Declarations audited | 2546 |
+| Theorem constants audited | 1886 (1674 stated in the sources, 212 auto-generated equation/congruence/injectivity lemmas) |
 | Axioms used | only `propext`, `Classical.choice`, `Quot.sound`; no `sorry`, no `native_decide`, no `axiom` declarations |
 
 | Pillar | Source (exact commit) | Status in this library |
@@ -96,7 +96,7 @@ artifact `axioms` of `.github/workflows/certify.yml`):
 'FrohmanianTether.Pillars.periodicBKMContinuation_of_classical' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.Pillars.clay_B_exact_of_periodic_tether_closing_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
 'FrohmanianTether.Pillars.clay_B_exact_unique_of_periodic_tether_closing_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
-AUDIT SUMMARY: theorems audited: 1789 (1589 stated in the sources, 200 auto-generated equation/congruence/injectivity lemmas); declarations audited: 2427; violations: 0
+AUDIT SUMMARY: theorems audited: 1886 (1674 stated in the sources, 212 auto-generated equation/congruence/injectivity lemmas); declarations audited: 2546; violations: 0
 AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations
 ```
 
