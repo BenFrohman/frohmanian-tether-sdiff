@@ -140,9 +140,125 @@ theorem continuous_duh {G : ℝ → Hm m} (hG : Continuous G) : Continuous (duh 
     (continuous_heatH_comp (continuous_fst.sub continuous_snd) (hG.comp continuous_snd))
     continuous_id
 
+/-! ## Continuity of the smoothing Duhamel integral in `t` -/
+
+/-- Kernel in the variable `r = t - s`. -/
+def kf (G : ℝ → Hm m) (t r : ℝ) : Hm (m + 1) := if h : 0 < r then heatUp m h (G (t - r)) else 0
+
+/-- Truncated kernel `1_{r < t} kf t r`. -/
+def kt (G : ℝ → Hm m) (t : ℝ) : ℝ → Hm (m + 1) := (Iio t).indicator (kf G t)
+
+lemma continuousOn_heatUp_r (x : ℝ → Hm m) (hx : Continuous x) :
+    ContinuousOn (fun r => if h : 0 < r then heatUp m h (x r) else 0) (Ioi 0) := by
+  intro r0 hr0
+  have hr0' : 0 < r0 := hr0
+  set σ := r0 / 2
+  have hσ : 0 < σ := by simp only [σ]; linarith
+  have hc : Continuous fun r => heatH (m + 1) (r - σ) (heatUp m hσ (x r)) :=
+    continuous_heatH_comp (continuous_id.sub continuous_const) ((heatUp m hσ).continuous.comp hx)
+  refine (ContinuousAt.congr hc.continuousAt ?_).continuousWithinAt
+  filter_upwards [eventually_gt_nhds (show σ < r0 by simp only [σ]; linarith)] with r hr
+  have hr' : 0 < r := hσ.trans hr
+  simp only [dif_pos hr']
+  exact (heatUp_eq hσ hr' hr.le (x r)).symm
+
+lemma norm_kt_le {G : ℝ → Hm m} {T M : ℝ} (hM0 : 0 ≤ M) (hM : ∀ s ∈ Icc 0 T, ‖G s‖ ≤ M)
+    {t r : ℝ} (ht : t ∈ Icc 0 T) (hr : r ∈ Ioc 0 T) : ‖kt G t r‖ ≤ M * (1 + r ^ (-(1 / 2 : ℝ))) := by
+  have hb : 0 ≤ M * (1 + r ^ (-(1 / 2 : ℝ))) := by
+    have := Real.rpow_nonneg hr.1.le (-(1 / 2 : ℝ)); positivity
+  unfold kt
+  by_cases hrt : r < t
+  · rw [indicator_of_mem (show r ∈ Iio t from hrt)]
+    simp only [kf, dif_pos hr.1]
+    refine (norm_heatUp_le m hr.1 _).trans ?_
+    rw [mul_comm M]
+    exact mul_le_mul (sqrt_le_one_add_rpow hr.1) (hM _ ⟨by linarith, by linarith [ht.2, hr.1]⟩)
+      (norm_nonneg _) (by have := Real.rpow_nonneg hr.1.le (-(1 / 2 : ℝ)); positivity)
+  · rw [indicator_of_notMem (show r ∉ Iio t from hrt), norm_zero]; exact hb
+
+lemma duhUp_eq_kt {G : ℝ → Hm m} (hG : Continuous G) {T M : ℝ} (hM0 : 0 ≤ M)
+    (hM : ∀ s ∈ Icc 0 T, ‖G s‖ ≤ M) {t : ℝ} (ht : t ∈ Icc 0 T) :
+    duhUp m G t = ∫ r in (0 : ℝ)..T, kt G t r := by
+  unfold duhUp
+  have e1 : ∫ s in (0 : ℝ)..t, upI G t s = ∫ s in (0 : ℝ)..t, kf G t (t - s) := by
+    refine intervalIntegral.integral_congr fun s _ => ?_
+    simp only [upI, kf, sub_sub_cancel, sub_pos]
+  rw [e1, intervalIntegral.integral_comp_sub_left (fun r => kf G t r), sub_self, sub_zero]
+  have hint : IntervalIntegrable (kt G t) volume 0 T := by
+    rw [intervalIntegrable_iff_integrableOn_Ioc_of_le (ht.1.trans ht.2)]
+    have hb := (intervalIntegrable_iff_integrableOn_Ioc_of_le (ht.1.trans ht.2)).1
+      (((intervalIntegrable_const (c := (1 : ℝ))).add
+        (intervalIntegral.intervalIntegrable_rpow' (a := 0) (b := T)
+          (by norm_num : (-1 : ℝ) < -(1 / 2)))).const_mul M)
+    refine hb.mono' ?_ ?_
+    · refine AEStronglyMeasurable.indicator ?_ measurableSet_Iio
+      have hco := continuousOn_heatUp_r (m := m) (fun r => G (t - r))
+        (hG.comp (continuous_const.sub continuous_id))
+      exact (hco.mono (fun r hr => hr.1)).aestronglyMeasurable measurableSet_Ioc
+    · refine (ae_restrict_iff' measurableSet_Ioc).2 (Eventually.of_forall fun r hr => ?_)
+      exact norm_kt_le hM0 hM ht hr
+  rw [← intervalIntegral.integral_add_adjacent_intervals (b := t)
+    (hint.mono_set (by rw [uIcc_of_le ht.1, uIcc_of_le (ht.1.trans ht.2)]; exact Icc_subset_Icc le_rfl ht.2))
+    (hint.mono_set (by rw [uIcc_of_le ht.2, uIcc_of_le (ht.1.trans ht.2)]; exact Icc_subset_Icc ht.1 le_rfl))]
+  have e2 : ∫ r in t..T, kt G t r = 0 := by
+    rw [intervalIntegral.integral_congr (g := fun _ => (0 : Hm (m + 1))) (fun r hr => ?_)]
+    · simp
+    · rw [uIcc_of_le ht.2] at hr
+      exact indicator_of_notMem (s := Iio t) (f := kf G t) (fun h : r < t => absurd hr.1 (not_le.2 h))
+  rw [e2, add_zero]
+  refine intervalIntegral.integral_congr_ae ?_
+  filter_upwards [measure_eq_zero_iff_ae_notMem.1 (measure_singleton (μ := volume) t)] with r hrt hr
+  rw [uIoc_of_le ht.1] at hr
+  exact (indicator_of_mem (show r ∈ Iio t from lt_of_le_of_ne hr.2 hrt) _).symm
+
+lemma aesm_kt {G : ℝ → Hm m} (hG : Continuous G) (t T : ℝ) :
+    AEStronglyMeasurable (kt G t) (volume.restrict (Ioc 0 T)) := by
+  refine AEStronglyMeasurable.indicator ?_ measurableSet_Iio
+  have hco := continuousOn_heatUp_r (m := m) (fun r => G (t - r))
+    (hG.comp (continuous_const.sub continuous_id))
+  exact (hco.mono (fun r hr => hr.1)).aestronglyMeasurable measurableSet_Ioc
+
+lemma continuous_kf_t {G : ℝ → Hm m} (hG : Continuous G) (r : ℝ) :
+    Continuous fun t => kf G t r := by
+  by_cases hr : 0 < r
+  · simp only [kf, dif_pos hr]
+    exact (heatUp m hr).continuous.comp (hG.comp (continuous_id.sub continuous_const))
+  · simp only [kf, dif_neg hr]; exact continuous_const
+
+/-- **Continuity in `t`** of the smoothing Duhamel integral on `[0, T]`. -/
+theorem continuousOn_duhUp {G : ℝ → Hm m} (hG : Continuous G) {T M : ℝ} (hM0 : 0 ≤ M)
+    (hM : ∀ s ∈ Icc 0 T, ‖G s‖ ≤ M) : ContinuousOn (duhUp m G) (Icc 0 T) := by
+  intro t0 ht0
+  have hT : 0 ≤ T := ht0.1.trans ht0.2
+  refine ContinuousWithinAt.congr (f := fun t => ∫ r in (0 : ℝ)..T, kt G t r) ?_
+    (fun t ht => duhUp_eq_kt hG hM0 hM ht) (duhUp_eq_kt hG hM0 hM ht0)
+  refine intervalIntegral.continuousWithinAt_of_dominated_interval
+    (bound := fun r => M * (1 + r ^ (-(1 / 2 : ℝ)))) ?_ ?_ ?_ ?_
+  · refine Eventually.of_forall fun t => ?_
+    rw [uIoc_of_le hT]; exact aesm_kt hG t T
+  · filter_upwards [self_mem_nhdsWithin] with t ht
+    refine Eventually.of_forall fun r hr => ?_
+    rw [uIoc_of_le hT] at hr
+    exact norm_kt_le hM0 hM ht hr
+  · exact ((intervalIntegrable_const (c := (1 : ℝ))).add
+      (intervalIntegral.intervalIntegrable_rpow' (a := 0) (b := T)
+        (by norm_num : (-1 : ℝ) < -(1 / 2)))).const_mul M
+  · filter_upwards [measure_eq_zero_iff_ae_notMem.1 (measure_singleton (μ := volume) t0)]
+      with r hr _
+    refine ContinuousAt.continuousWithinAt ?_
+    rcases lt_or_gt_of_ne (show r ≠ t0 from hr) with h | h
+    · refine ((continuous_kf_t hG r).continuousAt).congr ?_
+      filter_upwards [eventually_gt_nhds h] with t ht
+      exact (indicator_of_mem (show r ∈ Iio t from ht) _).symm
+    · refine (continuousAt_const (y := (0 : Hm (m + 1)))).congr ?_
+      filter_upwards [eventually_lt_nhds h] with t ht
+      exact (indicator_of_notMem (s := Iio t) (f := kf G t)
+        (show r ∉ Iio t from fun h' => absurd (h'.trans ht) (lt_irrefl r))).symm
+
 end DuhamelUp
 
 #print axioms DuhamelUp.intervalIntegrable_upI
 #print axioms DuhamelUp.norm_duhUp_le
 #print axioms DuhamelUp.duhUp_sub
 #print axioms DuhamelUp.continuous_duh
+#print axioms DuhamelUp.continuousOn_duhUp
