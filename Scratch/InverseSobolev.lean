@@ -17,7 +17,7 @@ noncomputable section
 namespace InverseSobolev
 
 open LerayHeat SobolevFourier SobolevHilbert
-open ProductEstimate (Cw Cw_lt_top one_le_ω)
+open ProductEstimate (Cw Cw_lt_top one_le_ω measurable_ω rpow_two' sq_rpow_half)
 
 /-- Local name for the Japanese-bracket weight `ω(ξ) = 1 + 4π²|ξ|²` as `ℝ≥0∞`. -/
 abbrev ω := ProductEstimate.ω
@@ -132,9 +132,175 @@ lemma lintegral_xi_pow_div_w {n m : ℕ} (hm : n + 2 ≤ m) :
   rw [hCw]
   exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top Cw_lt_top
 
+lemma aesm_coe_Hm {m : ℕ} (G : Hm m) :
+    AEStronglyMeasurable (G : E3 → V) volume :=
+  (Lp.stronglyMeasurable G).aestronglyMeasurable.mono_ac (ac_vol m)
+
+/-- Half-powers of the Japanese bracket cancel: `ω^{m/2} · ω^{-m/2} = 1`. -/
+lemma ω_pow_half_mul_inv (m : ℕ) (ξ : E3) :
+    (ω ξ ^ m) ^ (1 / 2 : ℝ) * (ω ξ ^ m) ^ (-(1 / 2 : ℝ)) = 1 := by
+  rw [ENNReal.rpow_neg]
+  refine ENNReal.mul_inv_cancel ?_ ?_
+  · exact (ENNReal.rpow_pos (ENNReal.pow_pos (lt_of_lt_of_le zero_lt_one (one_le_ω ξ)) m)
+      (ω_pow_ne_top m ξ)).ne'
+  · exact ENNReal.rpow_ne_top_of_nonneg (by norm_num) (ω_pow_ne_top m ξ)
+
+lemma moment_A_mul_B {m n : ℕ} (G : Hm m) (ξ : E3) :
+    (ENNReal.ofReal (‖ξ‖ ^ n) * (ω ξ ^ m) ^ (-(1 / 2 : ℝ))) *
+        ((ω ξ ^ m) ^ (1 / 2 : ℝ) * ‖(G : E3 → V) ξ‖ₑ) =
+      ENNReal.ofReal (‖ξ‖ ^ n) * ‖(G : E3 → V) ξ‖ₑ := by
+  have h := ω_pow_half_mul_inv m ξ
+  calc (ENNReal.ofReal (‖ξ‖ ^ n) * (ω ξ ^ m) ^ (-(1 / 2 : ℝ))) *
+          ((ω ξ ^ m) ^ (1 / 2 : ℝ) * ‖(G : E3 → V) ξ‖ₑ)
+      = ENNReal.ofReal (‖ξ‖ ^ n) *
+          ((ω ξ ^ m) ^ (-(1 / 2 : ℝ)) * (ω ξ ^ m) ^ (1 / 2 : ℝ)) *
+          ‖(G : E3 → V) ξ‖ₑ := by
+        simp only [mul_assoc]
+    _ = ENNReal.ofReal (‖ξ‖ ^ n) *
+          ((ω ξ ^ m) ^ (1 / 2 : ℝ) * (ω ξ ^ m) ^ (-(1 / 2 : ℝ))) *
+          ‖(G : E3 → V) ξ‖ₑ := by
+        rw [mul_comm ((ω ξ ^ m) ^ (-(1 / 2 : ℝ)))]
+    _ = ENNReal.ofReal (‖ξ‖ ^ n) * 1 * ‖(G : E3 → V) ξ‖ₑ := by rw [h]
+    _ = ENNReal.ofReal (‖ξ‖ ^ n) * ‖(G : E3 → V) ξ‖ₑ := by rw [mul_one]
+
+lemma moment_A_sq {m n : ℕ} (ξ : E3) :
+    (ENNReal.ofReal (‖ξ‖ ^ n) * (ω ξ ^ m) ^ (-(1 / 2 : ℝ))) ^ 2 =
+      ENNReal.ofReal (‖ξ‖ ^ (2 * n) / FourierEmb.w ξ ^ m) := by
+  have hnn : 0 ≤ ‖ξ‖ ^ n := pow_nonneg (norm_nonneg _) n
+  have hw : 0 < FourierEmb.w ξ ^ m := pow_pos (FourierEmb.w_pos ξ) m
+  have hinv : ((ω ξ ^ m) ^ (-(1 / 2 : ℝ))) ^ 2 = (ω ξ ^ m)⁻¹ := by
+    rw [← ENNReal.rpow_natCast, ← ENNReal.rpow_mul, Nat.cast_ofNat,
+      show -(1 / 2 : ℝ) * (2 : ℝ) = (-1 : ℝ) by norm_num, ENNReal.rpow_neg_one]
+  rw [mul_pow, ← ENNReal.ofReal_pow hnn, ← pow_mul, mul_comm n 2, hinv, ω_pow_eq_ofReal,
+    ← ENNReal.ofReal_inv_of_pos hw, ← ENNReal.ofReal_mul (pow_nonneg (norm_nonneg _) (2 * n)),
+    div_eq_mul_inv]
+
+lemma moment_B_sq {m : ℕ} (G : Hm m) (ξ : E3) :
+    ((ω ξ ^ m) ^ (1 / 2 : ℝ) * ‖(G : E3 → V) ξ‖ₑ) ^ 2 =
+      ω ξ ^ m * ‖(G : E3 → V) ξ‖ₑ ^ 2 := by
+  rw [mul_pow, sq_rpow_half]
+
+lemma aemeasurable_moment_A (m n : ℕ) :
+    AEMeasurable (fun ξ : E3 =>
+      ENNReal.ofReal (‖ξ‖ ^ n) * (ω ξ ^ m) ^ (-(1 / 2 : ℝ))) volume :=
+  ((continuous_pow n).comp continuous_norm).measurable.ennreal_ofReal.aemeasurable.mul
+    ((measurable_ω.pow_const m).aemeasurable.pow_const _)
+
+lemma aemeasurable_moment_B {m : ℕ} (G : Hm m) :
+    AEMeasurable (fun ξ : E3 =>
+      (ω ξ ^ m) ^ (1 / 2 : ℝ) * ‖(G : E3 → V) ξ‖ₑ) volume :=
+  ((measurable_ω.pow_const m).aemeasurable.pow_const _).mul (aesm_coe_Hm G).enorm
+
+/-- If `G ∈ Ĥ^m` and `m ≥ n + 2`, then `ξ ↦ ‖ξ‖^n ‖G ξ‖` is integrable. -/
+theorem integrable_moment_of_Hm {m n : ℕ} (hm : n + 2 ≤ m) (G : Hm m) :
+    Integrable (fun ξ : E3 => ‖ξ‖ ^ n * ‖(G : E3 → V) ξ‖) volume := by
+  have hsm : AEStronglyMeasurable (fun ξ : E3 => ‖ξ‖ ^ n * ‖(G : E3 → V) ξ‖) volume :=
+    ((continuous_pow n).comp continuous_norm).aestronglyMeasurable.mul (aesm_coe_Hm G).norm
+  refine ⟨hsm, ?_⟩
+  set A : E3 → ℝ≥0∞ :=
+    fun ξ => ENNReal.ofReal (‖ξ‖ ^ n) * (ω ξ ^ m) ^ (-(1 / 2 : ℝ))
+  set B : E3 → ℝ≥0∞ :=
+    fun ξ => (ω ξ ^ m) ^ (1 / 2 : ℝ) * ‖(G : E3 → V) ξ‖ₑ
+  have hCS := ENNReal.lintegral_mul_le_Lp_mul_Lq (μ := volume)
+    Real.HolderConjugate.two_two (aemeasurable_moment_A m n) (aemeasurable_moment_B G)
+  have hlin : ∫⁻ ξ, ‖‖ξ‖ ^ n * ‖(G : E3 → V) ξ‖‖ₑ = ∫⁻ ξ, A ξ * B ξ := by
+    refine (lintegral_congr fun ξ => ?_).trans
+      (lintegral_congr fun ξ => (moment_A_mul_B (n := n) G ξ).symm)
+    have hn : 0 ≤ ‖ξ‖ ^ n := pow_nonneg (norm_nonneg _) n
+    rw [enorm_mul, Real.enorm_eq_ofReal hn, enorm_norm ((G : E3 → V) ξ)]
+  have hAint : ∫⁻ ξ, A ξ ^ 2 = ∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * n) / FourierEmb.w ξ ^ m) :=
+    lintegral_congr fun ξ => moment_A_sq ξ
+  have hBint : ∫⁻ ξ, B ξ ^ 2 ≤ ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2 := by
+    have hmono : ∫⁻ ξ, B ξ ^ 2 ≤
+        ∫⁻ ξ, ENNReal.ofReal ((2 : ℝ) ^ m) * (sobW m ξ * ‖(G : E3 → V) ξ‖ₑ ^ 2) := by
+      refine lintegral_mono fun ξ => ?_
+      calc B ξ ^ 2
+          = ω ξ ^ m * ‖(G : E3 → V) ξ‖ₑ ^ 2 := moment_B_sq G ξ
+        _ ≤ (ENNReal.ofReal ((2 : ℝ) ^ m) * sobW m ξ) * ‖(G : E3 → V) ξ‖ₑ ^ 2 :=
+            mul_le_mul_left (ω_pow_le_mul_sobW m ξ) _
+        _ = ENNReal.ofReal ((2 : ℝ) ^ m) * (sobW m ξ * ‖(G : E3 → V) ξ‖ₑ ^ 2) := by
+            rw [mul_assoc]
+    refine hmono.trans (le_of_eq ?_)
+    rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, eLpNorm_sq, lintegral_μw]
+  have hAtop : ∫⁻ ξ, A ξ ^ 2 < ⊤ := by rw [hAint]; exact lintegral_xi_pow_div_w hm
+  have hBtop : ∫⁻ ξ, B ξ ^ 2 < ⊤ :=
+    hBint.trans_lt (ENNReal.mul_lt_top ENNReal.ofReal_lt_top
+      (ENNReal.pow_lt_top (Lp.eLpNorm_lt_top G)))
+  have hAtopR : ∫⁻ ξ, A ξ ^ (2 : ℝ) < ⊤ := by
+    have : ∫⁻ ξ, A ξ ^ (2 : ℝ) = ∫⁻ ξ, A ξ ^ 2 := lintegral_congr fun ξ => rpow_two' _
+    rwa [this]
+  have hBtopR : ∫⁻ ξ, B ξ ^ (2 : ℝ) < ⊤ := by
+    have : ∫⁻ ξ, B ξ ^ (2 : ℝ) = ∫⁻ ξ, B ξ ^ 2 := lintegral_congr fun ξ => rpow_two' _
+    rwa [this]
+  have hfin : ∫⁻ ξ, (A * B) ξ < ⊤ :=
+    hCS.trans_lt (ENNReal.mul_lt_top
+      (ENNReal.rpow_lt_top_of_nonneg (by norm_num) hAtopR.ne)
+      (ENNReal.rpow_lt_top_of_nonneg (by norm_num) hBtopR.ne))
+  have hAB : ∫⁻ ξ, A ξ * B ξ = ∫⁻ ξ, (A * B) ξ := rfl
+  change ∫⁻ ξ, ‖‖ξ‖ ^ n * ‖(G : E3 → V) ξ‖‖ₑ < ⊤
+  rw [hlin, hAB]
+  exact hfin
+
+/-- If `G ∈ Ĥ^m` and `m ≥ 2`, then `G` is (unweighted) integrable on ℝ³. -/
+theorem integrable_of_Hm {m : ℕ} (hm : 2 ≤ m) (G : Hm m) :
+    Integrable (G : E3 → V) volume := by
+  have h := integrable_moment_of_Hm (n := 0) (by omega) G
+  simp only [pow_zero, one_mul] at h
+  refine ⟨aesm_coe_Hm G, ?_⟩
+  simpa [HasFiniteIntegral, enorm_norm'] using h.2
+
+lemma integrable_moment_comp_neg {m n : ℕ} (hm : n + 2 ≤ m) (G : Hm m) :
+    Integrable (fun ξ : E3 => ‖ξ‖ ^ n * ‖(G : E3 → V) (-ξ)‖) volume := by
+  have h := integrable_moment_of_Hm hm G
+  have hmp : MeasurePreserving (Neg.neg : E3 → E3) volume volume :=
+    Measure.measurePreserving_neg volume
+  have heq : (fun ξ : E3 => ‖ξ‖ ^ n * ‖(G : E3 → V) (-ξ)‖) =
+      (fun ξ : E3 => ‖ξ‖ ^ n * ‖(G : E3 → V) ξ‖) ∘ (Neg.neg : E3 → E3) := by
+    funext ξ; simp [norm_neg]
+  rw [heq]
+  have hG : Integrable (fun ξ : E3 => ‖ξ‖ ^ n * ‖(G : E3 → V) ξ‖)
+      (Measure.map (Neg.neg : E3 → E3) volume) := by
+    rwa [hmp.map_eq]
+  exact (integrable_map_measure hG.aestronglyMeasurable measurable_neg.aemeasurable).1 hG
+
+/-- If `G ∈ Ĥ^m` and `m ≥ n + 2`, the inverse Fourier transform of `G` is `C^n`. -/
+theorem contDiff_fourierInv_of_Hm {m n : ℕ} (hm : n + 2 ≤ m) (G : Hm m) :
+    ContDiff ℝ n (𝓕⁻ (G : E3 → V)) := by
+  rw [fourierInv_eq_fourier_comp_neg]
+  refine contDiff_fourier ?_
+  intro k hk
+  have hkn : k ≤ n := Nat.cast_le.1 hk
+  exact integrable_moment_comp_neg (le_trans (Nat.add_le_add_right hkn 2) hm) G
+
+lemma fourierInv_congr_ae {f₁ f₂ : E3 → V} (h : f₁ =ᵐ[volume] f₂) (x : E3) :
+    𝓕⁻ f₁ x = 𝓕⁻ f₂ x :=
+  (fourierInv_eq_fourier_neg f₁ x).trans
+    ((fourier_congr_ae h (-x)).trans (fourierInv_eq_fourier_neg f₂ x).symm)
+
+/-- If a physical `L²` field has finite Fourier energy of every order, then
+`𝓕⁻ (𝓕 F)` is `C^∞`. -/
+theorem contDiff_fourierInv_of_all_energy {F : L2V}
+    (h : ∀ k : ℕ, fourierEnergy k F < ⊤) :
+    ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (𝓕⁻ ((𝓕 F : L2V) : E3 → V)) := by
+  rw [contDiff_infty]
+  intro n
+  have hE : fourierEnergy (n + 2) F < ⊤ := h (n + 2)
+  have hs := contDiff_fourierInv_of_Hm (m := n + 2) (n := n) le_rfl (toHm F hE)
+  have haeμ : (toHm F hE : E3 → V) =ᵐ[μw (n + 2)] ((𝓕 F : L2V) : E3 → V) :=
+    MemLp.coeFn_toLp (memLp_fourier_of_energy hE)
+  have hae : (toHm F hE : E3 → V) =ᵐ[volume] ((𝓕 F : L2V) : E3 → V) :=
+    haeμ.filter_mono (Measure.AbsolutelyContinuous.ae_le (ac_vol (n + 2)))
+  have heq : 𝓕⁻ (toHm F hE : E3 → V) = 𝓕⁻ ((𝓕 F : L2V) : E3 → V) :=
+    funext fun x => fourierInv_congr_ae hae x
+  exact heq ▸ hs
+
 #print axioms InverseSobolev.sobW_le_mul_ω_pow
 #print axioms InverseSobolev.ω_pow_le_mul_sobW
 #print axioms InverseSobolev.xi_pow_div_w
 #print axioms InverseSobolev.lintegral_xi_pow_div_w
+#print axioms InverseSobolev.integrable_moment_of_Hm
+#print axioms InverseSobolev.integrable_of_Hm
+#print axioms InverseSobolev.contDiff_fourierInv_of_Hm
+#print axioms InverseSobolev.contDiff_fourierInv_of_all_energy
 
 end InverseSobolev
