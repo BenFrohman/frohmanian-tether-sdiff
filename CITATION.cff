@@ -5,10 +5,10 @@ type: software
 authors:
   - family-names: Frohman
     given-names: "Benjamin Stanley"
+    alias: "B.S. Frohman"
     orcid: "https://orcid.org/0009-0006-7068-3718"
     email: frohmanbenjamin@gmail.com
     affiliation: "Independent Researcher, Texas, United States"
-    alias: "B.S. Frohman"
 version: "0.1.5"
 doi: "10.5281/zenodo.24122596"
 date-released: "2026-11-10"

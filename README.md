@@ -312,3 +312,7 @@ hypothesis.
 ## License
 
 Apache 2.0 (see `LICENSE`). Cite via `CITATION.cff` or the Zenodo record of version 0.1.5, [`10.5281/zenodo.24122596`](https://doi.org/10.5281/zenodo.24122596) ([record](https://zenodo.org/records/24122596)); it adds the Main Theorem framing, tether ⇒ BKM integrability (module `TetherImpliesBKM`) and the definition audit (module `TetherDefinitionAudit`), and corrects the local tether hypotheses. Earlier: 0.1.4 [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) (module `ExplicitFlows`), 0.1.3 [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (DOI-only update of 0.1.2), 0.1.2 [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345). All versions: concept DOI [`10.5281/zenodo.24081999`](https://doi.org/10.5281/zenodo.24081999). The archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)) is version 0.1.1, which still contains the removed hypothesis `KineticEnergyDerivIsVelocity`.
+
+## Copyright
+
+© 2026 Benjamin Stanley Frohman.
