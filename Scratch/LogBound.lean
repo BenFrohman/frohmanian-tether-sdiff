@@ -527,4 +527,32 @@ lemma high_le (G : 𝓢(E3, ℂ)) (N : ℕ) (x : E3) :
         rw [lintegral_fourier_sq]
         gcongr
 
+
+/-! ## Schwartz-level frequency-truncated BKM bound -/
+
+/-- **Frequency-truncated BKM bound (Schwartz vector fields, any truncation `N`).**
+`|∂_k g_l(x)| ≤ C_low ‖g_l‖₂ + N·A·(3 sup|curl-type| + sup|div|) + (2^{-N/2} K_h)^{1/2} ‖(1-Δ)∂_k g_l‖₂`. -/
+theorem schwartz_log_bound (g : Fin 3 → 𝓢(E3, ℂ)) (k l : Fin 3) (N : ℕ) {Bω Bd : ℝ}
+    (hω : ∀ m y, ‖(∂_{eb m} (g l) - ∂_{eb l} (g m)) y‖ ≤ Bω)
+    (hd : ∀ y, ‖(∑ m : Fin 3, ∂_{eb m} (g m)) y‖ ≤ Bd) (x : E3) :
+    ‖(∂_{eb k} (g l)) x‖ₑ ≤ Clow * (∫⁻ y, ‖g l y‖ₑ ^ (2 : ℝ)) ^ (1 / 2 : ℝ) +
+      ENNReal.ofReal (N * (Akern * (3 * Bω + Bd))) +
+      (ENNReal.ofReal (Real.sqrt ((2 : ℝ) ^ N))⁻¹ * Kh) ^ (1 / 2 : ℝ) *
+        (∫⁻ y, ‖(∂_{eb k} (g l) - Δ (∂_{eb k} (g l))) y‖ₑ ^ (2 : ℝ)) ^ (1 / 2 : ℝ) := by
+  rw [lp_split (∂_{eb k} (g l)) N x]
+  refine (enorm_add_le _ _).trans (add_le_add ((enorm_add_le _ _).trans
+    (add_le_add (low_le (g l) k x) ?_)) (high_le _ N x))
+  refine (enorm_sum_le _ _).trans ?_
+  calc _ ≤ ∑ _j ∈ Finset.range N, ENNReal.ofReal (Akern * (3 * Bω + Bd)) :=
+        Finset.sum_le_sum fun j _ => by
+          rw [← ofReal_norm_eq_enorm]
+          exact ENNReal.ofReal_le_ofReal (norm_mid_le g k l j hω hd x)
+    _ = _ := by
+        rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+        have h0 : 0 ≤ Akern * (3 * Bω + Bd) := by
+          have := (norm_nonneg _).trans (norm_mid_le g k l 0 hω hd x); exact this
+        rw [ENNReal.ofReal_mul (Nat.cast_nonneg N), ENNReal.ofReal_natCast]
+
 end LogBound
+
+#print axioms LogBound.schwartz_log_bound
