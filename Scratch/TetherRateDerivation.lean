@@ -468,11 +468,9 @@ def StrainControlledByVorticity (u : TimeDependentVelocity) (T C : ℝ) : Prop :
       BddAbove (Set.range fun y => ‖fderiv ℝ (u t) y‖) ∧
       strain_sup_norm (u t) ≤ C * Mω u t
 
-/-- Coercivity of direction curvature (or equivalently of "|∇omega|_{HS}") at an attained
-spatial maximum: "hsSq(omega(t), x_max(t)) ≥ κ M(t)⁴", with "κ > 0" independent of "t".
-This is the source of the cubic sink "−κ M³" after dividing by "M". UNSETTLED along
-Navier–Stokes trajectories. For *arbitrary* divergence-free snapshots the same
-lower bound is kernel-checked disproved in "Scratch/TetherRateStaticTests.lean". -/
+/-- Coercivity of direction curvature at an attained spatial maximum: `κ > 0` and
+`κ * M(t)⁴ ≤ hsSq(ω(t), x_max(t))` for every `t ∈ [0, T)`. UNSETTLED along
+Fefferman solutions. -/
 def DirectionCoercivityAtMax (u : TimeDependentVelocity) (T kap : ℝ) (x_max : ℝ → T3) : Prop :=
   0 < kap ∧
     ∀ t ∈ Set.Ico (0 : ℝ) T,

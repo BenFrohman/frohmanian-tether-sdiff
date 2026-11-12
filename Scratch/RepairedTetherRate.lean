@@ -49,8 +49,10 @@ Then there exist smooth functions `p(x, t)`, `uᵢ(x, t)` on `ℝ³ × [0, ∞)`
       ∃ (u : TimeDependentVelocity) (p : TimeDependentPressure),
         FeffermanGlobalSolution ν u₀ u p
 
-/-- Local solution in Fefferman's smooth class on `ℝ³ × [0, T)`, finite energy, energy
-inequality `∫|u(t)|² ≤ ∫|u°|²` (true for classical solutions by the energy equality). -/
+/-- Local solution in Fefferman's smooth class on `ℝ³ × [0, T)`: `u` and `p` are
+jointly `C^∞` on `ℝ³ × [0, T)`; the momentum and divergence equations hold on
+`[0, T)` with a one-sided time derivative at `t = 0`; `u(x, 0) = u°(x)`; and the
+energy inequality `∫|u(t)|² ≤ ∫|u°|²` holds for every `t ∈ [0, T)`. -/
 @[expose] public def IsFeffermanSolutionOn (ν T : ℝ) (u₀ : VelocityField)
     (u : TimeDependentVelocity) (p : TimeDependentPressure) : Prop :=
   ContDiffOn ℝ ∞ (fun q : T3 × ℝ => u q.2 q.1) (Set.univ ×ˢ Set.Ico (0 : ℝ) T) ∧
@@ -78,10 +80,11 @@ with `M' ≤ C M² − κ M³` (`C, κ > 0` depending only on `u₀, ν`). -/
           HasDerivWithinAt (Mω u) d (Set.Ici s) s ∧ d ≤ C * Mω u s ^ 2 - kap * Mω u s ^ 3) ∧
         (∀ t ∈ Set.Ico (0 : ℝ) T, BddAbove (Set.range fun x => ‖vorticity (u t) x‖))
 
-/-- **Classical continuation on ℝ³ for datum `u₀`** (Kato 1984 local existence in `H^s`,
-uniqueness, Beale–Kato–Majda 1984 criterion, parabolic smoothing, energy equality; known,
-NOT formalized). If one ceiling `Y` bounds `‖ω‖_∞` along every local solution in Fefferman's
-class from `u₀`, then `u₀` has a global solution exactly as Fefferman (A) requires. -/
+/-- **Continuation on ℝ³ for datum `u₀`.** If one ceiling `Y` bounds `‖ω‖_∞` along
+every local Fefferman-class solution from `u₀`, then `u₀` has a global solution
+exactly as Fefferman (A) requires. The BKM logarithmic inequality is proved
+(`LogBoundLocal.bkmLogInequality`); the implication is reduced to
+`KatoMaximalSolution` by `R3BKM.r3BKMContinuation_of_kato_of_log`. -/
 @[expose] public def R3BKMContinuationAt (ν : ℝ) (u₀ : VelocityField) : Prop :=
   (∃ Y : ℝ, ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
       IsFeffermanSolutionOn ν T u₀ u p → ∀ t ∈ Set.Ico (0 : ℝ) T,

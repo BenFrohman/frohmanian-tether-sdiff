@@ -6,11 +6,14 @@ import Mathlib.Analysis.SpecialFunctions.JapaneseBracket
 Decomposition of the classical hypothesis `RepairedTether.R3BKMContinuationAt` into
 named analytic inputs, with every logical / ODE step between them kernel-checked.
 
-* `KatoMaximalSolution ν u₀` (Kato 1972/1984, Fujita–Kato 1964, persistence of regularity,
-  parabolic smoothing, energy equality, Kato–Ponce 1988 commutator estimate): OPEN in Lean
-  (not formalized), classical in the literature.
+* `KatoMaximalSolution ν u₀`: OPEN in Lean. Existence of a Fefferman-class solution
+  on a time set `S` (`[0, ∞)` or `[0, T*)`) with finite, continuous, right-differentiable
+  `H³` energy satisfying `d/dt ‖u‖²_{H³} ≤ C_k ‖∇u‖_∞ ‖u‖²_{H³}`, and the `H³`
+  blow-up alternative if `T* < ∞`.
 * `BKMLogInequality` (Beale–Kato–Majda 1984, log-Sobolev / Brezis–Gallouet type bound
-  `‖∇f‖_∞ ≤ C (1 + ‖f‖₂² + ‖curl f‖_∞ (1 + log(1 + ‖f‖²_{H³})))`): OPEN in Lean, classical.
+  `‖∇f‖_∞ ≤ C (1 + ‖f‖₂² + ‖curl f‖_∞ (1 + log(1 + ‖f‖²_{H³})))`): proved in
+  `LogBoundLocal.bkmLogInequality`. The Prop asserts that `∇f` is bounded, not
+  that `curl f` is bounded.
 * PROVED here: the BKM Gronwall argument (`hsSq_bounded_of_vorticity_bounded`),
   the blow-up exclusion (`katoBKMMaximal_of_kato_of_log`), the passage from a global
   Fefferman-class local family to Fefferman's global solution (`feffermanGlobalSolution_of_forall`),
@@ -50,10 +53,12 @@ lemma gradSup_nonneg (f : VelocityField) : 0 ≤ gradSup f :=
 lemma mω_nonneg (u : TimeDependentVelocity) (t : ℝ) : 0 ≤ Mω u t :=
   Real.iSup_nonneg fun _ => norm_nonneg _
 
-/-! ## Named classical inputs (precisely stated sub-Props, NOT proved here) -/
+/-! ## Named inputs (precisely stated sub-Props).
+`BKMLogInequality` is proved in `LogBoundLocal`; `KatoMaximalSolution` is not proved here. -/
 
 /-- **BKM logarithmic inequality** (Beale–Kato–Majda 1984, eq. (3.2)–(3.5); m = 3 > 5/2).
-For smooth divergence-free `f` with finite `H³` energy: `∇f` and `curl f` are bounded and
+There is a constant `C > 0` such that for every smooth divergence-free `f` with
+finite `H³` energy, `∇f` is bounded and
 `‖∇f‖_∞ ≤ C (1 + ‖f‖₂² + ‖curl f‖_∞ (1 + log (1 + ‖f‖²_{H³})))`. -/
 def BKMLogInequality : Prop :=
   ∃ C : ℝ, 0 < C ∧ ∀ f : VelocityField, ContDiff ℝ ∞ f → (∀ x, div f x = 0) →
@@ -62,14 +67,12 @@ def BKMLogInequality : Prop :=
       gradSup f ≤ C * (1 + l2Sq f +
         vorticity_sup_norm (vorticity f) * (1 + Real.log (1 + hsSq 3 f)))
 
-/-- **Kato maximal solution with `H³` blow-up alternative and Kato–Ponce energy estimate.**
-For Fefferman data there is one pair `(u, p)` on a maximal interval `S = [0, T*)`
-(`T* ∈ (0, ∞]`) such that: `(u, p)` is in Fefferman's smooth class on every `[0, T) ⊆ S`
-(Kato/Fujita–Kato local existence, smoothing up to `t = 0` for data satisfying (4), energy
-equality, persistence of `H^m` regularity with `T*` independent of `m`); `‖u(t)‖²_{H³}` is finite, continuous and right-differentiable on `S` with
-`d/dt ‖u‖²_{H³} ≤ C_k ‖∇u‖_∞ ‖u‖²_{H³}` (Kato–Ponce commutator estimate; the viscous term has a
-sign and the pressure drops out by incompressibility); and if `T* < ∞` then
-`sup_{[0,T*)} ‖u‖²_{H³} = ∞` (Kato's blow-up alternative in `H³`). -/
+/-- **Kato maximal solution.** There exist a time set `S`, a pair `(u, p)`, and a
+constant `C_k ≥ 0` such that: on every `[0, T) ⊆ S`, `(u, p)` is a Fefferman-class
+solution from `u₀`; `‖u(t)‖²_{H³}` is finite at every `t ∈ S` and continuous on
+`S`; at every `s ∈ S` the map `t ↦ ‖u(t)‖²_{H³}` has a right derivative
+`d ≤ C_k ‖∇u(s)‖_∞ ‖u(s)‖²_{H³}`; and either `S = [0, ∞)` or `S = [0, T*)` for
+some `T* > 0` with `‖u‖²_{H³}` unbounded on `S`. OPEN in Lean. -/
 def KatoMaximalSolution (ν : ℝ) (u₀ : VelocityField) : Prop :=
   ∃ (S : Set ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure) (Ck : ℝ), 0 ≤ Ck ∧
     (∀ T : ℝ, Ico (0 : ℝ) T ⊆ S → IsFeffermanSolutionOn ν T u₀ u p) ∧
