@@ -762,6 +762,267 @@ lemma hasFDerivAt_uncurryFourierInvBCF {m : ℕ} (hm : 3 ≤ m) (x : E3) (G : Hm
     exact (norm_add_le _ _).trans hsum
   simpa [Prod.mk_add_mk] using hfinal
 
+/-- Operator-norm constant in the bilinear bound for `spatFDeriv`. -/
+def spatFDerivBound {m : ℕ} (hm : 3 ≤ m) : ℝ :=
+  ∑ j : Fin 3,
+    ‖(isBoundedLinearMap_fourierInvBCF
+      (two_le_pred_of_three hm)).toContinuousLinearMap‖ *
+      ‖(dH (one_le_of_three hm) j : Hm m →L[ℂ] Hm (m - 1))‖
+
+lemma spatFDerivBound_nonneg {m : ℕ} (hm : 3 ≤ m) : 0 ≤ spatFDerivBound hm :=
+  Finset.sum_nonneg fun j _ =>
+    mul_nonneg
+      (norm_nonneg
+        (isBoundedLinearMap_fourierInvBCF
+          (two_le_pred_of_three hm)).toContinuousLinearMap)
+      (norm_nonneg (dH (one_le_of_three hm) j : Hm m →L[ℂ] Hm (m - 1)))
+
+lemma spatFDeriv_le_bound {m : ℕ} (hm : 3 ≤ m) (G : Hm m) (x v : E3) :
+    ‖spatFDeriv hm G x v‖ ≤ spatFDerivBound hm * ‖G‖ * ‖v‖ :=
+  spatFDeriv_le_mul_norm hm G x v
+
+/-- Sum of the operator norms of the first-order Fourier multipliers. -/
+def dHBound {m : ℕ} (hm : 3 ≤ m) : ℝ :=
+  ∑ j : Fin 3, ‖(dH (one_le_of_three hm) j : Hm m →L[ℂ] Hm (m - 1))‖
+
+lemma dHBound_nonneg {m : ℕ} (hm : 3 ≤ m) : 0 ≤ dHBound hm :=
+  Finset.sum_nonneg fun j _ =>
+    norm_nonneg (dH (one_le_of_three hm) j : Hm m →L[ℂ] Hm (m - 1))
+
+lemma spatFDeriv_add {m : ℕ} (hm : 3 ≤ m) (G H : Hm m) (x v : E3) :
+    spatFDeriv hm (G + H) x v = spatFDeriv hm G x v + spatFDeriv hm H x v := by
+  simp only [spatFDeriv_apply]
+  have hadd := (isBoundedLinearMap_fourierInvBCF (two_le_pred_of_three hm)).map_add
+  have hdH : ∀ j, dH (one_le_of_three hm) j (G + H) =
+      dH (one_le_of_three hm) j G + dH (one_le_of_three hm) j H :=
+    fun j => map_add _ _ _
+  simp only [hdH, hadd, BoundedContinuousFunction.add_apply]
+  refine Eq.trans (Finset.sum_congr rfl fun j _ => smul_add _ _ _) ?_
+  exact Finset.sum_add_distrib
+
+/-- The inverse Fourier transform is Lipschitz in the spatial variable,
+uniformly on bounded sets of `Ĥ^m` (`m ≥ 3`). -/
+lemma norm_fourierInvBCF_sub_le {m : ℕ} (hm : 3 ≤ m) (G : Hm m) (x y : E3) :
+    ‖(fourierInvBCF (two_le_of_three hm) G).toFun x -
+      (fourierInvBCF (two_le_of_three hm) G).toFun y‖ ≤
+      spatFDerivBound hm * ‖G‖ * ‖x - y‖ := by
+  have hFTC := fourierInvBCF_eq_integral_spatFDeriv hm G y (x - y)
+  have hxy : y + (x - y) = x := add_sub_cancel y x
+  rw [hxy] at hFTC
+  have hbound : ∀ t ∈ Set.uIoc (0 : ℝ) 1,
+      ‖spatFDeriv hm G (y + t • (x - y)) (x - y)‖ ≤
+        spatFDerivBound hm * ‖G‖ * ‖x - y‖ :=
+    fun t _ => spatFDeriv_le_bound hm G _ (x - y)
+  have hI := intervalIntegral.norm_integral_le_of_norm_le_const hbound
+  have habs : |(1 : ℝ) - 0| = 1 := by norm_num
+  have hC : spatFDerivBound hm * ‖G‖ * ‖x - y‖ * |(1 : ℝ) - 0| =
+      spatFDerivBound hm * ‖G‖ * ‖x - y‖ := by rw [habs, mul_one]
+  exact (hFTC ▸ hI).trans_eq hC
+
+lemma four_le {m : ℕ} (hm : 4 ≤ m) : 3 ≤ m :=
+  le_trans (by norm_num : 3 ≤ 4) hm
+
+lemma three_le_pred_of_four {m : ℕ} (hm : 4 ≤ m) : 3 ≤ m - 1 := by
+  omega
+
+/-- Operator-norm increment of the joint derivative, for `m ≥ 4`. -/
+lemma norm_jointFDeriv_sub_le {m : ℕ} (hm : 4 ≤ m) (x y : E3) (G K : Hm m) :
+    ‖jointFDeriv (four_le hm) x G - jointFDeriv (four_le hm) y K‖ ≤
+      spatFDerivBound (four_le hm) * ‖G - K‖ +
+        (spatFDerivBound (three_le_pred_of_four hm) *
+          dHBound (four_le hm) * ‖K‖ +
+          spatFDerivBound (four_le hm)) * ‖x - y‖ := by
+  let hm3 := four_le hm
+  let hpred := three_le_pred_of_four hm
+  let C := spatFDerivBound hm3
+  let C' := spatFDerivBound hpred
+  let D := dHBound hm3
+  have hC0 : 0 ≤ C := spatFDerivBound_nonneg hm3
+  have hC'0 : 0 ≤ C' := spatFDerivBound_nonneg hpred
+  have hD0 : 0 ≤ D := dHBound_nonneg hm3
+  have hM0 : 0 ≤ C * ‖G - K‖ + (C' * D * ‖K‖ + C) * ‖x - y‖ :=
+    add_nonneg (mul_nonneg hC0 (norm_nonneg _))
+      (mul_nonneg (add_nonneg (mul_nonneg (mul_nonneg hC'0 hD0) (norm_nonneg _)) hC0)
+        (norm_nonneg _))
+  refine ContinuousLinearMap.opNorm_le_bound _ hM0 ?_
+  intro p
+  rcases p with ⟨v, H⟩
+  have hsplit :
+      jointFDeriv hm3 x G (v, H) - jointFDeriv hm3 y K (v, H) =
+        spatFDeriv hm3 (G - K) x v +
+          (spatFDeriv hm3 K x v - spatFDeriv hm3 K y v) +
+          ((fourierInvBCF (two_le_of_three hm3) H).toFun x -
+            (fourierInvBCF (two_le_of_three hm3) H).toFun y) := by
+    have hadd := spatFDeriv_add hm3 (G - K) K x v
+    have hGK : G - K + K = G := sub_add_cancel G K
+    rw [hGK] at hadd
+    rw [jointFDeriv_apply, jointFDeriv_apply, hadd]
+    abel
+  have h1 : ‖spatFDeriv hm3 (G - K) x v‖ ≤ C * ‖G - K‖ * ‖v‖ :=
+    spatFDeriv_le_bound hm3 (G - K) x v
+  have h3 : ‖(fourierInvBCF (two_le_of_three hm3) H).toFun x -
+      (fourierInvBCF (two_le_of_three hm3) H).toFun y‖ ≤
+      C * ‖H‖ * ‖x - y‖ :=
+    norm_fourierInvBCF_sub_le hm3 H x y
+  have h2 : ‖spatFDeriv hm3 K x v - spatFDeriv hm3 K y v‖ ≤
+      C' * D * ‖K‖ * ‖x - y‖ * ‖v‖ := by
+    refine (norm_spatFDeriv_sub_le hm3 K x y v).trans ?_
+    have hsum :
+        (∑ j : Fin 3,
+          ‖(fourierInvBCF (two_le_pred_of_three hm3)
+              (dH (one_le_of_three hm3) j K)).toFun x -
+            (fourierInvBCF (two_le_pred_of_three hm3)
+              (dH (one_le_of_three hm3) j K)).toFun y‖) ≤
+          C' * D * ‖K‖ * ‖x - y‖ := by
+      have hterm : ∀ j,
+          ‖(fourierInvBCF (two_le_pred_of_three hm3)
+              (dH (one_le_of_three hm3) j K)).toFun x -
+            (fourierInvBCF (two_le_pred_of_three hm3)
+              (dH (one_le_of_three hm3) j K)).toFun y‖ ≤
+            C' * ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1))‖ * ‖K‖ *
+              ‖x - y‖ := by
+        intro j
+        have hlip :=
+          norm_fourierInvBCF_sub_le hpred
+            (dH (one_le_of_three hm3) j K) x y
+        have hop :
+            ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1)) K‖ ≤
+              ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1))‖ * ‖K‖ :=
+          ContinuousLinearMap.le_opNorm _ _
+        refine hlip.trans ?_
+        have := mul_le_mul_of_nonneg_right
+          (mul_le_mul_of_nonneg_left hop hC'0) (norm_nonneg (x - y))
+        simpa [mul_assoc] using this
+      refine (Finset.sum_le_sum fun j _ => hterm j).trans ?_
+      have hfac :
+          (∑ j : Fin 3,
+            C' * ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1))‖ * ‖K‖ *
+              ‖x - y‖) =
+            C' * D * ‖K‖ * ‖x - y‖ := by
+        calc
+          (∑ j : Fin 3,
+              C' * ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1))‖ * ‖K‖ *
+                ‖x - y‖)
+              = C' * (∑ j : Fin 3,
+                  ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1))‖) *
+                (‖K‖ * ‖x - y‖) := by
+            simp only [mul_assoc, ← Finset.mul_sum]
+            congr 1
+            exact (Finset.sum_mul _ _ _).symm
+          _ = C' * D * ‖K‖ * ‖x - y‖ := by
+            simp [D, dHBound, mul_assoc]
+      exact le_of_eq hfac
+    have hmul : ‖v‖ * (C' * D * ‖K‖ * ‖x - y‖) = C' * D * ‖K‖ * ‖x - y‖ * ‖v‖ := by
+      ring
+    exact (mul_le_mul_of_nonneg_left hsum (norm_nonneg v)).trans_eq hmul
+  have hv : ‖v‖ ≤ ‖(v, H)‖ := norm_fst_le (v, H)
+  have hH : ‖H‖ ≤ ‖(v, H)‖ := norm_snd_le (v, H)
+  have h1' : ‖spatFDeriv hm3 (G - K) x v‖ ≤ C * ‖G - K‖ * ‖(v, H)‖ :=
+    h1.trans (mul_le_mul_of_nonneg_left hv (mul_nonneg hC0 (norm_nonneg _)))
+  have h3' :
+      ‖(fourierInvBCF (two_le_of_three hm3) H).toFun x -
+        (fourierInvBCF (two_le_of_three hm3) H).toFun y‖ ≤
+        C * ‖x - y‖ * ‖(v, H)‖ := by
+    have hstep : C * ‖H‖ * ‖x - y‖ ≤ C * ‖(v, H)‖ * ‖x - y‖ :=
+      mul_le_mul_of_nonneg_right
+        (mul_le_mul_of_nonneg_left hH hC0) (norm_nonneg (x - y))
+    have := h3.trans hstep
+    convert this using 1
+    ring
+  have h2'' : ‖spatFDeriv hm3 K x v - spatFDeriv hm3 K y v‖ ≤
+      C' * D * ‖K‖ * ‖x - y‖ * ‖(v, H)‖ :=
+    h2.trans (mul_le_mul_of_nonneg_left hv
+      (mul_nonneg (mul_nonneg (mul_nonneg hC'0 hD0) (norm_nonneg K))
+        (norm_nonneg (x - y))))
+  have hsum :=
+    (norm_add_le _ _).trans (add_le_add ((norm_add_le _ _).trans (add_le_add h1' h2'')) h3')
+  rw [ContinuousLinearMap.sub_apply, hsplit]
+  refine hsum.trans ?_
+  have : C * ‖G - K‖ * ‖(v, H)‖ + C' * D * ‖K‖ * ‖x - y‖ * ‖(v, H)‖ +
+      C * ‖x - y‖ * ‖(v, H)‖ =
+      (C * ‖G - K‖ + (C' * D * ‖K‖ + C) * ‖x - y‖) * ‖(v, H)‖ := by
+    ring
+  exact le_of_eq this
+
+/-- The joint derivative is continuous as a map into operators, for `m ≥ 4`. -/
+lemma continuous_jointFDeriv {m : ℕ} (hm : 4 ≤ m) :
+    Continuous (fun p : E3 × Hm m => jointFDeriv (four_le hm) p.1 p.2) := by
+  refine Metric.continuous_iff.2 ?_
+  intro p ε hε
+  let x0 := p.1
+  let G0 := p.2
+  let C := spatFDerivBound (four_le hm)
+  let C' := spatFDerivBound (three_le_pred_of_four hm)
+  let D := dHBound (four_le hm)
+  let A := C + (C' * D * ‖G0‖ + C)
+  have hA0 : 0 ≤ A :=
+    add_nonneg (spatFDerivBound_nonneg _)
+      (add_nonneg (mul_nonneg (mul_nonneg (spatFDerivBound_nonneg _) (dHBound_nonneg _))
+        (norm_nonneg _)) (spatFDerivBound_nonneg _))
+  have hA1 : 0 < A + 1 := lt_of_lt_of_le zero_lt_one (le_add_of_nonneg_left hA0)
+  refine ⟨ε / (A + 1), div_pos hε hA1, ?_⟩
+  intro q hq
+  have hdist : ‖q - p‖ < ε / (A + 1) := by
+    simpa [dist_eq_norm] using hq
+  have hx : ‖q.1 - x0‖ ≤ ‖q - p‖ := by
+    change ‖q.1 - p.1‖ ≤ ‖q - p‖
+    rw [Prod.norm_def]
+    exact le_max_left _ _
+  have hG : ‖q.2 - G0‖ ≤ ‖q - p‖ := by
+    change ‖q.2 - p.2‖ ≤ ‖q - p‖
+    rw [Prod.norm_def]
+    exact le_max_right _ _
+  have hle := norm_jointFDeriv_sub_le hm q.1 x0 q.2 G0
+  have hbound :
+      ‖jointFDeriv (four_le hm) q.1 q.2 - jointFDeriv (four_le hm) x0 G0‖ ≤
+        A * ‖q - p‖ := by
+    refine hle.trans ?_
+    have : C * ‖q.2 - G0‖ + (C' * D * ‖G0‖ + C) * ‖q.1 - x0‖ ≤
+        C * ‖q - p‖ + (C' * D * ‖G0‖ + C) * ‖q - p‖ :=
+      add_le_add
+        (mul_le_mul_of_nonneg_left hG (spatFDerivBound_nonneg _))
+        (mul_le_mul_of_nonneg_left hx
+          (add_nonneg (mul_nonneg (mul_nonneg (spatFDerivBound_nonneg _) (dHBound_nonneg _))
+            (norm_nonneg _)) (spatFDerivBound_nonneg _)))
+    simpa [A, mul_add, add_mul] using this
+  have hlt : A * ‖q - p‖ < A * (ε / (A + 1)) ∨ A = 0 := by
+    by_cases hA : A = 0
+    · exact Or.inr hA
+    · exact Or.inl (mul_lt_mul_of_pos_left hdist (lt_of_le_of_ne hA0 (Ne.symm hA)))
+  have hfinal : A * ‖q - p‖ < ε := by
+    cases hlt with
+    | inl hlt =>
+      have : A * (ε / (A + 1)) = (A / (A + 1)) * ε := by field_simp
+      have hfrac : A / (A + 1) < 1 :=
+        (div_lt_one hA1).2 (lt_add_one A)
+      exact hlt.trans_le (by rw [this]; exact (mul_le_of_le_one_left (le_of_lt hε)
+        (le_of_lt hfrac)))
+    | inr hA =>
+      simp [hA, hε]
+  have : dist (jointFDeriv (four_le hm) q.1 q.2)
+      (jointFDeriv (four_le hm) p.1 p.2) < ε := by
+    simpa [dist_eq_norm, x0, G0] using (hbound.trans_lt hfinal)
+  exact this
+
+lemma fderiv_uncurryFourierInvBCF {m : ℕ} (hm : 3 ≤ m) (x : E3) (G : Hm m) :
+    fderiv ℝ (uncurryFourierInvBCF (two_le_of_three hm)) (x, G) =
+      jointFDeriv hm x G :=
+  (hasFDerivAt_uncurryFourierInvBCF hm x G).fderiv
+
+lemma differentiable_uncurryFourierInvBCF {m : ℕ} (hm : 3 ≤ m) :
+    Differentiable ℝ (uncurryFourierInvBCF (two_le_of_three hm)) :=
+  fun p => (hasFDerivAt_uncurryFourierInvBCF hm p.1 p.2).differentiableAt
+
+/-- The uncurried inverse Fourier transform is jointly `C¹` on `ℝ³ × Ĥ^m` for `m ≥ 4`. -/
+theorem contDiff_one_uncurryFourierInvBCF {m : ℕ} (hm : 4 ≤ m) :
+    ContDiff ℝ 1 (uncurryFourierInvBCF (two_le_of_three (four_le hm))) := by
+  refine contDiff_one_iff_fderiv.2 ⟨differentiable_uncurryFourierInvBCF (four_le hm), ?_⟩
+  have hfun :
+      fderiv ℝ (uncurryFourierInvBCF (two_le_of_three (four_le hm))) =
+        fun p => jointFDeriv (four_le hm) p.1 p.2 :=
+    funext fun p => fderiv_uncurryFourierInvBCF (four_le hm) p.1 p.2
+  exact hfun ▸ continuous_jointFDeriv hm
+
 #print axioms FourierInvFDeriv.spatFDeriv_apply
 #print axioms FourierInvFDeriv.coeFn_sum_dH
 #print axioms FourierInvFDeriv.fourierInv_sum_smul
@@ -781,5 +1042,9 @@ lemma hasFDerivAt_uncurryFourierInvBCF {m : ℕ} (hm : 3 ≤ m) (x : E3) (G : Hm
 #print axioms FourierInvFDeriv.norm_spatFDeriv_sub_le
 #print axioms FourierInvFDeriv.spatial_remainder_eq_integral
 #print axioms FourierInvFDeriv.hasFDerivAt_uncurryFourierInvBCF
+#print axioms FourierInvFDeriv.norm_fourierInvBCF_sub_le
+#print axioms FourierInvFDeriv.norm_jointFDeriv_sub_le
+#print axioms FourierInvFDeriv.continuous_jointFDeriv
+#print axioms FourierInvFDeriv.contDiff_one_uncurryFourierInvBCF
 
 end FourierInvFDeriv
