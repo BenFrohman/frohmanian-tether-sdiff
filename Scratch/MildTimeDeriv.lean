@@ -314,6 +314,35 @@ theorem contDiffOn_one_inclExt
     rw [hempty]
     exact contDiffOn_empty
 
+/-- The Laplacian commutes with the heat semigroup, as Fourier multipliers. -/
+theorem lapH_heatH (m : ℕ) (τ : ℝ) (G : Hm (m + 2)) :
+    lapH m (heatH (m + 2) τ G) = heatH m τ (lapH m G) := by
+  refine Lp.ext ?_
+  filter_upwards [coeFn_lapH m (heatH (m + 2) τ G),
+    coeFn_heatH_ae_low m τ G,
+    coeFn_heatH τ (lapH m G),
+    coeFn_lapH m G] with ξ h1 h2 h3 h4
+  rw [h1, h2, h3, h4, smul_smul, smul_smul, mul_comm]
+
+/-- The time derivative of the included mild path is `ν Δu - N(u)` in `Ĥ^m`. -/
+theorem mildSDeriv_eq_lap
+    {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm2 : m + 2 ≤ k)
+    {T ν : ℝ} (hν : 0 < ν) (hT : 0 ≤ T)
+    {u₀ : Hm (k + 1)} {u : XTs k T} (hu : IsMildS hk hT ν u₀ u)
+    {t : ℝ} (ht : t ∈ Icc (0 : ℝ) T) :
+    mildSDeriv hk hm2 hν hT u₀ u t =
+      ν • lapH m (inclExt (add_two_le_succ hm2) hT u t) -
+        incl (incl_le_add_two m) (incl hm2 (nsnExt hk hT u t)) := by
+  have heq :
+      inclExt (add_two_le_succ hm2) hT u t =
+        heatH (m + 2) (ν * t) (incl (add_two_le_succ hm2) u₀) -
+          duhνSame (m + 2) ν (fun s => incl hm2 (nsnExt hk hT u s)) t := by
+    rw [inclExt_of_mem (add_two_le_succ hm2) hT u ht]
+    exact mildS_eq_duhνSame hk hm2 hν hT hu ht
+  unfold mildSDeriv
+  rw [heq, map_sub, lapH_heatH, smul_sub]
+  abel
+
 #print axioms MildTimeDeriv.incl_duhHigh_to_duhνSame
 #print axioms MildTimeDeriv.mildS_eq_duhνSame
 #print axioms MildTimeDeriv.hasDerivWithinAt_mildS_incl
@@ -321,5 +350,7 @@ theorem contDiffOn_one_inclExt
 #print axioms MildTimeDeriv.hasDerivAt_mildS_incl
 #print axioms MildTimeDeriv.hasDerivWithinAt_mildS_incl_Ico
 #print axioms MildTimeDeriv.contDiffOn_one_inclExt
+#print axioms MildTimeDeriv.lapH_heatH
+#print axioms MildTimeDeriv.mildSDeriv_eq_lap
 
 end MildTimeDeriv

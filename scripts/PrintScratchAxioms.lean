@@ -68,6 +68,8 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms MildTimeDeriv.hasDerivAt_mildS_incl
 #print axioms MildTimeDeriv.hasDerivWithinAt_mildS_incl_Ico
 #print axioms MildTimeDeriv.contDiffOn_one_inclExt
+#print axioms MildTimeDeriv.lapH_heatH
+#print axioms MildTimeDeriv.mildSDeriv_eq_lap
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -110,7 +112,9 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``MildTimeDeriv.continuous_mildSDeriv,
     ``MildTimeDeriv.hasDerivAt_mildS_incl,
     ``MildTimeDeriv.hasDerivWithinAt_mildS_incl_Ico,
-    ``MildTimeDeriv.contDiffOn_one_inclExt]
+    ``MildTimeDeriv.contDiffOn_one_inclExt,
+    ``MildTimeDeriv.lapH_heatH,
+    ``MildTimeDeriv.mildSDeriv_eq_lap]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
