@@ -4,6 +4,7 @@ import Scratch.ProductHm
 import Scratch.NonlinearHm
 import Scratch.InverseSobolev
 import Scratch.FeffermanSchwartz
+import Scratch.PersistenceHm
 
 open Lean Elab Command
 
@@ -25,10 +26,14 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms NonlinearHm.norm_NSN_sub_le
 #print axioms InverseSobolev.contDiff_fourierInv_of_all_energy
 #print axioms FeffermanSchwartz.fourierInv_fourier_cplx_of_fefferman
+#print axioms PersistenceHm.persist_on_minTime
+#print axioms PersistenceHm.apriori_double
+#print axioms PersistenceHm.persist_chunk_bound
+#print axioms PersistenceHm.persist_on_H3_time
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
-  -- Fail the job if any of these seven depends on an axiom outside the standard three
+  -- Fail the job if any of these headline theorems depends on an axiom outside the standard three
   -- (this includes `sorryAx` and `Lean.ofReduceBool`).
   let targets : List Name := [
     ``LogBoundLocal.bkmLogInequality,
@@ -37,7 +42,10 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``ProductHm.norm_mulF_le,
     ``NonlinearHm.norm_NSN_le,
     ``InverseSobolev.contDiff_fourierInv_of_all_energy,
-    ``FeffermanSchwartz.fourierInv_fourier_cplx_of_fefferman]
+    ``FeffermanSchwartz.fourierInv_fourier_cplx_of_fefferman,
+    ``PersistenceHm.persist_on_minTime,
+    ``PersistenceHm.persist_chunk_bound,
+    ``PersistenceHm.persist_on_H3_time]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
