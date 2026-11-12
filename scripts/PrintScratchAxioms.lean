@@ -13,6 +13,8 @@ import Scratch.IBPWholeSpace
 import Scratch.DuhamelDeriv
 import Scratch.MildTimeDeriv
 import Scratch.NonlinearSmooth
+import Scratch.InclNSN
+import Scratch.MildPathSmooth
 
 open Lean Elab Command
 
@@ -79,6 +81,11 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms NonlinearSmooth.contDiff_divTensor
 #print axioms NonlinearSmooth.contDiff_NSN
 #print axioms NonlinearSmooth.contDiff_NSNsucc
+#print axioms InclNSN.incl_mulF_of_le
+#print axioms InclNSN.incl_dH_of_le
+#print axioms InclNSN.incl_NSN_of_le
+#print axioms MildPathSmooth.coeFn_NSNsucc
+#print axioms MildPathSmooth.incl_NSNsucc
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -131,7 +138,12 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``NonlinearSmooth.contDiff_mulF_quad,
     ``NonlinearSmooth.contDiff_divTensor,
     ``NonlinearSmooth.contDiff_NSN,
-    ``NonlinearSmooth.contDiff_NSNsucc]
+    ``NonlinearSmooth.contDiff_NSNsucc,
+    ``InclNSN.incl_mulF_of_le,
+    ``InclNSN.incl_dH_of_le,
+    ``InclNSN.incl_NSN_of_le,
+    ``MildPathSmooth.coeFn_NSNsucc,
+    ``MildPathSmooth.incl_NSNsucc]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
