@@ -10,6 +10,7 @@ import Scratch.FeffermanMild
 import Scratch.KatoPonceCommutator
 import Scratch.HeatDeriv
 import Scratch.IBPWholeSpace
+import Scratch.DuhamelDeriv
 
 open Lean Elab Command
 
@@ -51,6 +52,9 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms HeatDeriv.hasDerivWithinAt_heatH_visc
 #print axioms IBPWholeSpace.integral_partial_mul
 #print axioms IBPWholeSpace.integral_partial_inner
+#print axioms DuhamelDeriv.duh_cocycle
+#print axioms DuhamelDeriv.tendsto_duhνSame_avg
+#print axioms DuhamelDeriv.hasDerivWithinAt_duhνSame_Ici
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -78,7 +82,10 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``HeatDeriv.hasDerivWithinAt_heatH,
     ``HeatDeriv.hasDerivWithinAt_heatH_visc,
     ``IBPWholeSpace.integral_partial_mul,
-    ``IBPWholeSpace.integral_partial_inner]
+    ``IBPWholeSpace.integral_partial_inner,
+    ``DuhamelDeriv.duh_cocycle,
+    ``DuhamelDeriv.tendsto_duhνSame_avg,
+    ``DuhamelDeriv.hasDerivWithinAt_duhνSame_Ici]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
