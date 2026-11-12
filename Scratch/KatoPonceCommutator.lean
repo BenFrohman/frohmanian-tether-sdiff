@@ -46,7 +46,7 @@ Nothing in this file is a `sorry`, a custom axiom, or an `opaque` trick.
 -/
 
 open MeasureTheory hiding volume
-open NavierStokes3D FrohmanianTether Set
+open NavierStokes3D FrohmanianTether RepairedTether Set
 open scoped ContDiff InnerProductSpace
 
 set_option autoImplicit false
@@ -3418,6 +3418,26 @@ theorem h3CommutatorEstimate : H3CommutatorEstimate := by
     nlinarith [hsum0, hsum1, hsum2, hsum3, hC, hgs0, hE0]
   exact htri.trans hparts
 
+/-- `katoPonce_h3_energy` with `H3CommutatorEstimate` discharged
+by `h3CommutatorEstimate`. The remaining hypotheses are viscosity
+nonnegativity, a Fefferman-class solution, finite H³ energy on `Ico 0 T`,
+the H³ energy right-derivative formula, partial commutation, and
+vanishing IBP flux. -/
+theorem katoPonce_h3_energy' :
+    ∃ Ck : ℝ, 0 ≤ Ck ∧
+      ∀ (ν T : ℝ) (u₀ : VelocityField) (u : TimeDependentVelocity)
+        (p : TimeDependentPressure),
+        0 ≤ ν →
+        IsFeffermanSolutionOn ν T u₀ u p →
+        (∀ t ∈ Ico (0 : ℝ) T, sobolevEnergy 3 (u t) < ⊤) →
+        H3EnergyRightDerivativeFormula T u →
+        (∀ t ∈ Ico (0 : ℝ) T, H3PartialCommutation (u t) (p t)) →
+        (∀ t ∈ Ico (0 : ℝ) T, H3IBPVanishingFlux (u t) (p t)) →
+        ∀ s ∈ Ico (0 : ℝ) T,
+          ∃ d : ℝ, HasDerivWithinAt (fun t => hsSq 3 (u t)) d (Ici s) s ∧
+            d ≤ Ck * gradSup (u s) * hsSq 3 (u s) :=
+  katoPonce_h3_energy h3CommutatorEstimate
+
 #print axioms KatoPonceCommutator.convectiveCommutator_order_one
 #print axioms KatoPonceCommutator.norm_convectiveCommutator_order_one
 #print axioms KatoPonceCommutator.abs_integral_commutator_order_one
@@ -3428,5 +3448,6 @@ theorem h3CommutatorEstimate : H3CommutatorEstimate := by
 #print axioms KatoPonceCommutator.abs_integral_commutator_order_two
 #print axioms KatoPonceCommutator.abs_integral_commutator_order_three
 #print axioms KatoPonceCommutator.h3CommutatorEstimate
+#print axioms KatoPonceCommutator.katoPonce_h3_energy'
 
 end KatoPonceCommutator

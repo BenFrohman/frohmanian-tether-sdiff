@@ -60,6 +60,7 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms KatoPonceCommutator.abs_integral_commutator_order_two
 #print axioms KatoPonceCommutator.abs_integral_commutator_order_three
 #print axioms KatoPonceCommutator.h3CommutatorEstimate
+#print axioms KatoPonceCommutator.katoPonce_h3_energy'
 #print axioms HeatDeriv.lapH
 #print axioms HeatDeriv.hasDerivWithinAt_gauss
 #print axioms HeatDeriv.hasDerivWithinAt_heatH
@@ -133,6 +134,7 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``KatoPonceCommutator.abs_integral_commutator_order_two,
     ``KatoPonceCommutator.abs_integral_commutator_order_three,
     ``KatoPonceCommutator.h3CommutatorEstimate,
+    ``KatoPonceCommutator.katoPonce_h3_energy',
     ``HeatDeriv.lapH,
     ``HeatDeriv.hasDerivWithinAt_heatH,
     ``HeatDeriv.hasDerivWithinAt_heatH_visc,
