@@ -7,6 +7,7 @@ import Scratch.FeffermanSchwartz
 import Scratch.PersistenceHm
 import Scratch.KatoPonce
 import Scratch.FeffermanMild
+import Scratch.KatoPonceCommutator
 
 open Lean Elab Command
 
@@ -40,6 +41,8 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms FeffermanMild.inclMap_persistPath_unique
 #print axioms FeffermanMild.physicalMild_zero
 #print axioms FeffermanMild.contDiff_physicalMild
+#print axioms KatoPonceCommutator.convectiveCommutator_order_one
+#print axioms KatoPonceCommutator.abs_integral_commutator_order_one
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -60,7 +63,9 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``FeffermanMild.physicalOfHm_toHmFeff,
     ``FeffermanMild.persist_fefferman,
     ``FeffermanMild.physicalMild_zero,
-    ``FeffermanMild.contDiff_physicalMild]
+    ``FeffermanMild.contDiff_physicalMild,
+    ``KatoPonceCommutator.convectiveCommutator_order_one,
+    ``KatoPonceCommutator.abs_integral_commutator_order_one]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
