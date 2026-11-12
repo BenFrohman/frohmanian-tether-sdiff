@@ -1051,6 +1051,260 @@ theorem contDiffOn_uncurry_clm_fourierInvBCF_one {m : ℕ} (hm : 4 ≤ m)
       (univ ×ˢ Ico 0 T) :=
   L.contDiff.comp_contDiffOn (contDiffOn_uncurryFourierInvBCF_path hm hγ)
 
+/-- Evaluation of the inverse Fourier transform in the representative, as a
+map from the spatial variable into operators `Ĥ^m →L ℂ³`. -/
+def evMap {m : ℕ} (hm : 2 ≤ m) (x : E3) : Hm m →L[ℝ] V :=
+  (evalCLM (𝕜 := ℝ) x).comp
+    (isBoundedLinearMap_fourierInvBCF hm).toContinuousLinearMap
+
+lemma evMap_apply {m : ℕ} (hm : 2 ≤ m) (x : E3) (H : Hm m) :
+    evMap hm x H = uncurryFourierInvBCF hm (x, H) :=
+  rfl
+
+lemma spatFDeriv_smul {m : ℕ} (hm : 3 ≤ m) (c : ℝ) (G : Hm m) (x v : E3) :
+    spatFDeriv hm (c • G) x v = c • spatFDeriv hm G x v := by
+  simp only [spatFDeriv_apply]
+  have hreal : ∀ j, dH (one_le_of_three hm) j (c • G) =
+      c • dH (one_le_of_three hm) j G := by
+    intro j
+    have hcoe : (c • G : Hm m) = (c : ℂ) • G := real_smul_eq_coe_smul c G
+    have hcoe' : (c • dH (one_le_of_three hm) j G : Hm (m - 1)) =
+        (c : ℂ) • dH (one_le_of_three hm) j G :=
+      real_smul_eq_coe_smul c _
+    have hlin : dH (one_le_of_three hm) j ((c : ℂ) • G) =
+        (c : ℂ) • dH (one_le_of_three hm) j G :=
+      map_smul _ _ _
+    exact (congrArg (dH (one_le_of_three hm) j) hcoe).trans (hlin.trans hcoe'.symm)
+  have hsmul := (isBoundedLinearMap_fourierInvBCF (two_le_pred_of_three hm)).map_smul
+  calc
+    ∑ j : Fin 3, v j •
+          (fourierInvBCF (two_le_pred_of_three hm)
+            (dH (one_le_of_three hm) j (c • G)) x)
+        = ∑ j : Fin 3, v j •
+            (fourierInvBCF (two_le_pred_of_three hm)
+              (c • dH (one_le_of_three hm) j G) x) := by
+          refine Finset.sum_congr rfl fun j _ => ?_
+          rw [hreal j]
+    _ = ∑ j : Fin 3, v j •
+          (c • fourierInvBCF (two_le_pred_of_three hm)
+            (dH (one_le_of_three hm) j G) x) := by
+          refine Finset.sum_congr rfl fun j _ => ?_
+          rw [hsmul, BoundedContinuousFunction.smul_apply]; rfl
+    _ = ∑ j : Fin 3, c •
+          (v j • fourierInvBCF (two_le_pred_of_three hm)
+            (dH (one_le_of_three hm) j G) x) :=
+          Finset.sum_congr rfl fun j _ =>
+            smul_comm (v j) c
+              (fourierInvBCF (two_le_pred_of_three hm)
+                (dH (one_le_of_three hm) j G) x)
+    _ = c • ∑ j : Fin 3, v j •
+          fourierInvBCF (two_le_pred_of_three hm)
+            (dH (one_le_of_three hm) j G) x :=
+          (Finset.smul_sum).symm
+
+/-- `G ↦ spatFDeriv G x` is a bounded linear map into operators on `ℝ³`. -/
+lemma isBoundedLinearMap_spatFDeriv {m : ℕ} (hm : 3 ≤ m) (x : E3) :
+    IsBoundedLinearMap ℝ (fun G : Hm m => spatFDeriv hm G x) where
+  map_add := by
+    intro G H
+    exact ContinuousLinearMap.ext fun v => spatFDeriv_add hm G H x v
+  map_smul := by
+    intro c G
+    exact ContinuousLinearMap.ext fun v => spatFDeriv_smul hm c G x v
+  bound := by
+    refine ⟨max (spatFDerivBound hm) 1,
+      lt_of_lt_of_le zero_lt_one (le_max_right _ _), fun G => ?_⟩
+    have h : ‖spatFDeriv hm G x‖ ≤ spatFDerivBound hm * ‖G‖ := by
+      refine ContinuousLinearMap.opNorm_le_bound _ (mul_nonneg (spatFDerivBound_nonneg hm)
+        (norm_nonneg G)) ?_
+      intro v
+      have := spatFDeriv_le_bound hm G x v
+      simpa [mul_assoc] using this
+    exact h.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg G))
+
+/-- Operator-norm Lipschitz estimate for `spatFDeriv` in the spatial variable,
+for `m ≥ 4`. -/
+lemma norm_spatFDeriv_sub_op {m : ℕ} (hm : 4 ≤ m) (H : Hm m) (x y : E3) :
+    ‖spatFDeriv (four_le hm) H x - spatFDeriv (four_le hm) H y‖ ≤
+      spatFDerivBound (three_le_pred_of_four hm) *
+        dHBound (four_le hm) * ‖H‖ * ‖x - y‖ := by
+  let hm3 := four_le hm
+  let hpred := three_le_pred_of_four hm
+  let C' := spatFDerivBound hpred
+  let D := dHBound hm3
+  have hC'0 : 0 ≤ C' := spatFDerivBound_nonneg hpred
+  have hM0 : 0 ≤ C' * D * ‖H‖ * ‖x - y‖ :=
+    mul_nonneg (mul_nonneg (mul_nonneg hC'0 (dHBound_nonneg hm3)) (norm_nonneg H))
+      (norm_nonneg (x - y))
+  refine ContinuousLinearMap.opNorm_le_bound _ hM0 ?_
+  intro v
+  refine (norm_spatFDeriv_sub_le hm3 H x y v).trans ?_
+  have hterm : ∀ j,
+      ‖(fourierInvBCF (two_le_pred_of_three hm3)
+          (dH (one_le_of_three hm3) j H)).toFun x -
+        (fourierInvBCF (two_le_pred_of_three hm3)
+          (dH (one_le_of_three hm3) j H)).toFun y‖ ≤
+        C' * ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1))‖ * ‖H‖ *
+          ‖x - y‖ := by
+    intro j
+    have hlip := norm_fourierInvBCF_sub_le hpred (dH (one_le_of_three hm3) j H) x y
+    have hop :
+        ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1)) H‖ ≤
+          ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1))‖ * ‖H‖ :=
+      ContinuousLinearMap.le_opNorm _ _
+    refine hlip.trans ?_
+    have := mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_left hop hC'0) (norm_nonneg (x - y))
+    simpa [mul_assoc] using this
+  have hsum :
+      (∑ j : Fin 3,
+        ‖(fourierInvBCF (two_le_pred_of_three hm3)
+            (dH (one_le_of_three hm3) j H)).toFun x -
+          (fourierInvBCF (two_le_pred_of_three hm3)
+            (dH (one_le_of_three hm3) j H)).toFun y‖) ≤
+        C' * D * ‖H‖ * ‖x - y‖ := by
+    have hsum0 :=
+      Finset.sum_le_sum fun j (_ : j ∈ (Finset.univ : Finset (Fin 3))) => hterm j
+    refine hsum0.trans (le_of_eq ?_)
+    calc
+      (∑ j : Fin 3,
+          C' * ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1))‖ * ‖H‖ *
+            ‖x - y‖)
+          = C' * (∑ j : Fin 3,
+              ‖(dH (one_le_of_three hm3) j : Hm m →L[ℂ] Hm (m - 1))‖) *
+            (‖H‖ * ‖x - y‖) := by
+        simp only [mul_assoc, ← Finset.mul_sum]
+        congr 1
+        exact (Finset.sum_mul _ _ _).symm
+      _ = C' * D * ‖H‖ * ‖x - y‖ := by
+        simp [D, dHBound, mul_assoc]
+  have hmul : ‖v‖ * (C' * D * ‖H‖ * ‖x - y‖) = C' * D * ‖H‖ * ‖x - y‖ * ‖v‖ := by
+    ring
+  exact (mul_le_mul_of_nonneg_left hsum (norm_nonneg v)).trans_eq hmul
+
+/-- The candidate derivative of `evMap` at `x`. -/
+def evFDeriv {m : ℕ} (hm : 3 ≤ m) (x : E3) : E3 →L[ℝ] (Hm m →L[ℝ] V) :=
+  (isBoundedLinearMap_spatFDeriv hm x).toContinuousLinearMap.flip
+
+lemma evFDeriv_apply {m : ℕ} (hm : 3 ≤ m) (x ξ : E3) (H : Hm m) :
+    evFDeriv hm x ξ H = spatFDeriv hm H x ξ :=
+  rfl
+
+lemma norm_spatFDerivDiff_le {m : ℕ} (hm : 4 ≤ m) (H : Hm m) (x ξ : E3) {t : ℝ}
+    (ht : t ∈ Set.uIoc (0 : ℝ) 1) :
+    ‖spatFDerivDiff (four_le hm) H x ξ t‖ ≤
+      spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm) *
+        ‖H‖ * ‖ξ‖ * ‖ξ‖ := by
+  have hu : Set.uIoc (0 : ℝ) 1 = Ioc 0 1 := Set.uIoc_of_le (by norm_num)
+  have htI : t ∈ Icc (0 : ℝ) 1 :=
+    Ioc_subset_Icc_self (by rwa [hu] at ht)
+  have htabs : |t| ≤ 1 :=
+    abs_le.2 ⟨le_trans (by norm_num : (-1 : ℝ) ≤ 0) htI.1, htI.2⟩
+  unfold spatFDerivDiff
+  have hop :=
+    ContinuousLinearMap.le_opNorm
+      (spatFDeriv (four_le hm) H (x + t • ξ) - spatFDeriv (four_le hm) H x) ξ
+  have hsub := norm_spatFDeriv_sub_op hm H (x + t • ξ) x
+  have hC'0 : 0 ≤ spatFDerivBound (three_le_pred_of_four hm) :=
+    spatFDerivBound_nonneg _
+  have hD0 : 0 ≤ dHBound (four_le hm) := dHBound_nonneg (four_le hm)
+  have h1 :
+      ‖spatFDeriv (four_le hm) H (x + t • ξ) ξ - spatFDeriv (four_le hm) H x ξ‖ ≤
+        spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm) *
+          ‖H‖ * (|t| * ‖ξ‖) * ‖ξ‖ := by
+    have h0 := hop.trans (mul_le_mul_of_nonneg_right hsub (norm_nonneg ξ))
+    have hx : (x + t • ξ) - x = t • ξ := add_sub_cancel_left _ _
+    have hts : ‖t • ξ‖ = |t| * ‖ξ‖ := by
+      rw [norm_smul, Real.norm_eq_abs]
+    simpa [hx, hts, mul_assoc] using h0
+  have h2 :
+      spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm) *
+          ‖H‖ * (|t| * ‖ξ‖) * ‖ξ‖ ≤
+        spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm) *
+          ‖H‖ * (1 * ‖ξ‖) * ‖ξ‖ := by
+    have htsle : |t| * ‖ξ‖ ≤ 1 * ‖ξ‖ :=
+      mul_le_mul_of_nonneg_right htabs (norm_nonneg ξ)
+    have hnn : 0 ≤ spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm) *
+        ‖H‖ :=
+      mul_nonneg (mul_nonneg hC'0 hD0) (norm_nonneg H)
+    have hmid := mul_le_mul_of_nonneg_left htsle hnn
+    exact mul_le_mul_of_nonneg_right hmid (norm_nonneg ξ)
+  have h3 :
+      spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm) *
+          ‖H‖ * (1 * ‖ξ‖) * ‖ξ‖ =
+        spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm) *
+          ‖H‖ * ‖ξ‖ * ‖ξ‖ := by
+    ring
+  exact h1.trans (h2.trans (le_of_eq h3))
+
+/-- `evMap` is Fréchet differentiable for `m ≥ 4`, with derivative `evFDeriv`. -/
+lemma hasFDerivAt_evMap {m : ℕ} (hm : 4 ≤ m) (x : E3) :
+    HasFDerivAt (evMap (two_le_of_three (four_le hm)))
+      (evFDeriv (four_le hm) x) x := by
+  rw [hasFDerivAt_iff_isLittleO_nhds_zero, isLittleO_iff]
+  intro ε hε
+  let hm3 := four_le hm
+  let A := spatFDerivBound (three_le_pred_of_four hm) * dHBound hm3
+  have hA0 : 0 ≤ A :=
+    mul_nonneg (spatFDerivBound_nonneg _) (dHBound_nonneg hm3)
+  have hA1 : 0 < A + 1 := lt_of_lt_of_le zero_lt_one (le_add_of_nonneg_left hA0)
+  let rad := ε / (A + 1)
+  have hrad : 0 < rad := div_pos hε hA1
+  refine Metric.eventually_nhds_iff.2 ⟨rad, hrad, ?_⟩
+  intro ξ hξ
+  have hξn : ‖ξ‖ < rad := by
+    simpa [dist_eq_norm, sub_zero] using hξ
+  have hbound : ∀ H : Hm m,
+      ‖evMap (two_le_of_three hm3) (x + ξ) H -
+        evMap (two_le_of_three hm3) x H -
+        evFDeriv hm3 x ξ H‖ ≤
+        A * ‖ξ‖ * ‖ξ‖ * ‖H‖ := by
+    intro H
+    have heq := spatial_remainder_eq_integral hm3 H x ξ
+    have hlip : ∀ t ∈ Set.uIoc (0 : ℝ) 1,
+        ‖spatFDerivDiff hm3 H x ξ t‖ ≤ A * ‖H‖ * ‖ξ‖ * ‖ξ‖ := by
+      intro t ht
+      have := norm_spatFDerivDiff_le hm H x ξ ht
+      simpa [A, mul_assoc, mul_left_comm, mul_comm] using this
+    have hI := intervalIntegral.norm_integral_le_of_norm_le_const hlip
+    have habs : A * ‖H‖ * ‖ξ‖ * ‖ξ‖ * |(1 : ℝ) - 0| = A * ‖ξ‖ * ‖ξ‖ * ‖H‖ := by
+      norm_num
+      ring
+    exact (heq ▸ hI).trans (le_of_eq habs)
+  have hop : ‖evMap (two_le_of_three hm3) (x + ξ) -
+      evMap (two_le_of_three hm3) x -
+      evFDeriv hm3 x ξ‖ ≤ A * ‖ξ‖ * ‖ξ‖ := by
+    refine ContinuousLinearMap.opNorm_le_bound _
+      (mul_nonneg (mul_nonneg hA0 (norm_nonneg ξ)) (norm_nonneg ξ)) ?_
+    intro H
+    have := hbound H
+    simpa [ContinuousLinearMap.sub_apply] using this
+  have hfinal : A * ‖ξ‖ * ‖ξ‖ ≤ ε * ‖ξ‖ := by
+    by_cases h0 : ξ = 0
+    · simp [h0]
+    · have : A * ‖ξ‖ ≤ A * rad :=
+        mul_le_mul_of_nonneg_left (le_of_lt hξn) hA0
+      have hstep : A * ‖ξ‖ * ‖ξ‖ ≤ (A * rad) * ‖ξ‖ :=
+        mul_le_mul_of_nonneg_right this (norm_nonneg ξ)
+      refine hstep.trans ?_
+      have : A * rad * ‖ξ‖ = (A / (A + 1)) * ε * ‖ξ‖ := by
+        unfold rad
+        field_simp
+      rw [this]
+      exact mul_le_mul_of_nonneg_right
+        (mul_le_of_le_one_left (le_of_lt hε)
+          ((div_le_one hA1).2 (le_add_of_nonneg_right zero_le_one)))
+        (norm_nonneg ξ)
+  exact hop.trans hfinal
+
+lemma fderiv_evMap {m : ℕ} (hm : 4 ≤ m) (x : E3) :
+    fderiv ℝ (evMap (two_le_of_three (four_le hm))) x = evFDeriv (four_le hm) x :=
+  (hasFDerivAt_evMap hm x).fderiv
+
+lemma differentiable_evMap {m : ℕ} (hm : 4 ≤ m) :
+    Differentiable ℝ (evMap (two_le_of_three (four_le hm))) :=
+  fun x => (hasFDerivAt_evMap hm x).differentiableAt
+
 #print axioms FourierInvFDeriv.spatFDeriv_apply
 #print axioms FourierInvFDeriv.coeFn_sum_dH
 #print axioms FourierInvFDeriv.fourierInv_sum_smul
@@ -1076,5 +1330,11 @@ theorem contDiffOn_uncurry_clm_fourierInvBCF_one {m : ℕ} (hm : 4 ≤ m)
 #print axioms FourierInvFDeriv.contDiff_one_uncurryFourierInvBCF
 #print axioms FourierInvFDeriv.contDiffOn_uncurryFourierInvBCF_path
 #print axioms FourierInvFDeriv.contDiffOn_uncurry_clm_fourierInvBCF_one
+#print axioms FourierInvFDeriv.spatFDeriv_smul
+#print axioms FourierInvFDeriv.isBoundedLinearMap_spatFDeriv
+#print axioms FourierInvFDeriv.norm_spatFDeriv_sub_op
+#print axioms FourierInvFDeriv.hasFDerivAt_evMap
+#print axioms FourierInvFDeriv.fderiv_evMap
+#print axioms FourierInvFDeriv.differentiable_evMap
 
 end FourierInvFDeriv
