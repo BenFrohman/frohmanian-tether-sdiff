@@ -29,16 +29,18 @@ Direct IBP on `φ` itself is not available: `|∇φ|⁴` is not a priori
 integrable from finite H² energy plus a sup bound. The order-zero
 commutator is already `convectiveCommutator_zero` in `KatoPonce`.
 
-What remains for `H3CommutatorEstimate` itself: the Leibniz expansion
-and Hölder bounds for `|α| = 2, 3` (the `|α| = 3`, `|β| = 2` term is the
-one that needs GN), and the assembly. A Fourier-side product estimate
+`H3GagliardoNirenberg` is proved above, as is the `|α| = 2` Leibniz
+expansion and its `L²` pairing bound. The `|α| = 3` Leibniz expansion,
+Hölder/`H3GagliardoNirenberg` bound (needed for the `|β| = 2` terms),
+and the assembly of `H3CommutatorEstimate` are carried out below. A Fourier-side product estimate
 would bound by `‖û‖` norms, which do not imply the `‖∇u‖_∞` form, so it
 is not used here. (`GradBound` already gives `‖∇u‖_∞ ≲ ‖u‖_{H³}` and
 `BddAbove`, which we do use.)
 
 The statement of `H3CommutatorEstimate` is not weakened; it remains a
-named `Prop` in `KatoPonce.lean`, and `katoPonce_h3_energy` still takes
-it as a hypothesis.
+named `Prop` in `KatoPonce.lean`. Once `h3CommutatorEstimate` is proved,
+a corollary in this file discharges that hypothesis from
+`katoPonce_h3_energy`.
 
 Nothing in this file is a `sorry`, a custom axiom, or an `opaque` trick.
 -/
@@ -1851,6 +1853,1571 @@ theorem h3GagliardoNirenberg : H3GagliardoNirenberg := by
     _ ≤ 9 * ∑ k : Fin 3, ∑ j : Fin 3, C1 * gradSup u ^ 2 * hsSq 3 u := hsumkj
     _ = C * gradSup u ^ 2 * hsSq 3 u := hcount
 
+/-! ## Leibniz expansion of the convective commutator at order 2 and 3 -/
+
+lemma mul_le_sq_add_sq (a b : ℝ) : a * b ≤ a ^ 2 + b ^ 2 := by
+  nlinarith [sq_nonneg (a - b)]
+
+lemma mul_mul_le_sq_add_pow_four (a b c : ℝ)
+    (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) :
+    a * b * c ≤ a ^ 2 / 2 + b ^ 4 / 4 + c ^ 4 / 4 := by
+  have h1 : a * (b * c) ≤ a ^ 2 / 2 + (b * c) ^ 2 / 2 := by
+    nlinarith [sq_nonneg (a - b * c)]
+  have h2 : (b * c) ^ 2 ≤ (b ^ 4 + c ^ 4) / 2 := by
+    nlinarith [sq_nonneg (b ^ 2 - c ^ 2)]
+  nlinarith
+
+/-- First-order product rule: `∂ᵢ((u·∇)v) = (∂ᵢ u · ∇)v + (u·∇)(∂ᵢ v)`. -/
+lemma convective_leibniz_one {u v : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hv : ContDiff ℝ ∞ v)
+    (α : Fin 1 → Fin 3) (x : T3) :
+    wordDeriv 1 α (convective u v) x =
+      convective (wordDeriv 1 α u) v x + convective u (wordDeriv 1 α v) x := by
+  set evec : T3 := EuclideanSpace.single (α 0) (1 : ℝ)
+  have huD := differentiable_of_infty hu
+  have hvD := differentiable_of_infty hv
+  have hDv := differentiable_fderiv_of_infty hv
+  have hprod := fderiv_clm_apply (c := fderiv ℝ v) (u := u) (hDv x) (huD x)
+  have hwd : wordDeriv 1 α (convective u v) x =
+      fderiv ℝ (fun y => (fderiv ℝ v y) (u y)) x evec := by
+    rw [wordDeriv_one]; rfl
+  have hL : fderiv ℝ (fun y => (fderiv ℝ v y) evec) x (u x) =
+      (fderiv ℝ (fderiv ℝ v) x (u x)) evec := by
+    let L : (T3 →L[ℝ] T3) →L[ℝ] T3 :=
+      ContinuousLinearMap.apply ℝ (EuclideanSpace ℝ (Fin 3)) evec
+    have hcomp : (fun y => (fderiv ℝ v y) evec) = ⇑L ∘ fderiv ℝ v := rfl
+    rw [hcomp, fderiv_comp (f := fderiv ℝ v) (g := ⇑L)
+      (x := x) L.differentiableAt (hDv x), ContinuousLinearMap.fderiv]
+    rfl
+  have hsym :
+      (fderiv ℝ (fderiv ℝ v) x (u x)) evec =
+        (fderiv ℝ (fderiv ℝ v) x evec) (u x) :=
+    second_derivative_symmetric (fun y => (hvD y).hasFDerivAt)
+      ((hDv x).hasFDerivAt) (u x) evec
+  have hwd_u : wordDeriv 1 α u = fun y => fderiv ℝ u y evec := by
+    funext y; exact wordDeriv_one α u y
+  have hwd_v : wordDeriv 1 α v = fun y => fderiv ℝ v y evec := by
+    funext y; exact wordDeriv_one α v y
+  have htr : convective u (wordDeriv 1 α v) x =
+      (fderiv ℝ (fderiv ℝ v) x (u x)) evec := by
+    simp only [convective, hwd_v]
+    exact hL
+  calc
+    wordDeriv 1 α (convective u v) x
+        = fderiv ℝ (fun y => (fderiv ℝ v y) (u y)) x evec := hwd
+    _ = (fderiv ℝ v x) (fderiv ℝ u x evec)
+          + (fderiv ℝ (fderiv ℝ v) x evec) (u x) := by
+        rw [hprod, ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply,
+          ContinuousLinearMap.flip_apply]
+    _ = convective (wordDeriv 1 α u) v x
+          + convective u (wordDeriv 1 α v) x := by
+        simp only [convective, hwd_u, hwd_v, hL]
+        rw [hsym]
+
+/-- `∂ᵢ(∂^α u)` as a length-`(k+1)` word, new index applied last. -/
+lemma wordDeriv_cons {k : ℕ} (i : Fin 3) (α : Fin k → Fin 3) {f : VelocityField}
+    (hf : ContDiff ℝ ∞ f) (x : T3) :
+    wordDeriv (k + 1) (Fin.cons i α) f x =
+      fderiv ℝ (wordDeriv k α f) x (EuclideanSpace.single i (1 : ℝ)) := by
+  simpa [Fin.tail_cons] using
+    congrFun (wordDeriv_succ (k := k) (Fin.cons i α) (f := f) hf) x
+
+/-- `‖∂ᵢ u(x)‖ ≤ ‖∇u(x)‖`. -/
+lemma norm_wordDeriv_one_le (α : Fin 1 → Fin 3) (u : VelocityField) (x : T3) :
+    ‖wordDeriv 1 α u x‖ ≤ ‖fderiv ℝ u x‖ := by
+  rw [wordDeriv_one]
+  have h := (fderiv ℝ u x).le_opNorm (EuclideanSpace.single (α 0) (1 : ℝ))
+  have he : ‖EuclideanSpace.single (α 0) (1 : ℝ)‖ = 1 := by
+    simp [PiLp.norm_single]
+  simpa [he] using h
+
+lemma opNorm_fderiv_wordDeriv_one_le {u : VelocityField} (hu : ContDiff ℝ ∞ u)
+    (α : Fin 1 → Fin 3) (x : T3) :
+    ‖fderiv ℝ (wordDeriv 1 α u) x‖ ≤
+      ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i α) u x‖ := by
+  have hle := GradBound.norm_clm_le (fderiv ℝ (wordDeriv 1 α u) x)
+  refine hle.trans (Finset.sum_le_sum fun i _ => ?_)
+  exact le_of_eq (congrArg norm (wordDeriv_cons i α hu x).symm)
+
+lemma opNorm_fderiv_wordDeriv_two_le {u : VelocityField} (hu : ContDiff ℝ ∞ u)
+    (α : Fin 2 → Fin 3) (x : T3) :
+    ‖fderiv ℝ (wordDeriv 2 α u) x‖ ≤
+      ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i α) u x‖ := by
+  have hle := GradBound.norm_clm_le (fderiv ℝ (wordDeriv 2 α u) x)
+  refine hle.trans (Finset.sum_le_sum fun i _ => ?_)
+  exact le_of_eq (congrArg norm (wordDeriv_cons i α hu x).symm)
+
+lemma integral_wordDeriv_sq_le {f : VelocityField} (hf : ContDiff ℝ ∞ f)
+    (hE : sobolevEnergy 3 f < ⊤) {k : ℕ} (hk : k ≤ 3) (α : Fin k → Fin 3) :
+    ∫ x, ‖wordDeriv k α f x‖ ^ 2 ∂volume ≤ hsSq 3 f := by
+  have hint := integrable_wordDeriv_sq hf hE hk α
+  have heq : ∫⁻ x, ENNReal.ofReal (‖wordDeriv k α f x‖ ^ 2) ∂volume =
+      ∫⁻ x, ‖wordDeriv k α f x‖ₑ ^ 2 :=
+    lintegral_congr fun x => by
+      rw [ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm]
+  exact integral_le_toReal_of_lintegral hint (fun _ => sq_nonneg _)
+    (heq.trans_le (lintegral_wordDeriv_sq_le 3 f hk α)) hE.ne
+
+lemma abs_inner_convective_le {v wvec f : VelocityField} (x : T3)
+    (hf : DifferentiableAt ℝ f x) :
+    |inner ℝ (v x) (convective wvec f x)| ≤
+      ‖v x‖ * ‖fderiv ℝ f x‖ * ‖wvec x‖ := by
+  have h1 := abs_real_inner_le_norm (v x) (convective wvec f x)
+  have h2 := convective_norm_le wvec f x hf
+  nlinarith [norm_nonneg (v x), norm_nonneg (fderiv ℝ f x),
+    norm_nonneg (wvec x), norm_nonneg (convective wvec f x)]
+
+/-- Four-term Leibniz expansion of `∂ᵢ∂ⱼ((u·∇)v)`. -/
+lemma wordDeriv_convective_order_two {u v : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hv : ContDiff ℝ ∞ v) (α : Fin 2 → Fin 3) (x : T3) :
+    wordDeriv 2 α (convective u v) x =
+      convective (wordDeriv 2 α u) v x
+        + convective (wordDeriv 1 (Fin.tail α) u)
+            (wordDeriv 1 (fun _ : Fin 1 => α 0) v) x
+        + convective (wordDeriv 1 (fun _ : Fin 1 => α 0) u)
+            (wordDeriv 1 (Fin.tail α) v) x
+        + convective u (wordDeriv 2 α v) x := by
+  have hconv : ContDiff ℝ ∞ (convective u v) := contDiff_convective hu hv
+  have hsucc := wordDeriv_succ (k := 1) α (f := convective u v) hconv
+  have hone : wordDeriv 1 (Fin.tail α) (convective u v) =
+      fun y => convective (wordDeriv 1 (Fin.tail α) u) v y
+        + convective u (wordDeriv 1 (Fin.tail α) v) y := by
+    funext y; exact convective_leibniz_one hu hv (Fin.tail α) y
+  have hp : ContDiff ℝ ∞ (convective (wordDeriv 1 (Fin.tail α) u) v) :=
+    contDiff_convective (contDiff_wordDeriv (Fin.tail α) hu) hv
+  have hq : ContDiff ℝ ∞ (convective u (wordDeriv 1 (Fin.tail α) v)) :=
+    contDiff_convective hu (contDiff_wordDeriv (Fin.tail α) hv)
+  have hadd :
+      wordDeriv 2 α (convective u v) x =
+        wordDeriv 1 (fun _ : Fin 1 => α 0)
+            (convective (wordDeriv 1 (Fin.tail α) u) v) x
+          + wordDeriv 1 (fun _ : Fin 1 => α 0)
+            (convective u (wordDeriv 1 (Fin.tail α) v)) x := by
+    have hx : wordDeriv 2 α (convective u v) x =
+        fderiv ℝ (wordDeriv 1 (Fin.tail α) (convective u v)) x
+          (EuclideanSpace.single (α 0) (1 : ℝ)) := congrFun hsucc x
+    rw [hx, hone, fderiv_fun_add (hp.differentiable (by simp) x)
+      (hq.differentiable (by simp) x)]
+    simp [wordDeriv_one, ContinuousLinearMap.add_apply]
+  have h1 := convective_leibniz_one
+    (contDiff_wordDeriv (Fin.tail α) hu) hv (fun _ : Fin 1 => α 0) x
+  have h2 := convective_leibniz_one hu
+    (contDiff_wordDeriv (Fin.tail α) hv) (fun _ : Fin 1 => α 0) x
+  have hidU : wordDeriv 1 (fun _ : Fin 1 => α 0) (wordDeriv 1 (Fin.tail α) u) =
+      wordDeriv 2 α u := by
+    funext y
+    simpa [wordDeriv_one] using
+      (congrFun (wordDeriv_succ (k := 1) α (f := u) hu) y).symm
+  have hidV : wordDeriv 1 (fun _ : Fin 1 => α 0) (wordDeriv 1 (Fin.tail α) v) =
+      wordDeriv 2 α v := by
+    funext y
+    simpa [wordDeriv_one] using
+      (congrFun (wordDeriv_succ (k := 1) α (f := v) hv) y).symm
+  rw [hadd, h1, h2, hidU, hidV]
+  abel
+
+/-- `[∂ᵢ∂ⱼ, u·∇]u = (∂ᵢ∂ⱼ u · ∇)u + (∂ⱼ u · ∇)(∂ᵢ u) + (∂ᵢ u · ∇)(∂ⱼ u)`. -/
+lemma convectiveCommutator_order_two {u : VelocityField} (hu : ContDiff ℝ ∞ u)
+    (α : Fin 2 → Fin 3) (x : T3) :
+    convectiveCommutator 2 α u x =
+      convective (wordDeriv 2 α u) u x
+        + convective (wordDeriv 1 (Fin.tail α) u)
+            (wordDeriv 1 (fun _ : Fin 1 => α 0) u) x
+        + convective (wordDeriv 1 (fun _ : Fin 1 => α 0) u)
+            (wordDeriv 1 (Fin.tail α) u) x := by
+  have h := wordDeriv_convective_order_two hu hu α x
+  simp only [convectiveCommutator, h]
+  abel
+
+/-- Pointwise bound for the order-two pairing, with a uniform `gradSup` factor
+and a sum of `H²` squares. The coefficient `10` absorbs the two
+`a S ≤ a² + 3 ∑ b²` estimates together with the `(∂²u · ∇)u` term. -/
+lemma abs_pairing_commutator_order_two_le {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤)
+    (α : Fin 2 → Fin 3) (x : T3) :
+    |inner ℝ (wordDeriv 2 α u x) (convectiveCommutator 2 α u x)| ≤
+      gradSup u *
+        (10 * ‖wordDeriv 2 α u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2) := by
+  have hx := convectiveCommutator_order_two hu α x
+  have hd_u : DifferentiableAt ℝ u x := differentiable_of_infty hu x
+  have hd_i : DifferentiableAt ℝ (wordDeriv 1 (fun _ : Fin 1 => α 0) u) x :=
+    (contDiff_wordDeriv (k := 1) (fun _ : Fin 1 => α 0) hu).differentiable (by simp) x
+  have hd_j : DifferentiableAt ℝ (wordDeriv 1 (Fin.tail α) u) x :=
+    (contDiff_wordDeriv (k := 1) (Fin.tail α) hu).differentiable (by simp) x
+  have hgs := le_gradSup hu hE x
+  have hgs0 : 0 ≤ gradSup u :=
+    (norm_nonneg (fderiv ℝ u 0)).trans (le_gradSup hu hE 0)
+  have hsplit :
+      |inner ℝ (wordDeriv 2 α u x) (convectiveCommutator 2 α u x)| ≤
+        |inner ℝ (wordDeriv 2 α u x) (convective (wordDeriv 2 α u) u x)| +
+          |inner ℝ (wordDeriv 2 α u x)
+            (convective (wordDeriv 1 (Fin.tail α) u)
+              (wordDeriv 1 (fun _ : Fin 1 => α 0) u) x)| +
+          |inner ℝ (wordDeriv 2 α u x)
+            (convective (wordDeriv 1 (fun _ : Fin 1 => α 0) u)
+              (wordDeriv 1 (Fin.tail α) u) x)| := by
+    rw [hx, inner_add_right, inner_add_right]
+    have habs1 := abs_add_le
+      (inner ℝ (wordDeriv 2 α u x) (convective (wordDeriv 2 α u) u x) +
+        inner ℝ (wordDeriv 2 α u x)
+          (convective (wordDeriv 1 (Fin.tail α) u)
+            (wordDeriv 1 (fun _ : Fin 1 => α 0) u) x))
+      (inner ℝ (wordDeriv 2 α u x)
+        (convective (wordDeriv 1 (fun _ : Fin 1 => α 0) u)
+          (wordDeriv 1 (Fin.tail α) u) x))
+    have habs2 := abs_add_le
+      (inner ℝ (wordDeriv 2 α u x) (convective (wordDeriv 2 α u) u x))
+      (inner ℝ (wordDeriv 2 α u x)
+        (convective (wordDeriv 1 (Fin.tail α) u)
+          (wordDeriv 1 (fun _ : Fin 1 => α 0) u) x))
+    linarith [habs1, habs2]
+  have hA : |inner ℝ (wordDeriv 2 α u x) (convective (wordDeriv 2 α u) u x)| ≤
+      gradSup u * ‖wordDeriv 2 α u x‖ ^ 2 := by
+    have h := abs_inner_convective_le (v := wordDeriv 2 α u) (wvec := wordDeriv 2 α u)
+      (f := u) x hd_u
+    have : ‖wordDeriv 2 α u x‖ * ‖fderiv ℝ u x‖ * ‖wordDeriv 2 α u x‖ ≤
+        gradSup u * ‖wordDeriv 2 α u x‖ ^ 2 := by
+      nlinarith [hgs, norm_nonneg (wordDeriv 2 α u x), norm_nonneg (fderiv ℝ u x)]
+    exact h.trans this
+  have hterm (β γ : Fin 1 → Fin 3)
+      (hd : DifferentiableAt ℝ (wordDeriv 1 γ u) x) :
+      |inner ℝ (wordDeriv 2 α u x) (convective (wordDeriv 1 β u) (wordDeriv 1 γ u) x)| ≤
+        gradSup u *
+          (‖wordDeriv 2 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖ ^ 2) := by
+    have h := abs_inner_convective_le (v := wordDeriv 2 α u) (wvec := wordDeriv 1 β u)
+      (f := wordDeriv 1 γ u) x hd
+    have hop := opNorm_fderiv_wordDeriv_one_le hu γ x
+    have hω := (norm_wordDeriv_one_le β u x).trans hgs
+    have hmul :
+        ‖wordDeriv 2 α u x‖ * ‖fderiv ℝ (wordDeriv 1 γ u) x‖ *
+          ‖wordDeriv 1 β u x‖ ≤
+        (‖wordDeriv 2 α u x‖ *
+          ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖) * gradSup u := by
+      have hnnA : 0 ≤ ‖wordDeriv 2 α u x‖ := norm_nonneg _
+      have hnnS : 0 ≤ ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖ :=
+        Finset.sum_nonneg fun _ _ => norm_nonneg _
+      have hnnw : 0 ≤ ‖wordDeriv 1 β u x‖ := norm_nonneg _
+      have h1 : ‖wordDeriv 2 α u x‖ * ‖fderiv ℝ (wordDeriv 1 γ u) x‖ ≤
+          ‖wordDeriv 2 α u x‖ *
+            ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖ :=
+        mul_le_mul_of_nonneg_left hop hnnA
+      exact mul_le_mul h1 hω hnnw (mul_nonneg hnnA hnnS)
+    have hamg : ‖wordDeriv 2 α u x‖ *
+        ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖ ≤
+          ‖wordDeriv 2 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖ ^ 2 := by
+      have h1 := mul_le_sq_add_sq (‖wordDeriv 2 α u x‖)
+        (∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖)
+      have h2 : (∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖) ^ 2 ≤
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖ ^ 2 := by
+        have := sq_sum_le_card_mul_sum_sq
+          (s := (Finset.univ : Finset (Fin 3)))
+          (f := fun i : Fin 3 => ‖wordDeriv 2 (Fin.cons i γ) u x‖)
+        simpa [Finset.card_univ, Fintype.card_fin] using this
+      nlinarith [h1, h2]
+    have hscale :
+        (‖wordDeriv 2 α u x‖ *
+          ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖) * gradSup u ≤
+          gradSup u *
+            (‖wordDeriv 2 α u x‖ ^ 2 +
+              3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖ ^ 2) :=
+      (mul_le_mul_of_nonneg_right hamg hgs0).trans_eq (by ring)
+    exact (h.trans hmul).trans hscale
+  have hB := hterm (Fin.tail α) (fun _ : Fin 1 => α 0) hd_i
+  have hC := hterm (fun _ : Fin 1 => α 0) (Fin.tail α) hd_j
+  have : |inner ℝ (wordDeriv 2 α u x) (convectiveCommutator 2 α u x)| ≤
+      gradSup u * ‖wordDeriv 2 α u x‖ ^ 2 +
+        gradSup u *
+          (‖wordDeriv 2 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2) +
+        gradSup u *
+          (‖wordDeriv 2 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2) :=
+    (hsplit.trans (add_le_add (add_le_add hA hB) hC))
+  have hrewrite :
+      gradSup u * ‖wordDeriv 2 α u x‖ ^ 2 +
+        gradSup u *
+          (‖wordDeriv 2 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2) +
+        gradSup u *
+          (‖wordDeriv 2 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2) =
+      gradSup u *
+        (3 * ‖wordDeriv 2 α u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2) := by
+    ring
+  have hloose :
+      gradSup u *
+          (3 * ‖wordDeriv 2 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2) ≤
+        gradSup u *
+          (10 * ‖wordDeriv 2 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2) := by
+    refine mul_le_mul_of_nonneg_left ?_ hgs0
+    nlinarith [sq_nonneg (‖wordDeriv 2 α u x‖)]
+  exact this.trans_eq hrewrite |>.trans hloose
+
+lemma integrable_inner_commutator_order_two {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤) (α : Fin 2 → Fin 3) :
+    Integrable (fun x =>
+      inner ℝ (wordDeriv 2 α u x) (convectiveCommutator 2 α u x)) volume := by
+  have hcont : Continuous
+      (fun x => inner ℝ (wordDeriv 2 α u x) (convectiveCommutator 2 α u x)) :=
+    (contDiff_wordDeriv (k := 2) α hu).continuous.inner
+      ((contDiff_wordDeriv (k := 2) α (contDiff_convective hu hu)).continuous.sub
+        (contDiff_convective hu (contDiff_wordDeriv (k := 2) α hu)).continuous)
+  have hgs0 : 0 ≤ gradSup u :=
+    (norm_nonneg (fderiv ℝ u 0)).trans (le_gradSup hu hE 0)
+  have hmaj : Integrable (fun x =>
+      gradSup u *
+        (10 * ‖wordDeriv 2 α u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2)) volume := by
+    have hα := (integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3) α).const_mul 10
+    have hi := integrable_finset_sum (Finset.univ : Finset (Fin 3))
+      (fun i _ => integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3)
+        (Fin.cons i (fun _ : Fin 1 => α 0)))
+    have hj := integrable_finset_sum (Finset.univ : Finset (Fin 3))
+      (fun i _ => integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3)
+        (Fin.cons i (Fin.tail α)))
+    exact (hα.add (hi.const_mul 3)).add (hj.const_mul 3) |>.const_mul (gradSup u)
+  exact hmaj.mono' hcont.aestronglyMeasurable
+    (Filter.Eventually.of_forall fun x => by
+      simpa [Real.norm_eq_abs] using abs_pairing_commutator_order_two_le hu hE α x)
+
+/-- Absolute pairing of the second-order commutator is at most
+`28 * gradSup u * hsSq 3 u`. -/
+theorem abs_integral_commutator_order_two {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤) (α : Fin 2 → Fin 3) :
+    |∫ x, inner ℝ (wordDeriv 2 α u x) (convectiveCommutator 2 α u x) ∂volume| ≤
+      28 * gradSup u * hsSq 3 u := by
+  have hinter := integrable_inner_commutator_order_two hu hE α
+  have habs :
+      |∫ x, inner ℝ (wordDeriv 2 α u x) (convectiveCommutator 2 α u x) ∂volume| ≤
+        ∫ x, |inner ℝ (wordDeriv 2 α u x) (convectiveCommutator 2 α u x)| ∂volume := by
+    simpa [Real.norm_eq_abs] using
+      (norm_integral_le_integral_norm
+        (f := fun x => inner ℝ (wordDeriv 2 α u x) (convectiveCommutator 2 α u x)))
+  have hgs0 : 0 ≤ gradSup u :=
+    (norm_nonneg (fderiv ℝ u 0)).trans (le_gradSup hu hE 0)
+  have hpt := fun x => abs_pairing_commutator_order_two_le hu hE α x
+  have hmaj : Integrable (fun x =>
+      gradSup u *
+        (10 * ‖wordDeriv 2 α u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2)) volume := by
+    have hα := (integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3) α).const_mul 10
+    have hi := integrable_finset_sum (Finset.univ : Finset (Fin 3))
+      (fun i _ => integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3)
+        (Fin.cons i (fun _ : Fin 1 => α 0)))
+    have hj := integrable_finset_sum (Finset.univ : Finset (Fin 3))
+      (fun i _ => integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3)
+        (Fin.cons i (Fin.tail α)))
+    exact (hα.add (hi.const_mul 3)).add (hj.const_mul 3) |>.const_mul (gradSup u)
+  have hmono := integral_mono_of_nonneg
+    (Filter.Eventually.of_forall fun _ => abs_nonneg _) hmaj
+    (Filter.Eventually.of_forall hpt)
+  have hαint := integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3) α
+  have hi := integrable_finset_sum (Finset.univ : Finset (Fin 3))
+    (fun i _ => integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3)
+      (Fin.cons i (fun _ : Fin 1 => α 0)))
+  have hj := integrable_finset_sum (Finset.univ : Finset (Fin 3))
+    (fun i _ => integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3)
+      (Fin.cons i (Fin.tail α)))
+  have hrhs :
+      ∫ x, gradSup u *
+          (10 * ‖wordDeriv 2 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2) ∂volume =
+        gradSup u *
+          (10 * ∫ x, ‖wordDeriv 2 α u x‖ ^ 2 ∂volume +
+            3 * ∑ i : Fin 3,
+              ∫ x, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 ∂volume +
+            3 * ∑ i : Fin 3,
+              ∫ x, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2 ∂volume) := by
+    have hsumi := integral_finset_sum (Finset.univ : Finset (Fin 3))
+      (fun i _ => integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3)
+        (Fin.cons i (fun _ : Fin 1 => α 0)))
+    have hsumj := integral_finset_sum (Finset.univ : Finset (Fin 3))
+      (fun i _ => integrable_wordDeriv_sq hu hE (by norm_num : (2 : ℕ) ≤ 3)
+        (Fin.cons i (Fin.tail α)))
+    rw [integral_const_mul]
+    congr 1
+    let f : T3 → ℝ := fun x => 10 * ‖wordDeriv 2 α u x‖ ^ 2
+    let g : T3 → ℝ := fun x =>
+      3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2
+    let h : T3 → ℝ := fun x =>
+      3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2
+    have hfun : (fun x =>
+        10 * ‖wordDeriv 2 α u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2) =
+        f + g + h := by
+      ext x
+      simp [f, g, h, Pi.add_apply]
+    have hf : Integrable f volume := hαint.const_mul 10
+    have hg : Integrable g volume := hi.const_mul 3
+    have hh : Integrable h volume := hj.const_mul 3
+    rw [hfun]
+    calc
+      integral volume (f + g + h)
+          = ∫ x, (f + g) x + h x ∂volume := rfl
+      _ = ∫ x, (f + g) x ∂volume + ∫ x, h x ∂volume :=
+          integral_add (hf.add hg) hh
+      _ = ∫ x, f x + g x ∂volume + ∫ x, h x ∂volume := rfl
+      _ = ∫ x, f x ∂volume + ∫ x, g x ∂volume + ∫ x, h x ∂volume := by
+          rw [integral_add hf hg]
+      _ = 10 * ∫ x, ‖wordDeriv 2 α u x‖ ^ 2 ∂volume +
+            3 * ∫ x, ∑ i : Fin 3,
+              ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 ∂volume +
+            3 * ∫ x, ∑ i : Fin 3,
+              ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2 ∂volume := by
+          simp only [f, g, h, integral_const_mul]
+      _ = 10 * ∫ x, ‖wordDeriv 2 α u x‖ ^ 2 ∂volume +
+            3 * ∑ i : Fin 3,
+              ∫ x, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 ∂volume +
+            3 * ∑ i : Fin 3,
+              ∫ x, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2 ∂volume := by
+          rw [hsumi, hsumj]
+  have hbound :
+      gradSup u *
+          (10 * ∫ x, ‖wordDeriv 2 α u x‖ ^ 2 ∂volume +
+            3 * ∑ i : Fin 3,
+              ∫ x, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 ∂volume +
+            3 * ∑ i : Fin 3,
+              ∫ x, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2 ∂volume) ≤
+        28 * gradSup u * hsSq 3 u := by
+    have h1 := integral_wordDeriv_sq_le hu hE (by norm_num : (2 : ℕ) ≤ 3) α
+    have h2 : ∑ i : Fin 3,
+        ∫ x, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 ∂volume ≤
+          3 * hsSq 3 u := by
+      have : ∀ i : Fin 3,
+          ∫ x, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 ∂volume ≤
+            hsSq 3 u := fun i =>
+        integral_wordDeriv_sq_le hu hE (by norm_num : (2 : ℕ) ≤ 3)
+          (Fin.cons i (fun _ : Fin 1 => α 0))
+      have hsum := Finset.sum_le_sum (s := (Finset.univ : Finset (Fin 3)))
+        (fun i _ => this i)
+      have hcard : ∑ _i : Fin 3, hsSq 3 u = 3 * hsSq 3 u := by
+        simp [Finset.sum_const, Fintype.card_fin]
+      exact hsum.trans_eq hcard
+    have h3 : ∑ i : Fin 3,
+        ∫ x, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2 ∂volume ≤
+          3 * hsSq 3 u := by
+      have : ∀ i : Fin 3,
+          ∫ x, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2 ∂volume ≤
+            hsSq 3 u := fun i =>
+        integral_wordDeriv_sq_le hu hE (by norm_num : (2 : ℕ) ≤ 3)
+          (Fin.cons i (Fin.tail α))
+      have hsum := Finset.sum_le_sum (s := (Finset.univ : Finset (Fin 3)))
+        (fun i _ => this i)
+      have hcard : ∑ _i : Fin 3, hsSq 3 u = 3 * hsSq 3 u := by
+        simp [Finset.sum_const, Fintype.card_fin]
+      exact hsum.trans_eq hcard
+    have hE0 : 0 ≤ hsSq 3 u := ENNReal.toReal_nonneg
+    have : 10 * ∫ x, ‖wordDeriv 2 α u x‖ ^ 2 ∂volume +
+        3 * ∑ i : Fin 3,
+          ∫ x, ‖wordDeriv 2 (Fin.cons i (fun _ : Fin 1 => α 0)) u x‖ ^ 2 ∂volume +
+        3 * ∑ i : Fin 3,
+          ∫ x, ‖wordDeriv 2 (Fin.cons i (Fin.tail α)) u x‖ ^ 2 ∂volume ≤
+        28 * hsSq 3 u := by
+      nlinarith [h1, h2, h3, hE0]
+    calc
+      _ ≤ gradSup u * (28 * hsSq 3 u) := mul_le_mul_of_nonneg_left this hgs0
+      _ = 28 * gradSup u * hsSq 3 u := by ring
+  exact habs.trans (hmono.trans_eq hrhs |>.trans hbound)
+
+/-- `∂_{α 0}` of a length-`k` word is the length-`(k+1)` word. -/
+lemma wordDeriv_outer {k : ℕ} (α : Fin (k + 1) → Fin 3) {f : VelocityField}
+    (hf : ContDiff ℝ ∞ f) :
+    wordDeriv 1 (fun _ : Fin 1 => α 0) (wordDeriv k (Fin.tail α) f) =
+      wordDeriv (k + 1) α f := by
+  funext y
+  simpa [wordDeriv_one] using
+    (congrFun (wordDeriv_succ (k := k) α (f := f) hf) y).symm
+
+/-- Prepending an index `i` is `∂_i` of the shorter word. -/
+lemma wordDeriv_cons_fun {k : ℕ} (i : Fin 3) (α : Fin k → Fin 3)
+    {f : VelocityField} (hf : ContDiff ℝ ∞ f) :
+    wordDeriv 1 (fun _ : Fin 1 => i) (wordDeriv k α f) =
+      wordDeriv (k + 1) (Fin.cons i α) f := by
+  funext y
+  simpa [wordDeriv_one, Fin.tail_cons] using
+    (congrFun (wordDeriv_succ (k := k) (Fin.cons i α) (f := f) hf) y).symm
+
+/-- Eight-term Leibniz expansion of `∂^α((u·∇)v)` at order three. -/
+lemma wordDeriv_convective_order_three {u v : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hv : ContDiff ℝ ∞ v) (α : Fin 3 → Fin 3) (x : T3) :
+    wordDeriv 3 α (convective u v) x =
+      convective (wordDeriv 3 α u) v x
+        + convective (wordDeriv 2 (Fin.tail α) u)
+            (wordDeriv 1 (fun _ : Fin 1 => α 0) v) x
+        + convective
+            (wordDeriv 2 (Fin.cons (α 0) (Fin.tail (Fin.tail α))) u)
+            (wordDeriv 1 (fun _ : Fin 1 => (Fin.tail α) 0) v) x
+        + convective (wordDeriv 1 (Fin.tail (Fin.tail α)) u)
+            (wordDeriv 2 (Fin.cons (α 0) (fun _ : Fin 1 => (Fin.tail α) 0)) v) x
+        + convective
+            (wordDeriv 2 (Fin.cons (α 0) (fun _ : Fin 1 => (Fin.tail α) 0)) u)
+            (wordDeriv 1 (Fin.tail (Fin.tail α)) v) x
+        + convective (wordDeriv 1 (fun _ : Fin 1 => (Fin.tail α) 0) u)
+            (wordDeriv 2 (Fin.cons (α 0) (Fin.tail (Fin.tail α))) v) x
+        + convective (wordDeriv 1 (fun _ : Fin 1 => α 0) u)
+            (wordDeriv 2 (Fin.tail α) v) x
+        + convective u (wordDeriv 3 α v) x := by
+  have hconv : ContDiff ℝ ∞ (convective u v) := contDiff_convective hu hv
+  set A : VelocityField := convective (wordDeriv 2 (Fin.tail α) u) v
+  set B : VelocityField :=
+    convective (wordDeriv 1 (Fin.tail (Fin.tail α)) u)
+      (wordDeriv 1 (fun _ : Fin 1 => (Fin.tail α) 0) v)
+  set C : VelocityField :=
+    convective (wordDeriv 1 (fun _ : Fin 1 => (Fin.tail α) 0) u)
+      (wordDeriv 1 (Fin.tail (Fin.tail α)) v)
+  set D : VelocityField := convective u (wordDeriv 2 (Fin.tail α) v)
+  have hfun : wordDeriv 2 (Fin.tail α) (convective u v) = A + B + C + D := by
+    funext y
+    simpa [A, B, C, D, Pi.add_apply] using
+      wordDeriv_convective_order_two hu hv (Fin.tail α) y
+  have hA : ContDiff ℝ ∞ A :=
+    contDiff_convective (contDiff_wordDeriv (k := 2) (Fin.tail α) hu) hv
+  have hB : ContDiff ℝ ∞ B :=
+    contDiff_convective (contDiff_wordDeriv (k := 1) (Fin.tail (Fin.tail α)) hu)
+      (contDiff_wordDeriv (k := 1) (fun _ : Fin 1 => (Fin.tail α) 0) hv)
+  have hC : ContDiff ℝ ∞ C :=
+    contDiff_convective
+      (contDiff_wordDeriv (k := 1) (fun _ : Fin 1 => (Fin.tail α) 0) hu)
+      (contDiff_wordDeriv (k := 1) (Fin.tail (Fin.tail α)) hv)
+  have hD : ContDiff ℝ ∞ D :=
+    contDiff_convective hu (contDiff_wordDeriv (k := 2) (Fin.tail α) hv)
+  have hAB : ContDiff ℝ ∞ (A + B) := hA.add hB
+  have hABC : ContDiff ℝ ∞ (A + B + C) := hAB.add hC
+  set i0 : Fin 1 → Fin 3 := fun _ => α 0
+  have hadd :
+      wordDeriv 3 α (convective u v) x =
+        wordDeriv 1 i0 A x + wordDeriv 1 i0 B x +
+          wordDeriv 1 i0 C x + wordDeriv 1 i0 D x := by
+    have houter : wordDeriv 3 α (convective u v) x =
+        wordDeriv 1 i0 (wordDeriv 2 (Fin.tail α) (convective u v)) x := by
+      simpa [i0] using
+        (congrFun (wordDeriv_outer (k := 2) α hconv) x).symm
+    rw [houter, hfun]
+    have hsum := congrFun
+      (wordDeriv_add (k := 1) i0 (contDiff_of_infty hABC) (contDiff_of_infty hD)) x
+    have hsum2 := congrFun
+      (wordDeriv_add (k := 1) i0 (contDiff_of_infty hAB) (contDiff_of_infty hC)) x
+    have hsum3 := congrFun
+      (wordDeriv_add (k := 1) i0 (contDiff_of_infty hA) (contDiff_of_infty hB)) x
+    simp only [hsum, hsum2, hsum3, Pi.add_apply]
+  have h1 := convective_leibniz_one
+    (contDiff_wordDeriv (k := 2) (Fin.tail α) hu) hv i0 x
+  have h2 := convective_leibniz_one
+    (contDiff_wordDeriv (k := 1) (Fin.tail (Fin.tail α)) hu)
+    (contDiff_wordDeriv (k := 1) (fun _ : Fin 1 => (Fin.tail α) 0) hv) i0 x
+  have h3 := convective_leibniz_one
+    (contDiff_wordDeriv (k := 1) (fun _ : Fin 1 => (Fin.tail α) 0) hu)
+    (contDiff_wordDeriv (k := 1) (Fin.tail (Fin.tail α)) hv) i0 x
+  have h4 := convective_leibniz_one hu
+    (contDiff_wordDeriv (k := 2) (Fin.tail α) hv) i0 x
+  have hid3u := wordDeriv_outer (k := 2) α hu
+  have hid3v := wordDeriv_outer (k := 2) α hv
+  have hid2u_in := wordDeriv_cons_fun (α 0) (Fin.tail (Fin.tail α)) hu
+  have hid2v_in := wordDeriv_cons_fun (α 0) (Fin.tail (Fin.tail α)) hv
+  have hid2u_mid := wordDeriv_cons_fun (α 0) (fun _ : Fin 1 => (Fin.tail α) 0) hu
+  have hid2v_mid := wordDeriv_cons_fun (α 0) (fun _ : Fin 1 => (Fin.tail α) 0) hv
+  simp only [i0] at hadd h1 h2 h3 h4
+  rw [hadd, h1, h2, h3, h4, hid3u, hid3v, hid2u_in, hid2v_in, hid2u_mid,
+    hid2v_mid]
+  abel
+
+/-- `[∂^α, u·∇]u` at order three is the eight-term expansion minus `(u·∇)(∂^α u)`. -/
+lemma convectiveCommutator_order_three {u : VelocityField} (hu : ContDiff ℝ ∞ u)
+    (α : Fin 3 → Fin 3) (x : T3) :
+    convectiveCommutator 3 α u x =
+      convective (wordDeriv 3 α u) u x
+        + convective (wordDeriv 2 (Fin.tail α) u)
+            (wordDeriv 1 (fun _ : Fin 1 => α 0) u) x
+        + convective
+            (wordDeriv 2 (Fin.cons (α 0) (Fin.tail (Fin.tail α))) u)
+            (wordDeriv 1 (fun _ : Fin 1 => (Fin.tail α) 0) u) x
+        + convective (wordDeriv 1 (Fin.tail (Fin.tail α)) u)
+            (wordDeriv 2 (Fin.cons (α 0) (fun _ : Fin 1 => (Fin.tail α) 0)) u) x
+        + convective
+            (wordDeriv 2 (Fin.cons (α 0) (fun _ : Fin 1 => (Fin.tail α) 0)) u)
+            (wordDeriv 1 (Fin.tail (Fin.tail α)) u) x
+        + convective (wordDeriv 1 (fun _ : Fin 1 => (Fin.tail α) 0) u)
+            (wordDeriv 2 (Fin.cons (α 0) (Fin.tail (Fin.tail α))) u) x
+        + convective (wordDeriv 1 (fun _ : Fin 1 => α 0) u)
+            (wordDeriv 2 (Fin.tail α) u) x := by
+  have h := wordDeriv_convective_order_three hu hu α x
+  simp only [convectiveCommutator, h]
+  abel
+
+lemma integrable_wordDeriv_two_pow_four {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤) (α : Fin 2 → Fin 3) :
+    Integrable (fun x => ‖wordDeriv 2 α u x‖ ^ (4 : ℕ)) volume := by
+  obtain ⟨K1, hK1nn, hK1b⟩ := exists_bound_unitBump_fderiv
+  obtain ⟨K2, hK2nn, hK2b⟩ := exists_bound_unitBump_partiali2
+  have hintkj : ∀ (k j : Fin 3),
+      Integrable (fun x => gradNormSq (dkj u k j) x ^ 2) volume := fun k j =>
+    integrable_gradNormSq_sq_of_energy (contDiff_dkj hu k j)
+      ((energyR_dkj_le hu k j).trans_lt hE)
+      (fun x => abs_dkj_le_gradSup hu hE k j x) hK1nn hK2nn hK1b hK2b
+  have hint_sum : Integrable (fun x =>
+      ∑ k : Fin 3, ∑ j : Fin 3, gradNormSq (dkj u k j) x ^ 2) volume := by
+    have h1 : Integrable (fun x =>
+        ∑ p : Fin 3 × Fin 3, gradNormSq (dkj u p.1 p.2) x ^ 2) volume :=
+      integrable_finset_sum (Finset.univ : Finset (Fin 3 × Fin 3))
+        fun p _ => hintkj p.1 p.2
+    have heq : (fun x => ∑ k : Fin 3, ∑ j : Fin 3, gradNormSq (dkj u k j) x ^ 2) =
+        fun x => ∑ p : Fin 3 × Fin 3, gradNormSq (dkj u p.1 p.2) x ^ 2 := by
+      funext x
+      exact sum_sum_eq_sum_prod (fun k j => gradNormSq (dkj u k j) x ^ 2)
+    rwa [heq]
+  have hcont : Continuous (fun x => ‖wordDeriv 2 α u x‖ ^ (4 : ℕ)) :=
+    (contDiff_wordDeriv (k := 2) α hu).continuous.norm.pow 4
+  have hnn : 0 ≤ fun x => ‖wordDeriv 2 α u x‖ ^ (4 : ℕ) := fun x =>
+    pow_nonneg (norm_nonneg _) _
+  have hle : ∀ x, ‖wordDeriv 2 α u x‖ ^ (4 : ℕ) ≤
+      9 * ∑ k : Fin 3, ∑ j : Fin 3, gradNormSq (dkj u k j) x ^ 2 := fun x =>
+    (Finset.single_le_sum
+      (f := fun α : Fin 2 → Fin 3 => ‖wordDeriv 2 α u x‖ ^ (4 : ℕ))
+      (fun _ _ => pow_nonneg (norm_nonneg _) _) (Finset.mem_univ α)).trans
+      (sum_wordDeriv_two_pow_four_le u hu x)
+  exact (hint_sum.const_mul 9).mono' hcont.aestronglyMeasurable
+    (Filter.Eventually.of_forall fun x => by
+      simpa [Real.norm_eq_abs, abs_of_nonneg (hnn x)] using hle x)
+
+lemma integral_wordDeriv_two_pow_four_le {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤) (α : Fin 2 → Fin 3)
+    {C : ℝ} (hC : 0 ≤ C)
+    (hgn : (∑ (β : Fin 2 → Fin 3),
+        ∫ x, ‖wordDeriv 2 β u x‖ ^ (4 : ℕ) ∂volume) ≤
+      C * gradSup u ^ 2 * hsSq 3 u) :
+    ∫ x, ‖wordDeriv 2 α u x‖ ^ (4 : ℕ) ∂volume ≤
+      C * gradSup u ^ 2 * hsSq 3 u := by
+  have hint : ∀ β : Fin 2 → Fin 3,
+      Integrable (fun x => ‖wordDeriv 2 β u x‖ ^ (4 : ℕ)) volume :=
+    fun β => integrable_wordDeriv_two_pow_four hu hE β
+  have hnn : ∀ β : Fin 2 → Fin 3,
+      0 ≤ ∫ x, ‖wordDeriv 2 β u x‖ ^ (4 : ℕ) ∂volume := fun β =>
+    integral_nonneg fun _ => pow_nonneg (norm_nonneg _) _
+  have hsingle := Finset.single_le_sum (s := (Finset.univ : Finset (Fin 2 → Fin 3)))
+    (fun β _ => hnn β) (Finset.mem_univ α)
+  exact hsingle.trans hgn
+
+lemma integrable_mul_of_sq {f g : T3 → ℝ}
+    (hf0 : ∀ x, 0 ≤ f x) (hg0 : ∀ x, 0 ≤ g x)
+    (hfc : Continuous f) (hgc : Continuous g)
+    (hfi : Integrable (fun x => f x ^ 2) volume)
+    (hgi : Integrable (fun x => g x ^ 2) volume) :
+    Integrable (fun x => f x * g x) volume := by
+  refine ((hfi.add hgi).const_mul (1 / 2)).mono'
+    (hfc.mul hgc).aestronglyMeasurable
+    (Filter.Eventually.of_forall fun x => ?_)
+  have hprod : 0 ≤ f x * g x := mul_nonneg (hf0 x) (hg0 x)
+  have ham : f x * g x ≤ (f x ^ 2 + g x ^ 2) / 2 := by
+    nlinarith [sq_nonneg (f x - g x)]
+  have habs : |f x| * |g x| = f x * g x := by
+    rw [abs_of_nonneg (hf0 x), abs_of_nonneg (hg0 x)]
+  simpa [Real.norm_eq_abs, habs, div_eq_inv_mul] using ham
+
+lemma integral_nonneg_mul_le_sqrt {f g : T3 → ℝ}
+    (hf0 : ∀ x, 0 ≤ f x) (hg0 : ∀ x, 0 ≤ g x)
+    (hfc : Continuous f) (hgc : Continuous g)
+    (hfi : Integrable (fun x => f x ^ 2) volume)
+    (hgi : Integrable (fun x => g x ^ 2) volume) :
+    ∫ x, f x * g x ∂volume ≤
+      Real.sqrt (∫ x, f x ^ 2 ∂volume) *
+        Real.sqrt (∫ x, g x ^ 2 ∂volume) := by
+  have hf2 : MemLp f 2 volume :=
+    (memLp_two_iff_integrable_sq hfc.aestronglyMeasurable).2 hfi
+  have hg2 : MemLp g 2 volume :=
+    (memLp_two_iff_integrable_sq hgc.aestronglyMeasurable).2 hgi
+  have hf2' : MemLp f (ENNReal.ofReal 2) volume := by convert hf2; norm_num
+  have hg2' : MemLp g (ENNReal.ofReal 2) volume := by convert hg2; norm_num
+  have h := integral_mul_le_Lp_mul_Lq_of_nonneg Real.HolderConjugate.two_two
+    (Filter.Eventually.of_forall hf0) (Filter.Eventually.of_forall hg0) hf2' hg2'
+  have hfpow : (fun x => f x ^ (2 : ℝ)) = fun x => f x ^ 2 := by
+    funext x; exact Real.rpow_natCast (f x) 2
+  have hgpow : (fun x => g x ^ (2 : ℝ)) = fun x => g x ^ 2 := by
+    funext x; exact Real.rpow_natCast (g x) 2
+  have hsqrt : ∀ {a : ℝ}, (0 ≤ a) → a ^ (1 / 2 : ℝ) = Real.sqrt a := fun {a} ha =>
+    (Real.sqrt_eq_rpow a).symm
+  have hf2nn : 0 ≤ ∫ x, f x ^ 2 ∂volume := integral_nonneg fun x => sq_nonneg (f x)
+  have hg2nn : 0 ≤ ∫ x, g x ^ 2 ∂volume := integral_nonneg fun x => sq_nonneg (g x)
+  simp only [hfpow, hgpow] at h
+  have hfroot : (∫ x, f x ^ 2 ∂volume) ^ (2⁻¹ : ℝ) =
+      Real.sqrt (∫ x, f x ^ 2 ∂volume) := by
+    simp only [inv_eq_one_div]
+    exact (Real.sqrt_eq_rpow _).symm
+  have hgroot : (∫ x, g x ^ 2 ∂volume) ^ (2⁻¹ : ℝ) =
+      Real.sqrt (∫ x, g x ^ 2 ∂volume) := by
+    simp only [inv_eq_one_div]
+    exact (Real.sqrt_eq_rpow _).symm
+  simpa [hfroot, hgroot] using h
+
+lemma integrable_norm_mul_mul {f g h : T3 → T3}
+    (hfc : Continuous f) (hgc : Continuous g) (hhc : Continuous h)
+    (hf2 : Integrable (fun x => ‖f x‖ ^ 2) volume)
+    (hg4 : Integrable (fun x => ‖g x‖ ^ (4 : ℕ)) volume)
+    (hh4 : Integrable (fun x => ‖h x‖ ^ (4 : ℕ)) volume) :
+    Integrable (fun x => ‖f x‖ * ‖g x‖ * ‖h x‖) volume := by
+  refine ((hf2.const_mul (1 / 2)).add (hg4.const_mul (1 / 4)) |>.add
+      (hh4.const_mul (1 / 4))).mono'
+    (((hfc.norm.mul hgc.norm).mul hhc.norm).aestronglyMeasurable)
+    (Filter.Eventually.of_forall fun x => ?_)
+  have hnn : 0 ≤ ‖f x‖ * ‖g x‖ * ‖h x‖ :=
+    mul_nonneg (mul_nonneg (norm_nonneg _) (norm_nonneg _)) (norm_nonneg _)
+  have ham := mul_mul_le_sq_add_pow_four (‖f x‖) (‖g x‖) (‖h x‖)
+    (norm_nonneg _) (norm_nonneg _) (norm_nonneg _)
+  simpa [Real.norm_eq_abs, abs_of_nonneg hnn, div_eq_inv_mul] using ham
+
+lemma integral_norm_mul_mul_le_L2_L4_L4 {f g h : T3 → T3}
+    (hfc : Continuous f) (hgc : Continuous g) (hhc : Continuous h)
+    (hf2 : Integrable (fun x => ‖f x‖ ^ 2) volume)
+    (hg4 : Integrable (fun x => ‖g x‖ ^ (4 : ℕ)) volume)
+    (hh4 : Integrable (fun x => ‖h x‖ ^ (4 : ℕ)) volume) :
+    ∫ x, ‖f x‖ * ‖g x‖ * ‖h x‖ ∂volume ≤
+      Real.sqrt (∫ x, ‖f x‖ ^ 2 ∂volume) *
+        Real.sqrt (Real.sqrt (∫ x, ‖g x‖ ^ (4 : ℕ) ∂volume) *
+          Real.sqrt (∫ x, ‖h x‖ ^ (4 : ℕ) ∂volume)) := by
+  have h1 := integral_nonneg_mul_le_sqrt
+    (fun x => norm_nonneg (f x))
+    (fun x => mul_nonneg (norm_nonneg (g x)) (norm_nonneg (h x)))
+    hfc.norm (hgc.norm.mul hhc.norm) hf2
+    (by
+      have hg2 : Integrable (fun x => (‖g x‖ ^ 2) ^ 2) volume := by
+        convert hg4 using 1
+        funext x; ring
+      have hh2 : Integrable (fun x => (‖h x‖ ^ 2) ^ 2) volume := by
+        convert hh4 using 1
+        funext x; ring
+      have heq : (fun x => (‖g x‖ * ‖h x‖) ^ 2) =
+          fun x => ‖g x‖ ^ 2 * ‖h x‖ ^ 2 := by
+        funext x; ring
+      rw [heq]
+      exact integrable_mul_of_sq (fun x => sq_nonneg _) (fun x => sq_nonneg _)
+        (hgc.norm.pow 2) (hhc.norm.pow 2) hg2 hh2)
+  have h2 := integral_nonneg_mul_le_sqrt
+    (fun x => sq_nonneg (‖g x‖)) (fun x => sq_nonneg (‖h x‖))
+    (hgc.norm.pow 2) (hhc.norm.pow 2)
+    (by convert hg4 using 1; funext x; ring)
+    (by convert hh4 using 1; funext x; ring)
+  have hrew : (fun x => ‖f x‖ * (‖g x‖ * ‖h x‖)) =
+      fun x => ‖f x‖ * ‖g x‖ * ‖h x‖ := by
+    funext x; ac_rfl
+  have hsqg : (fun x => (‖g x‖ ^ 2) ^ 2) = fun x => ‖g x‖ ^ (4 : ℕ) := by
+    funext x; ring
+  have hsqh : (fun x => (‖h x‖ ^ 2) ^ 2) = fun x => ‖h x‖ ^ (4 : ℕ) := by
+    funext x; ring
+  -- ∫ ‖f‖(‖g‖‖h‖) ≤ sqrt(∫‖f‖²) * sqrt(∫ ‖g‖²‖h‖²)
+  -- and ∫ ‖g‖²‖h‖² ≤ sqrt(∫‖g‖⁴) * sqrt(∫‖h‖⁴)
+  have : ∫ x, ‖f x‖ * ‖g x‖ * ‖h x‖ ∂volume ≤
+      Real.sqrt (∫ x, ‖f x‖ ^ 2 ∂volume) *
+        Real.sqrt (∫ x, ‖g x‖ ^ 2 * ‖h x‖ ^ 2 ∂volume) := by
+    simpa [hrew, mul_pow] using h1
+  refine this.trans ?_
+  refine mul_le_mul_of_nonneg_left ?_ (Real.sqrt_nonneg _)
+  have hnn : 0 ≤ ∫ x, ‖g x‖ ^ 2 * ‖h x‖ ^ 2 ∂volume :=
+    integral_nonneg fun x => mul_nonneg (sq_nonneg _) (sq_nonneg _)
+  have h2' : ∫ x, ‖g x‖ ^ 2 * ‖h x‖ ^ 2 ∂volume ≤
+      Real.sqrt (∫ x, ‖g x‖ ^ (4 : ℕ) ∂volume) *
+        Real.sqrt (∫ x, ‖h x‖ ^ (4 : ℕ) ∂volume) := by
+    simpa [hsqg, hsqh] using h2
+  exact Real.sqrt_le_sqrt h2'
+
+lemma rpow_quarter_prod_le {a b B : ℝ}
+    (ha : 0 ≤ a) (hb : 0 ≤ b) (hB : 0 ≤ B) (haB : a ≤ B) (hbB : b ≤ B) :
+    Real.sqrt (Real.sqrt a * Real.sqrt b) ≤ Real.sqrt B := by
+  have hsa : 0 ≤ Real.sqrt a := Real.sqrt_nonneg _
+  have hsb : 0 ≤ Real.sqrt b := Real.sqrt_nonneg _
+  have hab : Real.sqrt a * Real.sqrt b ≤ Real.sqrt B * Real.sqrt B :=
+    mul_le_mul (Real.sqrt_le_sqrt haB) (Real.sqrt_le_sqrt hbB) hsb (Real.sqrt_nonneg _)
+  have : Real.sqrt B * Real.sqrt B = B := Real.mul_self_sqrt hB
+  exact Real.sqrt_le_sqrt (hab.trans_eq this)
+
+lemma sqrt_mul_energy_le (C g E : ℝ) (hC : 0 ≤ C) (hg : 0 ≤ g) (hE : 0 ≤ E) :
+    Real.sqrt E * Real.sqrt (C * g ^ 2 * E) ≤ (C + 1) * g * E := by
+  have hB : 0 ≤ C * g ^ 2 * E := mul_nonneg (mul_nonneg hC (sq_nonneg _)) hE
+  have h1 : Real.sqrt (C * g ^ 2 * E) = Real.sqrt C * g * Real.sqrt E := by
+    have h2 : Real.sqrt (C * (g ^ 2 * E)) = Real.sqrt C * Real.sqrt (g ^ 2 * E) :=
+      Real.sqrt_mul hC (g ^ 2 * E)
+    have h3 : Real.sqrt (g ^ 2 * E) = g * Real.sqrt E := by
+      have := Real.sqrt_mul (sq_nonneg g) E
+      simpa [Real.sqrt_sq hg] using this
+    calc
+      Real.sqrt (C * g ^ 2 * E) = Real.sqrt (C * (g ^ 2 * E)) := by ring_nf
+      _ = Real.sqrt C * Real.sqrt (g ^ 2 * E) := h2
+      _ = Real.sqrt C * (g * Real.sqrt E) := by rw [h3]
+      _ = Real.sqrt C * g * Real.sqrt E := by ring
+  have hCS : Real.sqrt C ≤ C + 1 := by
+    nlinarith [sq_nonneg (Real.sqrt C - 1), Real.sq_sqrt hC]
+  have : Real.sqrt E * (Real.sqrt C * g * Real.sqrt E) ≤ (C + 1) * g * E := by
+    have hsq : Real.sqrt E * Real.sqrt E = E := Real.mul_self_sqrt hE
+    calc
+      Real.sqrt E * (Real.sqrt C * g * Real.sqrt E)
+          = (Real.sqrt E * Real.sqrt E) * (Real.sqrt C * g) := by ring
+      _ = E * (Real.sqrt C * g) := by rw [hsq]
+      _ = Real.sqrt C * g * E := by ring
+      _ ≤ (C + 1) * g * E :=
+          mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hCS hg) hE
+  calc
+    Real.sqrt E * Real.sqrt (C * g ^ 2 * E)
+        = Real.sqrt E * (Real.sqrt C * g * Real.sqrt E) := by rw [h1]
+    _ ≤ (C + 1) * g * E := this
+
+
+lemma abs_add_seven (a b c d e f g : ℝ) :
+    |a + b + c + d + e + f + g| ≤
+      |a| + |b| + |c| + |d| + |e| + |f| + |g| := by
+  have h1 := abs_add_le (a + b + c + d + e + f) g
+  have h2 := abs_add_le (a + b + c + d + e) f
+  have h3 := abs_add_le (a + b + c + d) e
+  have h4 := abs_add_le (a + b + c) d
+  have h5 := abs_add_le (a + b) c
+  have h6 := abs_add_le a b
+  linarith
+
+lemma integral_abs_inner_convective_three_zero_le {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤) (α : Fin 3 → Fin 3) :
+    |∫ x, inner ℝ (wordDeriv 3 α u x)
+        (convective (wordDeriv 3 α u) u x) ∂volume| ≤
+      gradSup u * hsSq 3 u := by
+  have hd : Differentiable ℝ u := (hu.differentiable (by simp))
+  have hsq := integrable_wordDeriv_sq hu hE (by norm_num : (3 : ℕ) ≤ 3) α
+  have hgs0 : 0 ≤ gradSup u :=
+    (norm_nonneg (fderiv ℝ u 0)).trans (le_gradSup hu hE 0)
+  have hpt : ∀ x,
+      |inner ℝ (wordDeriv 3 α u x) (convective (wordDeriv 3 α u) u x)| ≤
+        gradSup u * ‖wordDeriv 3 α u x‖ ^ 2 := by
+    intro x
+    have h := abs_inner_convective_le (v := wordDeriv 3 α u)
+      (wvec := wordDeriv 3 α u) (f := u) x (hd x)
+    have hgs := le_gradSup hu hE x
+    nlinarith [hgs, norm_nonneg (wordDeriv 3 α u x),
+      norm_nonneg (fderiv ℝ u x)]
+  have hinter : Integrable
+      (fun x => inner ℝ (wordDeriv 3 α u x)
+        (convective (wordDeriv 3 α u) u x)) volume := by
+    refine (hsq.const_mul (gradSup u)).mono' ?_
+      (Filter.Eventually.of_forall fun x => ?_)
+    · exact ((contDiff_wordDeriv (k := 3) α hu).continuous.inner
+        (contDiff_convective (contDiff_wordDeriv (k := 3) α hu) hu).continuous).aestronglyMeasurable
+    · simpa [Real.norm_eq_abs] using hpt x
+  have habs :
+      |∫ x, inner ℝ (wordDeriv 3 α u x)
+          (convective (wordDeriv 3 α u) u x) ∂volume| ≤
+        ∫ x, |inner ℝ (wordDeriv 3 α u x)
+          (convective (wordDeriv 3 α u) u x)| ∂volume := by
+    simpa [Real.norm_eq_abs] using
+      (norm_integral_le_integral_norm
+        (f := fun x => inner ℝ (wordDeriv 3 α u x)
+          (convective (wordDeriv 3 α u) u x)))
+  have hmono := integral_mono_of_nonneg
+    (Filter.Eventually.of_forall fun _ => abs_nonneg _)
+    (hsq.const_mul (gradSup u)) (Filter.Eventually.of_forall hpt)
+  have hfactor :
+      ∫ x, gradSup u * ‖wordDeriv 3 α u x‖ ^ 2 ∂volume =
+        gradSup u * ∫ x, ‖wordDeriv 3 α u x‖ ^ 2 ∂volume :=
+    integral_const_mul _ _
+  have hsqle := integral_wordDeriv_sq_le hu hE (by norm_num : (3 : ℕ) ≤ 3) α
+  have : gradSup u * ∫ x, ‖wordDeriv 3 α u x‖ ^ 2 ∂volume ≤
+      gradSup u * hsSq 3 u :=
+    mul_le_mul_of_nonneg_left hsqle hgs0
+  exact habs.trans (hmono.trans_eq hfactor |>.trans this)
+
+lemma integral_abs_inner_convective_one_two_le {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤)
+    (α : Fin 3 → Fin 3) (β : Fin 1 → Fin 3) (γ : Fin 2 → Fin 3) :
+    |∫ x, inner ℝ (wordDeriv 3 α u x)
+        (convective (wordDeriv 1 β u) (wordDeriv 2 γ u) x) ∂volume| ≤
+      10 * gradSup u * hsSq 3 u := by
+  have hd : Differentiable ℝ (wordDeriv 2 γ u) :=
+    (contDiff_wordDeriv (k := 2) γ hu).differentiable (by simp)
+  have hsqα := integrable_wordDeriv_sq hu hE (by norm_num : (3 : ℕ) ≤ 3) α
+  have hsqi : ∀ i : Fin 3,
+      Integrable (fun x => ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2) volume :=
+    fun i => integrable_wordDeriv_sq hu hE (by norm_num : (3 : ℕ) ≤ 3)
+      (Fin.cons i γ)
+  have hgs0 : 0 ≤ gradSup u :=
+    (norm_nonneg (fderiv ℝ u 0)).trans (le_gradSup hu hE 0)
+  have hpt : ∀ x,
+      |inner ℝ (wordDeriv 3 α u x)
+        (convective (wordDeriv 1 β u) (wordDeriv 2 γ u) x)| ≤
+        gradSup u *
+          (‖wordDeriv 3 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2) := by
+    intro x
+    have h := abs_inner_convective_le (v := wordDeriv 3 α u)
+      (wvec := wordDeriv 1 β u) (f := wordDeriv 2 γ u) x (hd x)
+    have hop := opNorm_fderiv_wordDeriv_two_le hu γ x
+    have hω := (norm_wordDeriv_one_le β u x).trans (le_gradSup hu hE x)
+    have hnnA : 0 ≤ ‖wordDeriv 3 α u x‖ := norm_nonneg _
+    have hnnS : 0 ≤ ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ :=
+      Finset.sum_nonneg fun _ _ => norm_nonneg _
+    have hmul :
+        ‖wordDeriv 3 α u x‖ * ‖fderiv ℝ (wordDeriv 2 γ u) x‖ *
+          ‖wordDeriv 1 β u x‖ ≤
+        (‖wordDeriv 3 α u x‖ *
+          ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖) * gradSup u := by
+      have h1 : ‖wordDeriv 3 α u x‖ * ‖fderiv ℝ (wordDeriv 2 γ u) x‖ ≤
+          ‖wordDeriv 3 α u x‖ * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ :=
+        mul_le_mul_of_nonneg_left hop hnnA
+      exact mul_le_mul h1 hω (norm_nonneg _) (mul_nonneg hnnA hnnS)
+    have hamg : ‖wordDeriv 3 α u x‖ *
+        ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ≤
+          ‖wordDeriv 3 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 := by
+      have h1 := mul_le_sq_add_sq (‖wordDeriv 3 α u x‖)
+        (∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖)
+      have h2 : (∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖) ^ 2 ≤
+          3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 := by
+        have := sq_sum_le_card_mul_sum_sq
+          (s := (Finset.univ : Finset (Fin 3)))
+          (f := fun i : Fin 3 => ‖wordDeriv 3 (Fin.cons i γ) u x‖)
+        simpa [Finset.card_univ, Fintype.card_fin] using this
+      nlinarith [h1, h2]
+    have hscale :
+        (‖wordDeriv 3 α u x‖ *
+          ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖) * gradSup u ≤
+          gradSup u *
+            (‖wordDeriv 3 α u x‖ ^ 2 +
+              3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2) :=
+      (mul_le_mul_of_nonneg_right hamg hgs0).trans_eq (by ring)
+    exact (h.trans hmul).trans hscale
+  have hmaj : Integrable (fun x =>
+      gradSup u *
+        (‖wordDeriv 3 α u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2)) volume := by
+    have hi := integrable_finset_sum (Finset.univ : Finset (Fin 3))
+      (fun i _ => hsqi i)
+    exact (hsqα.add (hi.const_mul 3)).const_mul (gradSup u)
+  have hinter : Integrable
+      (fun x => inner ℝ (wordDeriv 3 α u x)
+        (convective (wordDeriv 1 β u) (wordDeriv 2 γ u) x)) volume :=
+    hmaj.mono'
+      ((contDiff_wordDeriv (k := 3) α hu).continuous.inner
+        (contDiff_convective
+          (contDiff_wordDeriv (k := 1) β hu)
+          (contDiff_wordDeriv (k := 2) γ hu)).continuous).aestronglyMeasurable
+      (Filter.Eventually.of_forall fun x => by
+        simpa [Real.norm_eq_abs] using hpt x)
+  have habs :
+      |∫ x, inner ℝ (wordDeriv 3 α u x)
+          (convective (wordDeriv 1 β u) (wordDeriv 2 γ u) x) ∂volume| ≤
+        ∫ x, |inner ℝ (wordDeriv 3 α u x)
+          (convective (wordDeriv 1 β u) (wordDeriv 2 γ u) x)| ∂volume := by
+    simpa [Real.norm_eq_abs] using
+      (norm_integral_le_integral_norm
+        (f := fun x => inner ℝ (wordDeriv 3 α u x)
+          (convective (wordDeriv 1 β u) (wordDeriv 2 γ u) x)))
+  have hmono := integral_mono_of_nonneg
+    (Filter.Eventually.of_forall fun _ => abs_nonneg _) hmaj
+    (Filter.Eventually.of_forall hpt)
+  have hi := integrable_finset_sum (Finset.univ : Finset (Fin 3))
+    (fun i _ => hsqi i)
+  have hsumi := integral_finset_sum (Finset.univ : Finset (Fin 3))
+    (fun i _ => hsqi i)
+  have hrhs :
+      ∫ x, gradSup u *
+          (‖wordDeriv 3 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2) ∂volume =
+        gradSup u *
+          (∫ x, ‖wordDeriv 3 α u x‖ ^ 2 ∂volume +
+            3 * ∑ i : Fin 3,
+              ∫ x, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 ∂volume) := by
+    rw [integral_const_mul]
+    congr 1
+    have hf : Integrable (fun x => ‖wordDeriv 3 α u x‖ ^ 2) volume := hsqα
+    have hg : Integrable (fun x =>
+        3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2) volume :=
+      hi.const_mul 3
+    have hfun : (fun x => ‖wordDeriv 3 α u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2) =
+        (fun x => ‖wordDeriv 3 α u x‖ ^ 2) +
+          (fun x => 3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2) := by
+      ext x; simp [Pi.add_apply]
+    rw [hfun]
+    calc
+      integral volume
+          ((fun x => ‖wordDeriv 3 α u x‖ ^ 2) +
+            (fun x => 3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2))
+          = ∫ x, ‖wordDeriv 3 α u x‖ ^ 2 +
+              3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 ∂volume :=
+            rfl
+      _ = ∫ x, ‖wordDeriv 3 α u x‖ ^ 2 ∂volume +
+            ∫ x, 3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 ∂volume :=
+          integral_add hf hg
+      _ = ∫ x, ‖wordDeriv 3 α u x‖ ^ 2 ∂volume +
+            3 * ∫ x, ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 ∂volume := by
+          rw [integral_const_mul]
+      _ = ∫ x, ‖wordDeriv 3 α u x‖ ^ 2 ∂volume +
+            3 * ∑ i : Fin 3,
+              ∫ x, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 ∂volume := by
+          rw [hsumi]
+  have hbound :
+      gradSup u *
+          (∫ x, ‖wordDeriv 3 α u x‖ ^ 2 ∂volume +
+            3 * ∑ i : Fin 3,
+              ∫ x, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 ∂volume) ≤
+        10 * gradSup u * hsSq 3 u := by
+    have h1 := integral_wordDeriv_sq_le hu hE (by norm_num : (3 : ℕ) ≤ 3) α
+    have h2 : ∑ i : Fin 3,
+        ∫ x, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 ∂volume ≤ 3 * hsSq 3 u := by
+      have hterm : ∀ i : Fin 3,
+          ∫ x, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 ∂volume ≤ hsSq 3 u :=
+        fun i => integral_wordDeriv_sq_le hu hE (by norm_num : (3 : ℕ) ≤ 3)
+          (Fin.cons i γ)
+      have hsum := Finset.sum_le_sum (s := (Finset.univ : Finset (Fin 3)))
+        (fun i _ => hterm i)
+      have hcard : ∑ _i : Fin 3, hsSq 3 u = 3 * hsSq 3 u := by
+        simp [Finset.sum_const, Fintype.card_fin]
+      exact hsum.trans_eq hcard
+    have hE0 : 0 ≤ hsSq 3 u := ENNReal.toReal_nonneg
+    have : ∫ x, ‖wordDeriv 3 α u x‖ ^ 2 ∂volume +
+        3 * ∑ i : Fin 3,
+          ∫ x, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 ∂volume ≤
+        10 * hsSq 3 u := by
+      nlinarith [h1, h2, hE0]
+    calc
+      _ ≤ gradSup u * (10 * hsSq 3 u) := mul_le_mul_of_nonneg_left this hgs0
+      _ = 10 * gradSup u * hsSq 3 u := by ring
+  exact habs.trans (hmono.trans_eq hrhs |>.trans hbound)
+
+/-- Canonical Gagliardo–Nirenberg constant from `h3GagliardoNirenberg`. -/
+noncomputable def h3GNConst : ℝ := Exists.choose h3GagliardoNirenberg
+
+lemma h3GNConst_nonneg : 0 ≤ h3GNConst :=
+  (Exists.choose_spec h3GagliardoNirenberg).1
+
+lemma h3GN_le {u : VelocityField} (hu : ContDiff ℝ ∞ u)
+    (hE : sobolevEnergy 3 u < ⊤) :
+    ∑ (β : Fin 2 → Fin 3),
+        ∫ x, ‖wordDeriv 2 β u x‖ ^ (4 : ℕ) ∂volume ≤
+      h3GNConst * gradSup u ^ 2 * hsSq 3 u :=
+  (Exists.choose_spec h3GagliardoNirenberg).2 u hu hE
+
+lemma integral_abs_inner_convective_two_one_le {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤)
+    (α : Fin 3 → Fin 3) (β : Fin 2 → Fin 3) (γ : Fin 1 → Fin 3) :
+    |∫ x, inner ℝ (wordDeriv 3 α u x)
+        (convective (wordDeriv 2 β u) (wordDeriv 1 γ u) x) ∂volume| ≤
+      3 * (h3GNConst + 1) * gradSup u * hsSq 3 u := by
+  have hC := h3GNConst_nonneg
+  have hgn_u := h3GN_le hu hE
+  set f := wordDeriv 3 α u
+  set g := wordDeriv 2 β u
+  have hd : Differentiable ℝ (wordDeriv 1 γ u) :=
+    (contDiff_wordDeriv (k := 1) γ hu).differentiable (by simp)
+  have hfc : Continuous f := (contDiff_wordDeriv (k := 3) α hu).continuous
+  have hgc : Continuous g := (contDiff_wordDeriv (k := 2) β hu).continuous
+  have hf2 := integrable_wordDeriv_sq hu hE (by norm_num : (3 : ℕ) ≤ 3) α
+  have hgs0 : 0 ≤ gradSup u :=
+    (norm_nonneg (fderiv ℝ u 0)).trans (le_gradSup hu hE 0)
+  have hE0 : 0 ≤ hsSq 3 u := ENNReal.toReal_nonneg
+  have hpt : ∀ x,
+      |inner ℝ (f x) (convective g (wordDeriv 1 γ u) x)| ≤
+        ∑ i : Fin 3, ‖f x‖ * ‖wordDeriv 2 (Fin.cons i γ) u x‖ * ‖g x‖ := by
+    intro x
+    have h1 := abs_inner_convective_le (v := f) (wvec := g)
+      (f := wordDeriv 1 γ u) x (hd x)
+    have hop := opNorm_fderiv_wordDeriv_one_le hu γ x
+    have hnnf : 0 ≤ ‖f x‖ := norm_nonneg _
+    have hnng : 0 ≤ ‖g x‖ := norm_nonneg _
+    have hmul : ‖f x‖ * ‖fderiv ℝ (wordDeriv 1 γ u) x‖ * ‖g x‖ ≤
+        ‖f x‖ * (∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖) * ‖g x‖ :=
+      mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hop hnnf) hnng
+    have hsum : ‖f x‖ *
+        (∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖) * ‖g x‖ =
+        ∑ i : Fin 3, ‖f x‖ * ‖wordDeriv 2 (Fin.cons i γ) u x‖ * ‖g x‖ := by
+      simp [Finset.mul_sum, Finset.sum_mul, mul_assoc]
+    exact h1.trans (hmul.trans_eq hsum)
+  have hint_term : ∀ i : Fin 3,
+      Integrable (fun x => ‖f x‖ * ‖wordDeriv 2 (Fin.cons i γ) u x‖ * ‖g x‖)
+        volume := fun i =>
+    integrable_norm_mul_mul hfc
+      (contDiff_wordDeriv (k := 2) (Fin.cons i γ) hu).continuous hgc
+      hf2 (integrable_wordDeriv_two_pow_four hu hE (Fin.cons i γ))
+      (integrable_wordDeriv_two_pow_four hu hE β)
+  have hmaj : Integrable
+      (fun x => ∑ i : Fin 3,
+        ‖f x‖ * ‖wordDeriv 2 (Fin.cons i γ) u x‖ * ‖g x‖) volume :=
+    integrable_finset_sum _ (fun i _ => hint_term i)
+  have hinter : Integrable
+      (fun x => inner ℝ (f x) (convective g (wordDeriv 1 γ u) x)) volume :=
+    hmaj.mono'
+      (hfc.inner (contDiff_convective
+        (contDiff_wordDeriv (k := 2) β hu)
+        (contDiff_wordDeriv (k := 1) γ hu)).continuous).aestronglyMeasurable
+      (Filter.Eventually.of_forall fun x => by
+        simpa [Real.norm_eq_abs, f, g] using hpt x)
+  have habs :
+      |∫ x, inner ℝ (f x) (convective g (wordDeriv 1 γ u) x) ∂volume| ≤
+        ∫ x, |inner ℝ (f x) (convective g (wordDeriv 1 γ u) x)| ∂volume := by
+    simpa [Real.norm_eq_abs] using
+      (norm_integral_le_integral_norm
+        (f := fun x => inner ℝ (f x) (convective g (wordDeriv 1 γ u) x)))
+  have hmono := integral_mono_of_nonneg
+    (Filter.Eventually.of_forall fun _ => abs_nonneg _) hmaj
+    (Filter.Eventually.of_forall hpt)
+  have hsum := integral_finset_sum (Finset.univ : Finset (Fin 3))
+    (fun i _ => hint_term i)
+  have hterm : ∀ i : Fin 3,
+      ∫ x, ‖f x‖ * ‖wordDeriv 2 (Fin.cons i γ) u x‖ * ‖g x‖ ∂volume ≤
+        (h3GNConst + 1) * gradSup u * hsSq 3 u := by
+    intro i
+    have hholder := integral_norm_mul_mul_le_L2_L4_L4 hfc
+      (contDiff_wordDeriv (k := 2) (Fin.cons i γ) hu).continuous hgc
+      hf2 (integrable_wordDeriv_two_pow_four hu hE (Fin.cons i γ))
+      (integrable_wordDeriv_two_pow_four hu hE β)
+    have hfbound := integral_wordDeriv_sq_le hu hE
+      (by norm_num : (3 : ℕ) ≤ 3) α
+    have hAbound := integral_wordDeriv_two_pow_four_le hu hE
+      (Fin.cons i γ) hC hgn_u
+    have hBbound := integral_wordDeriv_two_pow_four_le hu hE β hC hgn_u
+    have hfnn : 0 ≤ ∫ x, ‖f x‖ ^ 2 ∂volume :=
+      integral_nonneg fun _ => sq_nonneg _
+    have hAnn : 0 ≤ ∫ x, ‖wordDeriv 2 (Fin.cons i γ) u x‖ ^ (4 : ℕ) ∂volume :=
+      integral_nonneg fun _ => pow_nonneg (norm_nonneg _) _
+    have hBnn : 0 ≤ ∫ x, ‖g x‖ ^ (4 : ℕ) ∂volume :=
+      integral_nonneg fun _ => pow_nonneg (norm_nonneg _) _
+    have hB0 : 0 ≤ h3GNConst * gradSup u ^ 2 * hsSq 3 u :=
+      mul_nonneg (mul_nonneg hC (sq_nonneg _)) hE0
+    have hsqrtf : Real.sqrt (∫ x, ‖f x‖ ^ 2 ∂volume) ≤ Real.sqrt (hsSq 3 u) :=
+      Real.sqrt_le_sqrt hfbound
+    have hprod := rpow_quarter_prod_le hAnn hBnn hB0 hAbound hBbound
+    have : Real.sqrt (∫ x, ‖f x‖ ^ 2 ∂volume) *
+        Real.sqrt (Real.sqrt (∫ x, ‖wordDeriv 2 (Fin.cons i γ) u x‖ ^ (4 : ℕ)
+            ∂volume) *
+          Real.sqrt (∫ x, ‖g x‖ ^ (4 : ℕ) ∂volume)) ≤
+        Real.sqrt (hsSq 3 u) * Real.sqrt (h3GNConst * gradSup u ^ 2 * hsSq 3 u) :=
+      mul_le_mul hsqrtf hprod (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+    exact hholder.trans (this.trans (sqrt_mul_energy_le h3GNConst (gradSup u) (hsSq 3 u)
+      hC hgs0 hE0))
+  have hsumle :
+      ∑ i : Fin 3,
+          ∫ x, ‖f x‖ * ‖wordDeriv 2 (Fin.cons i γ) u x‖ * ‖g x‖ ∂volume ≤
+        3 * (h3GNConst + 1) * gradSup u * hsSq 3 u := by
+    have h := Finset.sum_le_sum (s := (Finset.univ : Finset (Fin 3)))
+      (fun i _ => hterm i)
+    have hcard : ∑ _i : Fin 3, (h3GNConst + 1) * gradSup u * hsSq 3 u =
+        3 * ((h3GNConst + 1) * gradSup u * hsSq 3 u) := by
+      simp [Finset.sum_const, Fintype.card_fin]
+    have := h.trans_eq hcard
+    simpa [mul_assoc] using this
+  exact habs.trans (hmono.trans (hsum.trans_le hsumle))
+
+
+lemma integrable_inner_convective_three_zero {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤) (α : Fin 3 → Fin 3) :
+    Integrable (fun x => inner ℝ (wordDeriv 3 α u x)
+      (convective (wordDeriv 3 α u) u x)) volume := by
+  have hsq := integrable_wordDeriv_sq hu hE (by norm_num : (3 : ℕ) ≤ 3) α
+  have hpt : ∀ x,
+      |inner ℝ (wordDeriv 3 α u x) (convective (wordDeriv 3 α u) u x)| ≤
+        gradSup u * ‖wordDeriv 3 α u x‖ ^ 2 := by
+    intro x
+    have h := abs_inner_convective_le (v := wordDeriv 3 α u)
+      (wvec := wordDeriv 3 α u) (f := u) x ((hu.differentiable (by simp)) x)
+    have hgs := le_gradSup hu hE x
+    nlinarith [hgs, norm_nonneg (wordDeriv 3 α u x),
+      norm_nonneg (fderiv ℝ u x)]
+  refine (hsq.const_mul (gradSup u)).mono' ?_
+    (Filter.Eventually.of_forall fun x => ?_)
+  · exact ((contDiff_wordDeriv (k := 3) α hu).continuous.inner
+      (contDiff_convective (contDiff_wordDeriv (k := 3) α hu) hu).continuous).aestronglyMeasurable
+  · simpa [Real.norm_eq_abs] using hpt x
+
+lemma integrable_inner_convective_one_two {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤)
+    (α : Fin 3 → Fin 3) (β : Fin 1 → Fin 3) (γ : Fin 2 → Fin 3) :
+    Integrable (fun x => inner ℝ (wordDeriv 3 α u x)
+      (convective (wordDeriv 1 β u) (wordDeriv 2 γ u) x)) volume := by
+  have hsqα := integrable_wordDeriv_sq hu hE (by norm_num : (3 : ℕ) ≤ 3) α
+  have hsqi : ∀ i : Fin 3,
+      Integrable (fun x => ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2) volume :=
+    fun i => integrable_wordDeriv_sq hu hE (by norm_num : (3 : ℕ) ≤ 3)
+      (Fin.cons i γ)
+  have hi := integrable_finset_sum (Finset.univ : Finset (Fin 3))
+    (fun i _ => hsqi i)
+  have hgs0 : 0 ≤ gradSup u :=
+    (norm_nonneg (fderiv ℝ u 0)).trans (le_gradSup hu hE 0)
+  have hd : Differentiable ℝ (wordDeriv 2 γ u) :=
+    (contDiff_wordDeriv (k := 2) γ hu).differentiable (by simp)
+  have hpt : ∀ x,
+      |inner ℝ (wordDeriv 3 α u x)
+        (convective (wordDeriv 1 β u) (wordDeriv 2 γ u) x)| ≤
+        gradSup u *
+          (‖wordDeriv 3 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2) := by
+    intro x
+    have h := abs_inner_convective_le (v := wordDeriv 3 α u)
+      (wvec := wordDeriv 1 β u) (f := wordDeriv 2 γ u) x (hd x)
+    have hop := opNorm_fderiv_wordDeriv_two_le hu γ x
+    have hω := (norm_wordDeriv_one_le β u x).trans (le_gradSup hu hE x)
+    have hnnA : 0 ≤ ‖wordDeriv 3 α u x‖ := norm_nonneg _
+    have hnnS : 0 ≤ ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ :=
+      Finset.sum_nonneg fun _ _ => norm_nonneg _
+    have h1 : ‖wordDeriv 3 α u x‖ * ‖fderiv ℝ (wordDeriv 2 γ u) x‖ ≤
+        ‖wordDeriv 3 α u x‖ * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ :=
+      mul_le_mul_of_nonneg_left hop hnnA
+    have hmul := mul_le_mul h1 hω (norm_nonneg _) (mul_nonneg hnnA hnnS)
+    have hamg : ‖wordDeriv 3 α u x‖ *
+        ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ≤
+          ‖wordDeriv 3 α u x‖ ^ 2 +
+            3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 := by
+      have ha := mul_le_sq_add_sq (‖wordDeriv 3 α u x‖)
+        (∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖)
+      have hb : (∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖) ^ 2 ≤
+          3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2 := by
+        have := sq_sum_le_card_mul_sum_sq
+          (s := (Finset.univ : Finset (Fin 3)))
+          (f := fun i : Fin 3 => ‖wordDeriv 3 (Fin.cons i γ) u x‖)
+        simpa [Finset.card_univ, Fintype.card_fin] using this
+      nlinarith [ha, hb]
+    have hscale :
+        (‖wordDeriv 3 α u x‖ *
+          ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖) * gradSup u ≤
+          gradSup u *
+            (‖wordDeriv 3 α u x‖ ^ 2 +
+              3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2) :=
+      (mul_le_mul_of_nonneg_right hamg hgs0).trans_eq (by ring)
+    exact (h.trans hmul).trans hscale
+  have hmaj : Integrable (fun x =>
+      gradSup u *
+        (‖wordDeriv 3 α u x‖ ^ 2 +
+          3 * ∑ i : Fin 3, ‖wordDeriv 3 (Fin.cons i γ) u x‖ ^ 2)) volume :=
+    (hsqα.add (hi.const_mul 3)).const_mul (gradSup u)
+  exact hmaj.mono'
+    ((contDiff_wordDeriv (k := 3) α hu).continuous.inner
+      (contDiff_convective (contDiff_wordDeriv (k := 1) β hu)
+        (contDiff_wordDeriv (k := 2) γ hu)).continuous).aestronglyMeasurable
+    (Filter.Eventually.of_forall fun x => by
+      simpa [Real.norm_eq_abs] using hpt x)
+
+lemma integrable_inner_convective_two_one {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤)
+    (α : Fin 3 → Fin 3) (β : Fin 2 → Fin 3) (γ : Fin 1 → Fin 3) :
+    Integrable (fun x => inner ℝ (wordDeriv 3 α u x)
+      (convective (wordDeriv 2 β u) (wordDeriv 1 γ u) x)) volume := by
+  have hf2 := integrable_wordDeriv_sq hu hE (by norm_num : (3 : ℕ) ≤ 3) α
+  have hd : Differentiable ℝ (wordDeriv 1 γ u) :=
+    (contDiff_wordDeriv (k := 1) γ hu).differentiable (by simp)
+  have hpt : ∀ x,
+      |inner ℝ (wordDeriv 3 α u x)
+        (convective (wordDeriv 2 β u) (wordDeriv 1 γ u) x)| ≤
+        ∑ i : Fin 3, ‖wordDeriv 3 α u x‖ *
+          ‖wordDeriv 2 (Fin.cons i γ) u x‖ * ‖wordDeriv 2 β u x‖ := by
+    intro x
+    have h1 := abs_inner_convective_le (v := wordDeriv 3 α u)
+      (wvec := wordDeriv 2 β u) (f := wordDeriv 1 γ u) x (hd x)
+    have hop := opNorm_fderiv_wordDeriv_one_le hu γ x
+    have hmul := mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_left hop (norm_nonneg (wordDeriv 3 α u x)))
+      (norm_nonneg (wordDeriv 2 β u x))
+    have hsum : ‖wordDeriv 3 α u x‖ *
+        (∑ i : Fin 3, ‖wordDeriv 2 (Fin.cons i γ) u x‖) *
+        ‖wordDeriv 2 β u x‖ =
+        ∑ i : Fin 3, ‖wordDeriv 3 α u x‖ *
+          ‖wordDeriv 2 (Fin.cons i γ) u x‖ * ‖wordDeriv 2 β u x‖ := by
+      simp [Finset.mul_sum, Finset.sum_mul, mul_assoc]
+    exact h1.trans (hmul.trans_eq hsum)
+  have hint_term : ∀ i : Fin 3,
+      Integrable (fun x => ‖wordDeriv 3 α u x‖ *
+        ‖wordDeriv 2 (Fin.cons i γ) u x‖ * ‖wordDeriv 2 β u x‖) volume :=
+    fun i => integrable_norm_mul_mul
+      (contDiff_wordDeriv (k := 3) α hu).continuous
+      (contDiff_wordDeriv (k := 2) (Fin.cons i γ) hu).continuous
+      (contDiff_wordDeriv (k := 2) β hu).continuous hf2
+      (integrable_wordDeriv_two_pow_four hu hE (Fin.cons i γ))
+      (integrable_wordDeriv_two_pow_four hu hE β)
+  have hmaj := integrable_finset_sum (Finset.univ : Finset (Fin 3))
+    (fun i _ => hint_term i)
+  exact hmaj.mono'
+    ((contDiff_wordDeriv (k := 3) α hu).continuous.inner
+      (contDiff_convective (contDiff_wordDeriv (k := 2) β hu)
+        (contDiff_wordDeriv (k := 1) γ hu)).continuous).aestronglyMeasurable
+    (Filter.Eventually.of_forall fun x => by
+      simpa [Real.norm_eq_abs] using hpt x)
+
+theorem abs_integral_commutator_order_zero {u : VelocityField}
+    (α : Fin 0 → Fin 3) :
+    |∫ x, inner ℝ (wordDeriv 0 α u x) (convectiveCommutator 0 α u x) ∂volume| =
+      0 := by
+  simp [convectiveCommutator_zero, inner_zero_right, integral_zero]
+
+theorem abs_integral_commutator_order_three {u : VelocityField}
+    (hu : ContDiff ℝ ∞ u) (hE : sobolevEnergy 3 u < ⊤) (α : Fin 3 → Fin 3) :
+    |∫ x, inner ℝ (wordDeriv 3 α u x) (convectiveCommutator 3 α u x) ∂volume| ≤
+      (31 + 9 * (h3GNConst + 1)) * gradSup u * hsSq 3 u := by
+  set D3 := wordDeriv 3 α u
+  set t1 := convective D3 u
+  set t2 := convective (wordDeriv 2 (Fin.tail α) u)
+      (wordDeriv 1 (fun _ : Fin 1 => α 0) u)
+  set t3 := convective
+      (wordDeriv 2 (Fin.cons (α 0) (Fin.tail (Fin.tail α))) u)
+      (wordDeriv 1 (fun _ : Fin 1 => (Fin.tail α) 0) u)
+  set t4 := convective (wordDeriv 1 (Fin.tail (Fin.tail α)) u)
+      (wordDeriv 2 (Fin.cons (α 0) (fun _ : Fin 1 => (Fin.tail α) 0)) u)
+  set t5 := convective
+      (wordDeriv 2 (Fin.cons (α 0) (fun _ : Fin 1 => (Fin.tail α) 0)) u)
+      (wordDeriv 1 (Fin.tail (Fin.tail α)) u)
+  set t6 := convective (wordDeriv 1 (fun _ : Fin 1 => (Fin.tail α) 0) u)
+      (wordDeriv 2 (Fin.cons (α 0) (Fin.tail (Fin.tail α))) u)
+  set t7 := convective (wordDeriv 1 (fun _ : Fin 1 => α 0) u)
+      (wordDeriv 2 (Fin.tail α) u)
+  have hcomm : convectiveCommutator 3 α u = t1 + t2 + t3 + t4 + t5 + t6 + t7 := by
+    funext x
+    simpa [D3, t1, t2, t3, t4, t5, t6, t7, Pi.add_apply] using
+      convectiveCommutator_order_three hu α x
+  set i1 := fun x => inner ℝ (D3 x) (t1 x)
+  set i2 := fun x => inner ℝ (D3 x) (t2 x)
+  set i3 := fun x => inner ℝ (D3 x) (t3 x)
+  set i4 := fun x => inner ℝ (D3 x) (t4 x)
+  set i5 := fun x => inner ℝ (D3 x) (t5 x)
+  set i6 := fun x => inner ℝ (D3 x) (t6 x)
+  set i7 := fun x => inner ℝ (D3 x) (t7 x)
+  have hinner : (fun x => inner ℝ (D3 x) (convectiveCommutator 3 α u x)) =
+      i1 + i2 + i3 + i4 + i5 + i6 + i7 := by
+    funext x
+    simp only [hcomm, i1, i2, i3, i4, i5, i6, i7, Pi.add_apply, inner_add_right]
+    try abel
+  have hi1 : Integrable i1 volume := by
+    dsimp [i1, D3, t1]
+    exact integrable_inner_convective_three_zero hu hE α
+  have hi2 : Integrable i2 volume := by
+    dsimp [i2, D3, t2]
+    exact integrable_inner_convective_two_one hu hE α (Fin.tail α)
+      (fun _ : Fin 1 => α 0)
+  have hi3 : Integrable i3 volume := by
+    dsimp [i3, D3, t3]
+    exact integrable_inner_convective_two_one hu hE α
+      (Fin.cons (α 0) (Fin.tail (Fin.tail α)))
+      (fun _ : Fin 1 => (Fin.tail α) 0)
+  have hi4 : Integrable i4 volume := by
+    dsimp [i4, D3, t4]
+    exact integrable_inner_convective_one_two hu hE α (Fin.tail (Fin.tail α))
+      (Fin.cons (α 0) (fun _ : Fin 1 => (Fin.tail α) 0))
+  have hi5 : Integrable i5 volume := by
+    dsimp [i5, D3, t5]
+    exact integrable_inner_convective_two_one hu hE α
+      (Fin.cons (α 0) (fun _ : Fin 1 => (Fin.tail α) 0))
+      (Fin.tail (Fin.tail α))
+  have hi6 : Integrable i6 volume := by
+    dsimp [i6, D3, t6]
+    exact integrable_inner_convective_one_two hu hE α
+      (fun _ : Fin 1 => (Fin.tail α) 0)
+      (Fin.cons (α 0) (Fin.tail (Fin.tail α)))
+  have hi7 : Integrable i7 volume := by
+    dsimp [i7, D3, t7]
+    exact integrable_inner_convective_one_two hu hE α
+      (fun _ : Fin 1 => α 0) (Fin.tail α)
+  have hsumI :
+      ∫ x, inner ℝ (D3 x) (convectiveCommutator 3 α u x) ∂volume =
+        ∫ x, i1 x ∂volume + ∫ x, i2 x ∂volume + ∫ x, i3 x ∂volume +
+          ∫ x, i4 x ∂volume + ∫ x, i5 x ∂volume + ∫ x, i6 x ∂volume +
+            ∫ x, i7 x ∂volume := by
+    have I12 : Integrable (i1 + i2) volume := hi1.add hi2
+    have I13 : Integrable (i1 + i2 + i3) volume := I12.add hi3
+    have I14 : Integrable (i1 + i2 + i3 + i4) volume := I13.add hi4
+    have I15 : Integrable (i1 + i2 + i3 + i4 + i5) volume := I14.add hi5
+    have I16 : Integrable (i1 + i2 + i3 + i4 + i5 + i6) volume := I15.add hi6
+    rw [hinner]
+    calc
+      integral volume (i1 + i2 + i3 + i4 + i5 + i6 + i7)
+          = ∫ x, (i1 + i2 + i3 + i4 + i5 + i6) x + i7 x ∂volume := rfl
+      _ = ∫ x, (i1 + i2 + i3 + i4 + i5 + i6) x ∂volume + ∫ x, i7 x ∂volume :=
+          integral_add I16 hi7
+      _ = ∫ x, (i1 + i2 + i3 + i4 + i5) x + i6 x ∂volume + ∫ x, i7 x ∂volume := by
+          congr 2
+      _ = ∫ x, (i1 + i2 + i3 + i4 + i5) x ∂volume + ∫ x, i6 x ∂volume +
+            ∫ x, i7 x ∂volume := by
+          rw [integral_add I15 hi6]
+      _ = ∫ x, (i1 + i2 + i3 + i4) x + i5 x ∂volume + ∫ x, i6 x ∂volume +
+            ∫ x, i7 x ∂volume := rfl
+      _ = ∫ x, (i1 + i2 + i3 + i4) x ∂volume + ∫ x, i5 x ∂volume +
+            ∫ x, i6 x ∂volume + ∫ x, i7 x ∂volume := by
+          rw [integral_add I14 hi5]
+      _ = ∫ x, (i1 + i2 + i3) x + i4 x ∂volume + ∫ x, i5 x ∂volume +
+            ∫ x, i6 x ∂volume + ∫ x, i7 x ∂volume := rfl
+      _ = ∫ x, (i1 + i2 + i3) x ∂volume + ∫ x, i4 x ∂volume +
+            ∫ x, i5 x ∂volume + ∫ x, i6 x ∂volume + ∫ x, i7 x ∂volume := by
+          rw [integral_add I13 hi4]
+      _ = ∫ x, (i1 + i2) x + i3 x ∂volume + ∫ x, i4 x ∂volume +
+            ∫ x, i5 x ∂volume + ∫ x, i6 x ∂volume + ∫ x, i7 x ∂volume := rfl
+      _ = ∫ x, (i1 + i2) x ∂volume + ∫ x, i3 x ∂volume +
+            ∫ x, i4 x ∂volume + ∫ x, i5 x ∂volume + ∫ x, i6 x ∂volume +
+            ∫ x, i7 x ∂volume := by
+          rw [integral_add I12 hi3]
+      _ = ∫ x, i1 x + i2 x ∂volume + ∫ x, i3 x ∂volume +
+            ∫ x, i4 x ∂volume + ∫ x, i5 x ∂volume + ∫ x, i6 x ∂volume +
+            ∫ x, i7 x ∂volume := rfl
+      _ = ∫ x, i1 x ∂volume + ∫ x, i2 x ∂volume + ∫ x, i3 x ∂volume +
+            ∫ x, i4 x ∂volume + ∫ x, i5 x ∂volume + ∫ x, i6 x ∂volume +
+            ∫ x, i7 x ∂volume := by
+          rw [integral_add hi1 hi2]
+  have b1 := integral_abs_inner_convective_three_zero_le hu hE α
+  have b2 := integral_abs_inner_convective_two_one_le hu hE α
+    (Fin.tail α) (fun _ : Fin 1 => α 0)
+  have b3 := integral_abs_inner_convective_two_one_le hu hE α
+    (Fin.cons (α 0) (Fin.tail (Fin.tail α)))
+    (fun _ : Fin 1 => (Fin.tail α) 0)
+  have b4 := integral_abs_inner_convective_one_two_le hu hE α
+    (Fin.tail (Fin.tail α))
+    (Fin.cons (α 0) (fun _ : Fin 1 => (Fin.tail α) 0))
+  have b5 := integral_abs_inner_convective_two_one_le hu hE α
+    (Fin.cons (α 0) (fun _ : Fin 1 => (Fin.tail α) 0))
+    (Fin.tail (Fin.tail α))
+  have b6 := integral_abs_inner_convective_one_two_le hu hE α
+    (fun _ : Fin 1 => (Fin.tail α) 0)
+    (Fin.cons (α 0) (Fin.tail (Fin.tail α)))
+  have b7 := integral_abs_inner_convective_one_two_le hu hE α
+    (fun _ : Fin 1 => α 0) (Fin.tail α)
+  have habs := abs_add_seven
+    (∫ x, i1 x ∂volume) (∫ x, i2 x ∂volume) (∫ x, i3 x ∂volume)
+    (∫ x, i4 x ∂volume) (∫ x, i5 x ∂volume) (∫ x, i6 x ∂volume)
+    (∫ x, i7 x ∂volume)
+  have hC0 : 0 ≤ h3GNConst := h3GNConst_nonneg
+  have hgs0 : 0 ≤ gradSup u :=
+    (norm_nonneg (fderiv ℝ u 0)).trans (le_gradSup hu hE 0)
+  have hE0 : 0 ≤ hsSq 3 u := ENNReal.toReal_nonneg
+  have hsumbound :
+      |∫ x, i1 x ∂volume| + |∫ x, i2 x ∂volume| + |∫ x, i3 x ∂volume| +
+        |∫ x, i4 x ∂volume| + |∫ x, i5 x ∂volume| + |∫ x, i6 x ∂volume| +
+        |∫ x, i7 x ∂volume| ≤
+      (31 + 9 * (h3GNConst + 1)) * gradSup u * hsSq 3 u := by
+    -- b1 ≤ 1 * g * E; b2,b3,b5 ≤ 3(C+1) g E; b4,b6,b7 ≤ 10 g E
+    have : |∫ x, i1 x ∂volume| ≤ gradSup u * hsSq 3 u := by
+      simpa [D3, t1, i1] using b1
+    have h2' : |∫ x, i2 x ∂volume| ≤
+        3 * (h3GNConst + 1) * gradSup u * hsSq 3 u := by
+      simpa [D3, t2, i2] using b2
+    have h3' : |∫ x, i3 x ∂volume| ≤
+        3 * (h3GNConst + 1) * gradSup u * hsSq 3 u := by
+      simpa [D3, t3, i3] using b3
+    have h4' : |∫ x, i4 x ∂volume| ≤ 10 * gradSup u * hsSq 3 u := by
+      simpa [D3, t4, i4] using b4
+    have h5' : |∫ x, i5 x ∂volume| ≤
+        3 * (h3GNConst + 1) * gradSup u * hsSq 3 u := by
+      simpa [D3, t5, i5] using b5
+    have h6' : |∫ x, i6 x ∂volume| ≤ 10 * gradSup u * hsSq 3 u := by
+      simpa [D3, t6, i6] using b6
+    have h7' : |∫ x, i7 x ∂volume| ≤ 10 * gradSup u * hsSq 3 u := by
+      simpa [D3, t7, i7] using b7
+    nlinarith [this, h2', h3', h4', h5', h6', h7', hC0, hgs0, hE0]
+  rw [hsumI]
+  exact habs.trans hsumbound
+
+lemma card_words (k : ℕ) : Fintype.card (Fin k → Fin 3) = 3 ^ k := by
+  simp [Fintype.card_fun, Fintype.card_fin]
+
+theorem h3CommutatorEstimate : H3CommutatorEstimate := by
+  let C : ℝ :=
+    3 + 9 * 28 + 27 * (31 + 9 * (h3GNConst + 1))
+  have hC : 0 ≤ C := by
+    have : 0 ≤ h3GNConst := h3GNConst_nonneg
+    nlinarith
+  refine ⟨C, hC, ?_⟩
+  intro u hu hE
+  have hgs0 : 0 ≤ gradSup u :=
+    (norm_nonneg (fderiv ℝ u 0)).trans (le_gradSup hu hE 0)
+  have hE0 : 0 ≤ hsSq 3 u := ENNReal.toReal_nonneg
+  have h0 : ∀ α : Fin 0 → Fin 3,
+      |∫ x, inner ℝ (wordDeriv 0 α u x)
+        (convectiveCommutator 0 α u x) ∂volume| ≤
+        0 * gradSup u * hsSq 3 u := fun α => by
+    simp [abs_integral_commutator_order_zero α]
+  have h1 : ∀ α : Fin 1 → Fin 3,
+      |∫ x, inner ℝ (wordDeriv 1 α u x)
+        (convectiveCommutator 1 α u x) ∂volume| ≤
+        gradSup u * hsSq 3 u := fun α =>
+    (abs_integral_commutator_order_one hu hE α).trans
+      (mul_le_mul_of_nonneg_left
+        (integral_wordDeriv_sq_le hu hE (by norm_num : (1 : ℕ) ≤ 3) α) hgs0)
+  have h2 : ∀ α : Fin 2 → Fin 3,
+      |∫ x, inner ℝ (wordDeriv 2 α u x)
+        (convectiveCommutator 2 α u x) ∂volume| ≤
+        28 * gradSup u * hsSq 3 u :=
+    fun α => abs_integral_commutator_order_two hu hE α
+  have h3 : ∀ α : Fin 3 → Fin 3,
+      |∫ x, inner ℝ (wordDeriv 3 α u x)
+        (convectiveCommutator 3 α u x) ∂volume| ≤
+        (31 + 9 * (h3GNConst + 1)) * gradSup u * hsSq 3 u :=
+    fun α => abs_integral_commutator_order_three hu hE α
+  have htri :
+      |∑ k ∈ Finset.range 4, ∑ α : Fin k → Fin 3,
+          ∫ x, inner ℝ (wordDeriv k α u x)
+            (convectiveCommutator k α u x) ∂volume| ≤
+        ∑ k ∈ Finset.range 4, ∑ α : Fin k → Fin 3,
+          |∫ x, inner ℝ (wordDeriv k α u x)
+            (convectiveCommutator k α u x) ∂volume| :=
+    (Finset.abs_sum_le_sum_abs _ _).trans
+      (Finset.sum_le_sum fun _ _ => Finset.abs_sum_le_sum_abs _ _)
+  have hsum0 :
+      ∑ α : Fin 0 → Fin 3,
+          |∫ x, inner ℝ (wordDeriv 0 α u x)
+            (convectiveCommutator 0 α u x) ∂volume| ≤ 0 := by
+    have h0' : ∀ α : Fin 0 → Fin 3,
+        |∫ x, inner ℝ (wordDeriv 0 α u x)
+          (convectiveCommutator 0 α u x) ∂volume| ≤ 0 := fun α =>
+      (h0 α).trans_eq (by ring)
+    have := Finset.sum_le_sum (s := (Finset.univ : Finset (Fin 0 → Fin 3)))
+      (fun α _ => h0' α)
+    have hcard : ∑ _α : Fin 0 → Fin 3, (0 : ℝ) = 0 := by
+      simp [Finset.sum_const]
+    exact this.trans_eq hcard
+  have hsum1 :
+      ∑ α : Fin 1 → Fin 3,
+          |∫ x, inner ℝ (wordDeriv 1 α u x)
+            (convectiveCommutator 1 α u x) ∂volume| ≤
+        3 * gradSup u * hsSq 3 u := by
+    have := Finset.sum_le_sum (s := (Finset.univ : Finset (Fin 1 → Fin 3)))
+      (fun α _ => h1 α)
+    have hcard : ∑ _α : Fin 1 → Fin 3, gradSup u * hsSq 3 u =
+        3 * (gradSup u * hsSq 3 u) := by
+      simp [Finset.sum_const, card_words]
+    exact this.trans_eq (by simpa [mul_assoc] using hcard)
+  have hsum2 :
+      ∑ α : Fin 2 → Fin 3,
+          |∫ x, inner ℝ (wordDeriv 2 α u x)
+            (convectiveCommutator 2 α u x) ∂volume| ≤
+        9 * 28 * gradSup u * hsSq 3 u := by
+    have := Finset.sum_le_sum (s := (Finset.univ : Finset (Fin 2 → Fin 3)))
+      (fun α _ => h2 α)
+    have hcard : ∑ _α : Fin 2 → Fin 3, 28 * gradSup u * hsSq 3 u =
+        9 * (28 * gradSup u * hsSq 3 u) := by
+      simp [Finset.sum_const, card_words]
+    exact this.trans_eq (by simpa [mul_assoc] using hcard)
+  have hsum3 :
+      ∑ α : Fin 3 → Fin 3,
+          |∫ x, inner ℝ (wordDeriv 3 α u x)
+            (convectiveCommutator 3 α u x) ∂volume| ≤
+        27 * (31 + 9 * (h3GNConst + 1)) * gradSup u * hsSq 3 u := by
+    have := Finset.sum_le_sum (s := (Finset.univ : Finset (Fin 3 → Fin 3)))
+      (fun α _ => h3 α)
+    have hcard :
+        ∑ _α : Fin 3 → Fin 3,
+            (31 + 9 * (h3GNConst + 1)) * gradSup u * hsSq 3 u =
+          27 * ((31 + 9 * (h3GNConst + 1)) * gradSup u * hsSq 3 u) := by
+      simp [Finset.sum_const, card_words]
+    exact this.trans_eq (by simpa [mul_assoc] using hcard)
+  have hparts :
+      ∑ k ∈ Finset.range 4, ∑ α : Fin k → Fin 3,
+          |∫ x, inner ℝ (wordDeriv k α u x)
+            (convectiveCommutator k α u x) ∂volume| ≤
+        C * gradSup u * hsSq 3 u := by
+    rw [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_succ,
+      Finset.sum_range_one]
+    -- range 4 = {0,1,2,3}; sum_range_one is {0}
+    nlinarith [hsum0, hsum1, hsum2, hsum3, hC, hgs0, hE0]
+  exact htri.trans hparts
+
 #print axioms KatoPonceCommutator.convectiveCommutator_order_one
 #print axioms KatoPonceCommutator.norm_convectiveCommutator_order_one
 #print axioms KatoPonceCommutator.abs_integral_commutator_order_one
@@ -1858,5 +3425,8 @@ theorem h3GagliardoNirenberg : H3GagliardoNirenberg := by
 #print axioms KatoPonceCommutator.integral_gradNormSq_sq_le_of_hasCompactSupport
 #print axioms KatoPonceCommutator.partiali2_cutoff
 #print axioms KatoPonceCommutator.h3GagliardoNirenberg
+#print axioms KatoPonceCommutator.abs_integral_commutator_order_two
+#print axioms KatoPonceCommutator.abs_integral_commutator_order_three
+#print axioms KatoPonceCommutator.h3CommutatorEstimate
 
 end KatoPonceCommutator
