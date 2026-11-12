@@ -1365,6 +1365,174 @@ theorem contDiff_one_evMap {m : ℕ} (hm : 4 ≤ m) :
     funext fun x => fderiv_evMap hm x
   exact hfun ▸ continuous_evFDeriv hm
 
+lemma five_le {m : ℕ} (hm : 5 ≤ m) : 4 ≤ m :=
+  le_trans (by norm_num : 4 ≤ 5) hm
+
+lemma four_le_pred_of_five {m : ℕ} (hm : 5 ≤ m) : 4 ≤ m - 1 := by
+  omega
+
+lemma three_le_of_five {m : ℕ} (hm : 5 ≤ m) : 3 ≤ m :=
+  le_trans (by norm_num : 3 ≤ 5) hm
+
+/-- The real-linear first-order multiplier, as a `C^∞` map. -/
+lemma contDiff_dH {m : ℕ} (hm : 3 ≤ m) (j : Fin 3) {n : WithTop ℕ∞} :
+    ContDiff ℝ n (fun G : Hm m =>
+      (dH (one_le_of_three hm) j : Hm m →L[ℂ] Hm (m - 1)) G) :=
+  (isBoundedLinearMap_restrictCLM
+      (dH (one_le_of_three hm) j : Hm m →L[ℂ] Hm (m - 1))
+      (fun c x => real_smul_eq_coe_smul c x)
+      (fun c y => real_smul_eq_coe_smul c y)).contDiff
+
+/-- `(x, G) ↦ (x, dHⱼ G)` is `C^∞`. -/
+lemma contDiff_id_dH {m : ℕ} (hm : 3 ≤ m) (j : Fin 3) {n : WithTop ℕ∞} :
+    ContDiff ℝ n (fun p : E3 × Hm m =>
+      (p.1, (dH (one_le_of_three hm) j : Hm m →L[ℂ] Hm (m - 1)) p.2)) :=
+  ContDiff.prodMk contDiff_fst ((contDiff_dH hm j).comp contDiff_snd)
+
+/-- Post-composition with `fst`, as a continuous linear map on operators. -/
+def compFstCLM (m : ℕ) : (E3 →L[ℝ] V) →L[ℝ] (E3 × Hm m →L[ℝ] V) :=
+  (ContinuousLinearMap.compL ℝ (E3 × Hm m) E3 V).flip
+    (ContinuousLinearMap.fst ℝ E3 (Hm m))
+
+/-- Post-composition with `snd`, as a continuous linear map on operators. -/
+def compSndCLM (m : ℕ) : (Hm m →L[ℝ] V) →L[ℝ] (E3 × Hm m →L[ℝ] V) :=
+  (ContinuousLinearMap.compL ℝ (E3 × Hm m) (Hm m) V).flip
+    (ContinuousLinearMap.snd ℝ E3 (Hm m))
+
+lemma jointFDeriv_eq_comp {m : ℕ} (hm : 3 ≤ m) (x : E3) (G : Hm m) :
+    jointFDeriv hm x G =
+      compFstCLM m (spatFDeriv hm G x) +
+        compSndCLM m (evMap (two_le_of_three hm) x) :=
+  rfl
+
+/-- The map `(x, G) ↦ evMap x`, as a `C¹` function for `m ≥ 4`. -/
+lemma contDiff_one_evMap_fst {m : ℕ} (hm : 4 ≤ m) :
+    ContDiff ℝ 1 (fun p : E3 × Hm m => evMap (two_le_of_three (four_le hm)) p.1) :=
+  (contDiff_one_evMap hm).comp contDiff_fst
+
+/-- Rank-one spatial operators `w ↦ projⱼ.smulRight w`. -/
+lemma isBoundedLinearMap_smulRight_proj (j : Fin 3) :
+    IsBoundedLinearMap ℝ
+      (fun w : V => (EuclideanSpace.proj (𝕜 := ℝ) j).smulRight w) where
+  map_add := by
+    intro w₁ w₂
+    exact ContinuousLinearMap.ext fun v => by
+      simp [smul_add]
+  map_smul := by
+    intro c w
+    exact ContinuousLinearMap.ext fun v => by
+      have h : v j • (c • w) = c • (v j • w) := smul_comm (v j) c w
+      simpa [ContinuousLinearMap.smulRight_apply] using h
+  bound := by
+    refine ⟨1, zero_lt_one, fun w => ?_⟩
+    have hop : ‖(EuclideanSpace.proj (𝕜 := ℝ) j).smulRight w‖ ≤ ‖w‖ := by
+      refine ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg w) ?_
+      intro v
+      have hn : ‖v j • w‖ = ‖v j‖ * ‖w‖ := by
+        rw [real_smul_eq_coe_smul_V, norm_smul]
+        congr 1
+        exact (RCLike.norm_ofReal (K := ℂ) (v j)).trans (Real.norm_eq_abs (v j)).symm
+      have hcoord : ‖v j‖ * ‖w‖ ≤ ‖w‖ * ‖v‖ := by
+        have := mul_le_mul_of_nonneg_right (norm_coord_le v j) (norm_nonneg w)
+        simpa [mul_comm] using this
+      change ‖v j • w‖ ≤ ‖w‖ * ‖v‖
+      rw [hn]
+      exact hcoord
+    simpa using hop
+
+/-- `spatFDeriv`, as a `C¹` map of `(x, G)` for `m ≥ 5`. -/
+lemma contDiff_one_spatFDeriv {m : ℕ} (hm : 5 ≤ m) :
+    ContDiff ℝ 1 (fun p : E3 × Hm m =>
+      spatFDeriv (four_le (five_le hm)) p.2 p.1) := by
+  have hunc : ContDiff ℝ 1
+      (uncurryFourierInvBCF
+        (two_le_of_three (four_le (four_le_pred_of_five hm)))) :=
+    contDiff_one_uncurryFourierInvBCF (four_le_pred_of_five hm)
+  have hterm : ∀ j : Fin 3,
+      ContDiff ℝ 1 (fun p : E3 × Hm m =>
+        (EuclideanSpace.proj (𝕜 := ℝ) j).smulRight
+          (uncurryFourierInvBCF
+            (two_le_of_three (four_le (four_le_pred_of_five hm)))
+            (p.1, dH (one_le_of_three (three_le_of_five hm)) j p.2))) := by
+    intro j
+    have hcomp : ContDiff ℝ 1 (fun p : E3 × Hm m =>
+        uncurryFourierInvBCF
+          (two_le_of_three (four_le (four_le_pred_of_five hm)))
+          (p.1, dH (one_le_of_three (three_le_of_five hm)) j p.2)) :=
+      hunc.comp (contDiff_id_dH (three_le_of_five hm) j)
+    exact (isBoundedLinearMap_smulRight_proj j).contDiff.comp hcomp
+  have hfun :
+      (fun p : E3 × Hm m => spatFDeriv (four_le (five_le hm)) p.2 p.1) =
+        fun p => ∑ j : Fin 3,
+          (EuclideanSpace.proj (𝕜 := ℝ) j).smulRight
+            (uncurryFourierInvBCF
+              (two_le_of_three (four_le (four_le_pred_of_five hm)))
+              (p.1, dH (one_le_of_three (three_le_of_five hm)) j p.2)) := by
+    funext p
+    exact ContinuousLinearMap.ext fun v => by
+      rw [spatFDeriv_apply]
+      rfl
+  rw [hfun]
+  exact ContDiff.sum (fun j _ => hterm j)
+
+/-- The joint derivative is `C¹` as a map into operators, for `m ≥ 5`. -/
+lemma contDiff_one_jointFDeriv {m : ℕ} (hm : 5 ≤ m) :
+    ContDiff ℝ 1 (fun p : E3 × Hm m =>
+      jointFDeriv (four_le (five_le hm)) p.1 p.2) := by
+  have hfun :
+      (fun p : E3 × Hm m => jointFDeriv (four_le (five_le hm)) p.1 p.2) =
+        fun p =>
+          compFstCLM m (spatFDeriv (four_le (five_le hm)) p.2 p.1) +
+            compSndCLM m (evMap (two_le_of_three (four_le (five_le hm))) p.1) := by
+    funext p
+    exact jointFDeriv_eq_comp (four_le (five_le hm)) p.1 p.2
+  rw [hfun]
+  have hspat : ContDiff ℝ 1 (fun p : E3 × Hm m =>
+      compFstCLM m (spatFDeriv (four_le (five_le hm)) p.2 p.1)) :=
+    (compFstCLM m).contDiff.comp (contDiff_one_spatFDeriv hm)
+  have hev : ContDiff ℝ 1 (fun p : E3 × Hm m =>
+      compSndCLM m (evMap (two_le_of_three (four_le (five_le hm))) p.1)) :=
+    (compSndCLM m).contDiff.comp (contDiff_one_evMap_fst (five_le hm))
+  exact hspat.add hev
+
+/-- The uncurried inverse Fourier transform is jointly `C²` on `ℝ³ × Ĥ^m` for `m ≥ 5`. -/
+theorem contDiff_two_uncurryFourierInvBCF {m : ℕ} (hm : 5 ≤ m) :
+    ContDiff ℝ 2
+      (uncurryFourierInvBCF (two_le_of_three (four_le (five_le hm)))) := by
+  have h21 : (2 : WithTop ℕ∞) = (1 : WithTop ℕ∞) + 1 := by norm_num
+  rw [h21, contDiff_succ_iff_fderiv]
+  refine ⟨differentiable_uncurryFourierInvBCF (four_le (five_le hm)), ?analytic, ?der⟩
+  · intro hω
+    cases hω
+  · have hfun :
+        fderiv ℝ (uncurryFourierInvBCF (two_le_of_three (four_le (five_le hm)))) =
+          fun p => jointFDeriv (four_le (five_le hm)) p.1 p.2 :=
+      funext fun p => fderiv_uncurryFourierInvBCF (four_le (five_le hm)) p.1 p.2
+    exact hfun ▸ contDiff_one_jointFDeriv hm
+
+theorem contDiffOn_uncurryFourierInvBCF_path_two {m : ℕ} (hm : 5 ≤ m)
+    {T : ℝ} {γ : ℝ → Hm m} (hγ : ContDiffOn ℝ 2 γ (Ico 0 T)) :
+    ContDiffOn ℝ 2
+      (fun q : E3 × ℝ =>
+        uncurryFourierInvBCF (two_le_of_three (four_le (five_le hm))) (q.1, γ q.2))
+      (univ ×ˢ Ico 0 T) := by
+  have hΦ : ContDiff ℝ 2
+      (uncurryFourierInvBCF (two_le_of_three (four_le (five_le hm)))) :=
+    contDiff_two_uncurryFourierInvBCF hm
+  have hpath : ContDiffOn ℝ 2 (fun q : E3 × ℝ => (q.1, γ q.2))
+      (univ ×ˢ Ico 0 T) :=
+    ContDiffOn.prodMk contDiff_fst.contDiffOn
+      (hγ.comp contDiffOn_snd fun q hq => hq.2)
+  exact hΦ.comp_contDiffOn hpath
+
+theorem contDiffOn_uncurry_clm_fourierInvBCF_two {m : ℕ} (hm : 5 ≤ m)
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] (L : V →L[ℝ] F)
+    {T : ℝ} {γ : ℝ → Hm m} (hγ : ContDiffOn ℝ 2 γ (Ico 0 T)) :
+    ContDiffOn ℝ 2 (fun q : E3 × ℝ =>
+      L (uncurryFourierInvBCF (two_le_of_three (four_le (five_le hm))) (q.1, γ q.2)))
+      (univ ×ˢ Ico 0 T) :=
+  L.contDiff.comp_contDiffOn (contDiffOn_uncurryFourierInvBCF_path_two hm hγ)
+
 #print axioms FourierInvFDeriv.spatFDeriv_apply
 #print axioms FourierInvFDeriv.coeFn_sum_dH
 #print axioms FourierInvFDeriv.fourierInv_sum_smul
@@ -1399,5 +1567,10 @@ theorem contDiff_one_evMap {m : ℕ} (hm : 4 ≤ m) :
 #print axioms FourierInvFDeriv.norm_evFDeriv_sub_le
 #print axioms FourierInvFDeriv.continuous_evFDeriv
 #print axioms FourierInvFDeriv.contDiff_one_evMap
+#print axioms FourierInvFDeriv.contDiff_one_spatFDeriv
+#print axioms FourierInvFDeriv.contDiff_one_jointFDeriv
+#print axioms FourierInvFDeriv.contDiff_two_uncurryFourierInvBCF
+#print axioms FourierInvFDeriv.contDiffOn_uncurryFourierInvBCF_path_two
+#print axioms FourierInvFDeriv.contDiffOn_uncurry_clm_fourierInvBCF_two
 
 end FourierInvFDeriv

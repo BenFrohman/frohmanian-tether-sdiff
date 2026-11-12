@@ -103,8 +103,43 @@ theorem contDiffOn_physicalMild_one {u₀ : VelocityField} (hf : ContDiff ℝ �
               (persistPath hf hdec hν hk) q.2)) := by
           simpa [uncurryFourierInvBCF] using hreal.symm
 
+/-- The realized mild field is jointly `C²` on `ℝ³ × [0, T)`, including the
+one-sided time derivative at `t = 0`. -/
+theorem contDiffOn_physicalMild_two {u₀ : VelocityField} (hf : ContDiff ℝ ∞ u₀)
+    (hdec : FeffermanDecay u₀) {ν : ℝ} (hν : 0 < ν) :
+    ContDiffOn ℝ 2 (fun q : E3 × ℝ => physicalMild hf hdec hν q.2 q.1)
+      (univ ×ˢ Ico 0 (Tfeff hf hdec hν)) := by
+  have hk : (2 : ℕ) ≤ 9 := by norm_num
+  have hle : (5 : ℕ) ≤ 9 + 1 := by norm_num
+  have hn : (5 : ℕ) + 2 * 2 ≤ 9 := by norm_num
+  have hγ : ContDiffOn ℝ 2
+      (inclExt hle (Tfeff_nonneg hf hdec hν) (persistPath hf hdec hν hk))
+      (Ico 0 (Tfeff hf hdec hν)) :=
+    contDiffOn_inclExt hk (by norm_num : 2 ≤ 5) hn hν
+      (Tfeff_nonneg hf hdec hν) (persistPath_mildS hf hdec hν hk)
+  have hC :=
+    contDiffOn_uncurry_clm_fourierInvBCF_two (by norm_num : 5 ≤ 5) realifyCLM hγ
+  refine hC.congr ?_
+  intro q hq
+  have hphys := physicalMild_eq_inclExt hf hdec hν hk hle hq.2
+  have hreal := physicalOfHm_eq_realify_BCF (by norm_num : 2 ≤ 5)
+    (inclExt hle (Tfeff_nonneg hf hdec hν) (persistPath hf hdec hν hk) q.2) q.1
+  calc
+    physicalMild hf hdec hν q.2 q.1
+        = physicalOfHm
+            (inclExt hle (Tfeff_nonneg hf hdec hν)
+              (persistPath hf hdec hν hk) q.2) q.1 :=
+          congrArg (fun f => f q.1) hphys
+    _ = realifyCLM
+          (uncurryFourierInvBCF
+            (two_le_of_three (four_le (five_le (by norm_num : 5 ≤ 5))))
+            (q.1, inclExt hle (Tfeff_nonneg hf hdec hν)
+              (persistPath hf hdec hν hk) q.2)) := by
+          simpa [uncurryFourierInvBCF] using hreal.symm
+
 #print axioms MildJointSmooth.continuousOn_uncurry_physicalOfHm
 #print axioms MildJointSmooth.continuousOn_physicalMild
 #print axioms MildJointSmooth.contDiffOn_physicalMild_one
+#print axioms MildJointSmooth.contDiffOn_physicalMild_two
 
 end MildJointSmooth
