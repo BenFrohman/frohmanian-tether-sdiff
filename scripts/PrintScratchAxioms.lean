@@ -103,6 +103,7 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms FourierInvBCF.isBoundedLinearMap_fourierInvBCF
 #print axioms FourierInvBCF.continuous_uncurry_fourierInv
 #print axioms FourierInvBCF.continuousOn_uncurry_clm_fourierInvBCF
+#print axioms FourierInvBCF.contDiffOn_fourierInvBCF
 #print axioms MildJointSmooth.continuousOn_physicalMild
 
 elab "#strict_scratch_axiom_audit" : command => do
@@ -176,6 +177,7 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``FourierInvBCF.isBoundedLinearMap_fourierInvBCF,
     ``FourierInvBCF.continuous_uncurry_fourierInv,
     ``FourierInvBCF.continuousOn_uncurry_clm_fourierInvBCF,
+    ``FourierInvBCF.contDiffOn_fourierInvBCF,
     ``MildJointSmooth.continuousOn_physicalMild]
   let mut bad : Array String := #[]
   let mut nOk := 0

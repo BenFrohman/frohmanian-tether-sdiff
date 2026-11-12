@@ -2,6 +2,8 @@ import Scratch.InverseSobolev
 import Scratch.NonlinearSmooth
 import Mathlib.Topology.ContinuousMap.Bounded.Normed
 import Mathlib.Analysis.Fourier.FourierTransformDeriv
+import Mathlib.Analysis.Calculus.ContDiff.Basic
+import Mathlib.Analysis.Calculus.ContDiff.Comp
 
 /-! # Inverse Fourier as a bounded linear map `Ĥ^m → (ℝ³ →ᵇ ℂ³)`
 
@@ -133,5 +135,14 @@ theorem continuousOn_uncurry_clm_fourierInvBCF {m : ℕ} (hm : 2 ≤ m)
 
 #print axioms FourierInvBCF.continuous_uncurry_clm_fourierInv
 #print axioms FourierInvBCF.continuousOn_uncurry_clm_fourierInvBCF
+
+/-- Inverse Fourier, as a map into bounded continuous functions, preserves
+`C^n` regularity of an `Ĥ^m`-valued path. -/
+theorem contDiffOn_fourierInvBCF {m : ℕ} (hm : 2 ≤ m) {n : WithTop ℕ∞}
+    {T : ℝ} {γ : ℝ → Hm m} (hγ : ContDiffOn ℝ n γ (Ico 0 T)) :
+    ContDiffOn ℝ n (fun t => fourierInvBCF hm (γ t)) (Ico 0 T) :=
+  (isBoundedLinearMap_fourierInvBCF hm).contDiff.comp_contDiffOn hγ
+
+#print axioms FourierInvBCF.contDiffOn_fourierInvBCF
 
 end FourierInvBCF
