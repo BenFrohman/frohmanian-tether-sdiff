@@ -20,6 +20,7 @@ import Scratch.FourierInvBCF
 import Scratch.MildJointSmooth
 import Scratch.FourierInvFDeriv
 import Scratch.LerayPressure
+import Scratch.DivergenceWholeSpace
 
 open Lean Elab Command
 
@@ -140,6 +141,8 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms FourierInvFDeriv.contDiff_two_uncurryFourierInvBCF
 #print axioms FourierInvFDeriv.contDiffOn_uncurryFourierInvBCF_path_two
 #print axioms MildJointSmooth.contDiffOn_physicalMild_two
+#print axioms DivergenceWholeSpace.integral_div_eq_zero_of_hasCompactSupport
+#print axioms DivergenceWholeSpace.integral_div_eq_zero
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -245,7 +248,9 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``FourierInvFDeriv.contDiff_one_evMap,
     ``FourierInvFDeriv.contDiff_two_uncurryFourierInvBCF,
     ``FourierInvFDeriv.contDiffOn_uncurryFourierInvBCF_path_two,
-    ``MildJointSmooth.contDiffOn_physicalMild_two]
+    ``MildJointSmooth.contDiffOn_physicalMild_two,
+    ``DivergenceWholeSpace.integral_div_eq_zero_of_hasCompactSupport,
+    ``DivergenceWholeSpace.integral_div_eq_zero]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
