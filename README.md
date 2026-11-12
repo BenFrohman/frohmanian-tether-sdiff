@@ -6,9 +6,9 @@
 [![Mathlib](https://img.shields.io/badge/Mathlib-v4.30.0--rc1-blue.svg)](https://github.com/leanprover-community/mathlib4)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0006--7068--3718-brightgreen.svg)](https://orcid.org/0009-0006-7068-3718)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24122596.svg)](https://doi.org/10.5281/zenodo.24122596)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24148268.svg)](https://doi.org/10.5281/zenodo.24148268)
 
-Lean 4 formalization and manuscript for *The Frohmanian Tether Bound Implies Global Smoothness on 𝕋³ under Beale–Kato–Majda Continuation, and Implies BKM Integrability: Kernel-Checked Conditional Theorems in Lean 4* (Benjamin Stanley Frohman), version 0.1.5.
+Lean 4 formalization and manuscript for *The Frohmanian Tether Bound Implies Global Smoothness on 𝕋³ under Beale–Kato–Majda Continuation, and Implies BKM Integrability: Kernel-Checked Conditional Theorems in Lean 4* (Benjamin Stanley Frohman), version 0.1.6.
 
 ## Scope (read this first)
 
@@ -18,11 +18,12 @@ Problem.** All results about the full program are *conditional
 implications*: every open assumption is an explicit Lean hypothesis (full list by Lean name under
 "Remaining assumptions" below).
 
-## Unreleased: Fefferman Problem (A) reduction and tether-rate refutation (branch `feat/fefferman-clay-a-reduction`)
+## Fefferman Problem (A) reduction and tether-rate refutation (included in version 0.1.6)
 
-**Conditional only. Clay (A) is not proved.** Kernel-checked at commit `4010251` (Lean
-`v4.30.0-rc1`, Mathlib `0c154d67`; axioms only `propext`, `Classical.choice`, `Quot.sound`;
-rebuild: `bash scripts/verify.sh`). Full details and `#print axioms` output are in `CERTIFICATE.md`.
+**Conditional only. Clay (A) is not proved.** Merged in PR #4 and included on `main` at
+`4aba751`. Kernel-checked at commit `4010251` (Lean `v4.30.0-rc1`, Mathlib `0c154d67`; axioms only
+`propext`, `Classical.choice`, `Quot.sound`; rebuild: `bash scripts/verify.sh`). Full details and
+`#print axioms` output are in `CERTIFICATE.md`.
 
 * `TetherRateCounterexample.not_forall_frohmanianTetherRate`: `FrohmanianTetherRate` (and
   `FrohmanianTetherBound`) as written is **false**. A steady finite-energy field with a
@@ -35,7 +36,7 @@ rebuild: `bash scripts/verify.sh`). Full details and `#print axioms` output are 
   `Clay_A_Fefferman` states Fefferman's official Problem (A) literally. Both hypotheses are
   **open** for general data and are shown satisfiable at `u₀ = 0`.
 
-## Main results (version 0.1.5)
+## Main results (version 0.1.6)
 
 **Main Theorem (kernel-checked)** — `FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound`:
 
@@ -48,15 +49,15 @@ theorem clay_B_exact_of_periodic_tether_bound
 `PeriodicTetherClosingBound ν` is **the Frohmanian tether bound**: for every smooth divergence-free
 ℤ³-periodic `u₀` there is one `Y` with `‖ω(t)‖_∞ ≤ Y` along every classical periodic solution from `u₀` on
 every `[0, T)`. `PeriodicBKMContinuation ν` is the Beale–Kato–Majda continuation hypothesis (such a
-ceiling yields a global smooth periodic solution). In version 0.1.5 both are hypotheses. On `main`,
-`PeriodicBKMContinuation` is now **proved** ("Proved pillar: BKM continuation" below), so only the tether bound
-remains open.
+ceiling yields a global smooth periodic solution). In version 0.1.5 both were hypotheses. In version
+0.1.6, `PeriodicBKMContinuation` is **proved** ("Proved pillar: BKM continuation" below), so only the
+tether bound remains open.
 
 **Second theorem (kernel-checked)** — `FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound`:
 `PeriodicTetherBound ν u₀ → PeriodicBKMIntegrability ν u₀`, i.e. `∫⁻ t in Ico 0 T, ofReal ‖ω(t)‖_∞ ≤ ofReal (max Y 0 * max T₀ 0)`
 for every classical periodic solution on `[0, T)`, `T ≤ T₀`.
 
-**Proved pillar: uniqueness (kernel-checked, unconditional; after 0.1.5, not yet in a Zenodo version)** —
+**Proved pillar: uniqueness (kernel-checked, unconditional; included in version 0.1.6)** —
 library `FrohmanianTetherPillars`, module `FrohmanianTether.Pillars.Uniqueness`. Uniqueness of classical
 ℤ³-periodic solutions is imported from
 [`BenFrohman/periodic-navier-stokes-smooth-uniqueness`](https://github.com/BenFrohman/periodic-navier-stokes-smooth-uniqueness)
@@ -80,7 +81,7 @@ theorem clay_B_exact_unique_of_periodic_tether_bound
 `Clay_B_exact_unique` is Statement (B) plus uniqueness of the global velocity; both sides of the `iff` are
 open. The uniqueness pillar adds the uniqueness conclusion; it discharges no hypothesis by itself.
 
-**Proved pillar: BKM continuation (kernel-checked; after 0.1.5, not yet in a Zenodo version)** —
+**Proved pillar: BKM continuation (kernel-checked; included in version 0.1.6)** —
 module `FrohmanianTether.Pillars.BKMContinuation`. The hypothesis `hBKM` of the Main Theorem is now a
 theorem:
 
@@ -366,17 +367,16 @@ lake env lean scripts/AxiomAudit.lean
 lake env lean scripts/PrintAxioms.lean
 ```
 
-Build (version 0.1.5, verified commit `5d7c9d0`): 2797 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
-`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 1101 declarations in the 35
-`FrohmanianTether.*` modules, including 782 theorem constants (690 stated in the sources, 92
-auto-generated equation/congruence/injectivity lemmas), and **fails** if any depends on an axiom other
-than `propext`, `Classical.choice`, `Quot.sound` (so `sorryAx` and `native_decide` are rejected).
-On `main` with both proved pillars (verified commit `4625ce3adfc04cf31ee2310c406cb2c95763b1d0`, same toolchain
-`leanprover/lean4:v4.30.0-rc1` and Mathlib `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7`): 8389 jobs; the audit covers
-2546 declarations in the 42 `FrohmanianTether.*` and 52 vendored `BKMPillar.*` modules, including 1886 theorem
-constants (1674 stated, 212 auto-generated), all on the three standard axioms;
-`bash scripts/check_vendor.sh` checks the vendored copy against upstream. Both
-checks run in CI (`.github/workflows/certify.yml`). See [`CERTIFICATE.md`](CERTIFICATE.md).
+Build (version 0.1.6, verified commit `4aba751`): 8389 jobs. `python3 scripts/check_no_sorry.py` finds no `sorry`, `admit`, `native_decide` or
+`axiom` declaration in the sources. `scripts/AxiomAudit.lean` audits all 2546 declarations in the 42
+`FrohmanianTether.*` and 52 vendored `BKMPillar.*` modules, including 1886 theorem constants (1674
+stated in the sources, 212 auto-generated equation/congruence/injectivity lemmas), and **fails** if any
+depends on an axiom other than `propext`, `Classical.choice`, `Quot.sound` (so `sorryAx` and
+`native_decide` are rejected). Toolchain `leanprover/lean4:v4.30.0-rc1`, Mathlib
+`0c154d67103f74be3a0f2c509f72ccbf5be9f2a7`. `bash scripts/check_vendor.sh` checks the vendored copy
+against upstream. Both checks run in CI (`.github/workflows/certify.yml`; Lean certificate run
+43107567565, `VERIFY OK`). Version 0.1.5 (verified commit `5d7c9d0`, before the pillars) was 2797 jobs
+and 1101 declarations in 35 modules, including 782 theorem constants. See [`CERTIFICATE.md`](CERTIFICATE.md).
 
 Every hypothesis named above is an explicit Lean argument or a named `Prop`; the repository declares no
 axioms. No theorem takes any of the removed hypotheses above, or `KineticEnergyDerivIsVelocity`, as a
@@ -386,7 +386,7 @@ hypothesis.
 
 * `FrohmanianTether/` — Lean modules (originally extracted from the author's NS_Millennium_Proof
   project, branch `sdiff-abstract-action`, commit `0c9cfdb`; this repository is now standalone).
-* `manuscript/main.tex`, `manuscript/main.pdf` — the paper (version 0.1.5 preprint; conditional results). It quotes the Lean statements
+* `manuscript/main.tex`, `manuscript/main.pdf` — the paper (version 0.1.6 preprint; conditional results). It quotes the Lean statements
   verbatim from `manuscript/lean/`, generated by `python3 scripts/extract_statements.py`; build with
   `cd manuscript && tectonic main.tex`.
 * `scripts/verify.sh` (`make verify`) — one-command verification; `scripts/AxiomAudit.lean`,
@@ -398,7 +398,7 @@ hypothesis.
 
 ## License
 
-Apache 2.0 (see `LICENSE`). Cite via `CITATION.cff` or the Zenodo record of version 0.1.5, [`10.5281/zenodo.24122596`](https://doi.org/10.5281/zenodo.24122596) ([record](https://zenodo.org/records/24122596)); it adds the Main Theorem framing, tether ⇒ BKM integrability (module `TetherImpliesBKM`) and the definition audit (module `TetherDefinitionAudit`), and corrects the local tether hypotheses. Earlier: 0.1.4 [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) (module `ExplicitFlows`), 0.1.3 [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (DOI-only update of 0.1.2), 0.1.2 [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345). All versions: concept DOI [`10.5281/zenodo.24081999`](https://doi.org/10.5281/zenodo.24081999). The archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)) is version 0.1.1, which still contains the removed hypothesis `KineticEnergyDerivIsVelocity`.
+Apache 2.0 (see `LICENSE`). Cite via `CITATION.cff` or the Zenodo record of version 0.1.6, [`10.5281/zenodo.24148268`](https://doi.org/10.5281/zenodo.24148268) ([record](https://zenodo.org/records/24148268)); it adds the proved BKM continuation pillar, so the Main Theorem needs only the open tether closing bound, and includes the repaired `FrohmanianTetherRateSmooth` reduction of Fefferman's Problem (A). Earlier: 0.1.5 [`10.5281/zenodo.24122596`](https://doi.org/10.5281/zenodo.24122596) (Main Theorem framing, tether ⇒ BKM integrability, definition audit and corrected local hypotheses); 0.1.4 [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) (module `ExplicitFlows`), 0.1.3 [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (DOI-only update of 0.1.2), 0.1.2 [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345). All versions: concept DOI [`10.5281/zenodo.24081999`](https://doi.org/10.5281/zenodo.24081999). The archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) ([record](https://zenodo.org/records/24082000)) is version 0.1.1, which still contains the removed hypothesis `KineticEnergyDerivIsVelocity`.
 
 ## Copyright
 

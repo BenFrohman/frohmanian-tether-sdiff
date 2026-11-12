@@ -35,7 +35,8 @@
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 
-\newcommand{\VERSIONDOI}{\href{https://doi.org/10.5281/zenodo.24122596}{10.5281/zenodo.24122596}}
+\newcommand{\VERSIONDOI}{\href{https://doi.org/10.5281/zenodo.24148268}{10.5281/zenodo.24148268}}
+\newcommand{\PREVDOI}{\href{https://doi.org/10.5281/zenodo.24122596}{10.5281/zenodo.24122596}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\T}{\mathbb{T}^3}
 \newcommand{\Tf}{\mathfrak{T}}
@@ -46,8 +47,8 @@
 \small Independent Researcher, Texas, United States\\
 \small \href{mailto:frohmanbenjamin@gmail.com}{\texttt{frohmanbenjamin@gmail.com}}\quad
 ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}\\[0.3em]
-\small Companion repository: \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} \\[0.2em]\small Version 0.1.5; this version's DOI: \VERSIONDOI\\[0.3em]\small\textbf{Preprint. All main results are conditional;}\\\small\textbf{the open hypotheses are collected in Section~\ref{sec:conditional}.}\\\small\textbf{Not a Clay Millennium Problem claim.}}
-\date{10 November 2026}
+\small Companion repository: \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} \\[0.2em]\small Version 0.1.6; this version's DOI: \VERSIONDOI\\[0.3em]\small\textbf{Preprint. All main results are conditional;}\\\small\textbf{the open hypotheses are collected in Section~\ref{sec:conditional}.}\\\small\textbf{Not a Clay Millennium Problem claim.}}
+\date{11 November 2026}
 
 \begin{document}
 \maketitle
@@ -67,10 +68,15 @@ datum implies Beale--Kato--Majda integrability there, $\int_{[0,T)}\|\omega(t)\|
 \max(Y,0)\max(T_0,0)$ for every solution on $[0,T)$, $T\le T_0$. The converse, BKM integrability $\Rightarrow$
 tether bound, is true classical mathematics conditional on three classical pillars (the Beale--Kato--Majda
 theorem, uniqueness of classical periodic solutions, long-time decay); it is described in a separate section,
-is not stated as a theorem, and is being formalized. Both hypotheses of the Main Theorem are open, and the
-tether bound is as strong as statement (B) itself.
+is not stated as a theorem, and is being formalized.
+In this version the Beale--Kato--Majda continuation hypothesis
+\lean{PeriodicBKMContinuation} is proved
+(\lean{periodicBKMContinuation_of_classical}, in
+\texttt{FrohmanianTether/Pillars/BKMContinuation.lean}), so the Main Theorem needs only the
+open tether closing bound, which is as strong as statement (B) itself. This is not a proof of
+statement (B).
 
-Version 0.1.5 also corrects the $\R^3$-class local hypotheses of version 0.1.4, with Lean proofs of both defects:
+Version 0.1.6 adds the BKM continuation pillar described above. Version 0.1.5 corrected the $\R^3$-class local hypotheses of version 0.1.4, with Lean proofs of both defects:
 the real supremum \lean{vorticity_sup_norm} takes the junk value $0$ on unbounded vorticity, so the 0.1.4
 ceiling imposed no constraint at such times (now guarded by \lean{BddAbove}); and the 0.1.4
 \lean{LocalTetherRate} demanded two-sided differentiability of $\|\omega\|_{L^\infty}$ at the right endpoint,
@@ -85,9 +91,11 @@ restricted kernel class, the corrected weight condition via concentrated diverge
 \emph{obstruction to damping} (every symmetric kernel satisfying the energy degeneracy (C2) has $B(H,M)=0$ for
 every $M$), and the decaying shear and ABC flows as exact global periodic solutions for their own data.
 \textbf{This work does not prove global regularity of the three-dimensional Navier--Stokes equations and is not a
-Clay Millennium Problem claim.} The build (Lean \texttt{v4.30.0-rc1}, Mathlib \texttt{v4.30.0-rc1}, 2797 jobs) contains 782 theorem
-constants (690 stated in the sources and 92 auto-generated equation, congruence and injectivity lemmas) and
-1101 declarations in 35 modules, with no \texttt{sorry}, no \texttt{native\_decide}, no axiom
+Clay Millennium Problem claim.} The build at the verified commit \texttt{4aba751d2d365faf0cc48c5b46e9aa0113519273}
+(Lean \texttt{v4.30.0-rc1}, Mathlib \texttt{v4.30.0-rc1}, rev \texttt{0c154d67103f74be3a0f2c509f72ccbf5be9f2a7},
+8389 jobs) contains 1886 theorem constants (1674 stated in the sources and 212 auto-generated equation,
+congruence and injectivity lemmas) and 2546 declarations in 42 \texttt{FrohmanianTether.*} and 52 vendored
+\texttt{BKMPillar.*} modules, with no \texttt{sorry}, no \texttt{native\_decide}, no axiom
 declarations, and every declaration depending only on \texttt{propext}, \texttt{Classical.choice} and
 \texttt{Quot.sound}; this is enforced in continuous integration and reproduced from a fresh clone by
 the single command \texttt{bash scripts/verify.sh} (or \texttt{make verify}).
@@ -112,7 +120,8 @@ source of truth: every result below is stated to match a checked Lean declaratio
 made explicit, and the exact Lean text is reproduced in Appendix~\ref{app:lean}. The main findings are:
 \begin{enumerate}[label=(\roman*)]
 \item \emph{Main results} (Section~\ref{sec:main}). The Frohmanian tether bound together with periodic BKM
-continuation implies the formal statement (B) (Theorem~\ref{thm:mainA}); the tether bound implies BKM
+continuation implies the formal statement (B) (Theorem~\ref{thm:mainA}); in version 0.1.6 the continuation
+hypothesis is proved, so only the open tether bound remains. The tether bound implies BKM
 integrability datum by datum (Theorem~\ref{thm:mainB}). The converse direction and its three classical pillars are
 described in Section~\ref{sec:converse}. Section~\ref{sec:corr} corrects the local hypotheses of 0.1.4.
 \item The tether $T$ satisfies (C3) unconditionally (Section~\ref{sec:tether}). (C2) is not proved. (C1)
@@ -151,9 +160,11 @@ is an \emph{implication} whose hypotheses are not proved. This is the single lis
 name; no other section introduces one.
 \begin{itemize}[leftmargin=1.2em]
 \item \emph{Classical results not in Mathlib:} \lean{KatoLocalWitness} (argument \texttt{hKato}),
-\lean{BKMGlobalContinuation}, \lean{SmoothPhysicalUniqueness}, \lean{PeriodicBKMContinuation} (hypothesis (ii)
-of the Main Theorem),
+\lean{BKMGlobalContinuation}, \lean{SmoothPhysicalUniqueness},
 \lean{KatoUniquenessOnExistenceTimes}, \lean{IsCoadjointMotion}.
+(As of version 0.1.6, hypothesis (ii) of the Main Theorem,
+\lean{PeriodicBKMContinuation}, is proved:
+\lean{periodicBKMContinuation_of_classical}.)
 \item \emph{As strong as the open problem:} the Frohmanian tether bound \lean{ClayStatements.PeriodicTetherClosingBound}
 (hypothesis (i) of the Main Theorem) and its per-datum form \lean{TetherImpliesBKM.PeriodicTetherBound} (hypothesis of
 Theorem~\ref{thm:mainB}); \lean{LocalTetherRate}, \lean{LocalTetherBound},
@@ -192,7 +203,17 @@ conditions for $T$ (Section~\ref{sec:canon}), and restricts the Kato witness to 
 for $T$; a fifth pass constructs concentrated divergence-free test fields, proves the corrected weight
 condition for $T$ (Section~\ref{sec:testfields}) and proves the transported (C1) for translations
 (Section~\ref{sec:c1t}).
-Version 0.1.3 (\href{https://doi.org/10.5281/zenodo.24102715}{10.5281/zenodo.24102715}) added only its DOI to 0.1.2 (\href{https://doi.org/10.5281/zenodo.24102345}{10.5281/zenodo.24102345}). Version 0.1.4 (\href{https://doi.org/10.5281/zenodo.24120781}{10.5281/zenodo.24120781}) added the module \lean{ExplicitFlows} (Section~\ref{sec:explicit}): the decaying shear and ABC flows as exact solutions, their periodic smoothness, and the proof that no nonzero periodic field can be a \lean{KatoLocalWitness}; no existing Lean statement was changed. This version, 0.1.5 (DOI \VERSIONDOI), adds the modules \lean{TetherImpliesBKM} and \lean{TetherDefinitionAudit} (Section~\ref{sec:main}) and corrects the local hypotheses \lean{LocalTetherBound}, \lean{LocalFiniteTimeVorticityBound} and \lean{LocalTetherRate}; the exact statement changes are listed in Section~\ref{sec:diff}. All versions are collected under the concept DOI \href{https://doi.org/10.5281/zenodo.24081999}{10.5281/zenodo.24081999}. The Zenodo version DOI of this repository's \texttt{v0.1.1} archive is \href{https://doi.org/10.5281/zenodo.24082000}{10.5281/zenodo.24082000} (GitHub tag \texttt{v0.1.1} / commit \texttt{0722b16}); it still contains the removed hypothesis \lean{KineticEnergyDerivIsVelocity}. This manuscript is not peer-reviewed and is not an unconditional Navier--Stokes proof.
+Version 0.1.3 (\href{https://doi.org/10.5281/zenodo.24102715}{10.5281/zenodo.24102715}) added only its DOI to 0.1.2 (\href{https://doi.org/10.5281/zenodo.24102345}{10.5281/zenodo.24102345}). Version 0.1.4 (\href{https://doi.org/10.5281/zenodo.24120781}{10.5281/zenodo.24120781}) added the module \lean{ExplicitFlows} (Section~\ref{sec:explicit}): the decaying shear and ABC flows as exact solutions, their periodic smoothness, and the proof that no nonzero periodic field can be a \lean{KatoLocalWitness}; no existing Lean statement was changed. Version 0.1.5 (\PREVDOI) added the modules \lean{TetherImpliesBKM} and \lean{TetherDefinitionAudit} (Section~\ref{sec:main}) and corrected the local hypotheses \lean{LocalTetherBound}, \lean{LocalFiniteTimeVorticityBound} and \lean{LocalTetherRate}; the exact statement changes are listed in Section~\ref{sec:diff}.
+This version, 0.1.6 (DOI \VERSIONDOI, commit \texttt{4aba751d2d365faf0cc48c5b46e9aa0113519273}),
+wires in the proved BKM continuation pillar
+(\lean{periodicBKMContinuation_of_classical}): the Main Theorem
+\lean{clay_B_exact_of_periodic_tether_closing_bound} and its unique-velocity form
+\lean{clay_B_exact_unique_of_periodic_tether_closing_bound} need only the open tether closing bound.
+This is not a proof of statement (B). The same commit includes the repaired rate
+\lean{FrohmanianTetherRateSmooth} and the conditional reduction
+\lean{clay_A_fefferman_of_frohmanianTetherRateSmooth} of Fefferman's Problem (A), whose two hypotheses
+remain open for general data and are only shown satisfiable at $u_0=0$.
+All versions are collected under the concept DOI \href{https://doi.org/10.5281/zenodo.24081999}{10.5281/zenodo.24081999}. The Zenodo version DOI of this repository's \texttt{v0.1.1} archive is \href{https://doi.org/10.5281/zenodo.24082000}{10.5281/zenodo.24082000} (GitHub tag \texttt{v0.1.1} / commit \texttt{0722b16}); it still contains the removed hypothesis \lean{KineticEnergyDerivIsVelocity}. This manuscript is not peer-reviewed and is not an unconditional Navier--Stokes proof.
 
 %=====================================================================
 \section{Main results of version 0.1.5}\label{sec:main}
@@ -245,6 +266,17 @@ Theorem~\ref{thm:mainA} is therefore the composition of (ii) with (i), and the a
 the two hypotheses. Hypothesis (i) is the key estimate. It is open; it is not supplied by the tether kernel of
 Sections~\ref{sec:tether}--\ref{sec:damping}; and it is as strong as statement (B) itself (for $\nu>0$, global
 smoothness on $\T$ together with the decay of the energy gives a time-uniform bound on $M$).
+
+\paragraph{Version 0.1.6: hypothesis (ii) is now a theorem.}
+Uniqueness of classical periodic solutions was already formalized as a pillar
+(\lean{periodicSmoothSolutionOn_unique}). Version 0.1.6 adds
+\lean{periodicBKMContinuation_of_classical}
+(\texttt{FrohmanianTether/Pillars/BKMContinuation.lean}): for every $\nu>0$,
+\lean{PeriodicBKMContinuation ν} holds. Consequently
+\lean{clay_B_exact_of_periodic_tether_closing_bound} and
+\lean{clay_B_exact_unique_of_periodic_tether_closing_bound} take only hypothesis (i), which remains
+open and as strong as statement (B). The two-hypothesis form of Theorem~\ref{thm:mainA} is unchanged
+and is the composition used by the discharged form. This is not a proof of statement (B).
 
 \begin{theorem}[Tether bound $\Rightarrow$ BKM integrability, kernel-checked]\label{thm:mainB}
 \emph{Lean:} \leanbrk{TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound}.\par\noindent
@@ -1018,7 +1050,7 @@ supremum, the degenerate local solution, the refutation of the 0.1.4 \lean{Local
 \lean{localTetherRate_zero}).
 
 \paragraph{Proved as implications from named, open hypotheses.}
-The Main Theorem~\ref{thm:mainA} (from the tether bound and periodic BKM continuation) and
+The Main Theorem~\ref{thm:mainA} (from the tether bound; in version 0.1.6 periodic BKM continuation is proved) and
 Theorem~\ref{thm:mainB} (BKM integrability from the tether bound); canonicity (from saturation and polarization); Casimir conservation (from \lean{IsCoadjointMotion}); the
 conditional regularity theorems \ref{thm:blue}, \ref{thm:cr}, \ref{thm:fft} (from rate or bound
 hypotheses on local solutions, Kato existence, Kato--BKM continuation and uniqueness). The hypotheses are
@@ -1061,10 +1093,12 @@ used and how it relates to the classical literature. Every one is an explicit Le
 finite-energy data (Kato local existence \cite{Kato1984}, equations on $[0,T]$ only);
 \lean{BKMGlobalContinuation} (Kato local existence with Beale--Kato--Majda continuation \cite{BKM1984}; the
 classical statements are for $H^s$ data); \lean{SmoothPhysicalUniqueness} (uniqueness of smooth solutions;
-uniqueness clauses only); \lean{PeriodicBKMContinuation} (hypothesis (ii) of the Main Theorem: local existence,
-uniqueness and Beale--Kato--Majda continuation for classical periodic solutions); \lean{KatoUniquenessOnExistenceTimes}
+uniqueness clauses only); \lean{KatoUniquenessOnExistenceTimes}
 (auxiliary lemma \lean{smoothBelowTstar_of_katoUniqueness} only); \lean{IsCoadjointMotion} for the Euler flow
 (Arnold \cite{Arnold1966}).
+As of version 0.1.6, \lean{PeriodicBKMContinuation} (formerly hypothesis (ii) of the Main Theorem:
+local existence, uniqueness and Beale--Kato--Majda continuation for classical periodic solutions)
+is proved by \lean{periodicBKMContinuation_of_classical}.
 \item[(d) Equivalent in strength to the open problem.] The Frohmanian tether bound
 \lean{ClayStatements.PeriodicTetherClosingBound} (hypothesis (i) of the Main Theorem) and its per-datum form
 \lean{PeriodicTetherBound}; \lean{LocalTetherRate} (the cubic rate on every local physical solution, as a
@@ -1353,14 +1387,14 @@ Quoted verbatim from the repository by \texttt{scripts/extract\_statements.py}; 
 \begin{center}
 \begin{tabular}{>{\raggedright\arraybackslash}p{0.3\textwidth}>{\raggedright\arraybackslash}p{0.62\textwidth}}
 \toprule
-Repository & \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} (version 0.1.5, DOI \VERSIONDOI)\\
-Verified commit & \texttt{5d7c9d0fe1f418063e57a7289dbb71105d73e8b4} (Lean sources; later commits change only documentation, the manuscript and metadata)\\
+Repository & \url{https://github.com/BenFrohman/frohmanian-tether-sdiff} (version 0.1.6, DOI \VERSIONDOI)\\
+Verified commit & \texttt{4aba751d2d365faf0cc48c5b46e9aa0113519273} (main, merge of the BKM continuation pillar)\\
 Lean toolchain & \texttt{leanprover/lean4:v4.30.0-rc1} (pinned in \texttt{lean-toolchain})\\
 Mathlib & \texttt{v4.30.0-rc1}, rev \texttt{0c154d67103f74be3a0f2c509f72ccbf5be9f2a7} (pinned in \texttt{lake-manifest.json})\\
-Build & \texttt{lake build}: 2797 jobs, success\\
-Modules & 35 (\texttt{FrohmanianTether} and 34 submodules)\\
-Theorems audited & 782 (690 stated in the sources, 92 auto-generated)\\
-Declarations audited & 1101 (theorems, definitions, structures, instances)\\
+Build & \texttt{lake build}: 8389 jobs, success (CI run 43107567565, \texttt{VERIFY OK})\\
+Modules audited & 42 \texttt{FrohmanianTether.*} + 52 vendored \texttt{BKMPillar.*}\\
+Theorems audited & 1886 (1674 stated in the sources, 212 auto-generated)\\
+Declarations audited & 2546 (theorems, definitions, structures, instances)\\
 Axioms & only \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\\
 \texttt{sorry} / \texttt{admit} / \texttt{native\_decide} & none (\texttt{scripts/check\_no\_sorry.py}: \texttt{OK})\\
 Axiom declarations & none\\
