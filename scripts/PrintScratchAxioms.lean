@@ -19,6 +19,7 @@ import Scratch.MildPathSmooth
 import Scratch.FourierInvBCF
 import Scratch.MildJointSmooth
 import Scratch.FourierInvFDeriv
+import Scratch.LerayPressure
 
 open Lean Elab Command
 
@@ -115,6 +116,17 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms FourierInvFDeriv.hasFDerivAt_fourierInvBCF
 #print axioms FourierInvFDeriv.fourierInvBCF_eq_integral_spatFDeriv
 #print axioms FourierInvFDeriv.hasFDerivAt_uncurryFourierInvBCF
+#print axioms LerayPressure.abs_rieszCoeff_le
+#print axioms LerayPressure.rieszSym_norm_le
+#print axioms LerayPressure.norm_rieszMul_le
+#print axioms LerayPressure.norm_lerayPressureHm_le
+#print axioms LerayPressure.continuous_lerayPressure
+#print axioms LerayPressure.abs_lerayPressure_le
+#print axioms LerayPressure.bddAbove_lerayPressure
+#print axioms LerayPressure.contDiff_physicalInv
+#print axioms LerayPressure.contDiff_lerayPressure
+#print axioms LerayPressure.contDiff_two_lerayPressure
+#print axioms LerayPressure.contDiff_five_lerayPressure
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -196,7 +208,18 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``MildJointSmooth.continuousOn_physicalMild,
     ``FourierInvFDeriv.hasFDerivAt_fourierInvBCF,
     ``FourierInvFDeriv.fourierInvBCF_eq_integral_spatFDeriv,
-    ``FourierInvFDeriv.hasFDerivAt_uncurryFourierInvBCF]
+    ``FourierInvFDeriv.hasFDerivAt_uncurryFourierInvBCF,
+    ``LerayPressure.abs_rieszCoeff_le,
+    ``LerayPressure.rieszSym_norm_le,
+    ``LerayPressure.norm_rieszMul_le,
+    ``LerayPressure.norm_lerayPressureHm_le,
+    ``LerayPressure.continuous_lerayPressure,
+    ``LerayPressure.abs_lerayPressure_le,
+    ``LerayPressure.bddAbove_lerayPressure,
+    ``LerayPressure.contDiff_physicalInv,
+    ``LerayPressure.contDiff_lerayPressure,
+    ``LerayPressure.contDiff_two_lerayPressure,
+    ``LerayPressure.contDiff_five_lerayPressure]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
