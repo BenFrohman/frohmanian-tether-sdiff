@@ -113,6 +113,7 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms FourierInvBCF.contDiffOn_fourierInvBCF
 #print axioms MildJointSmooth.continuousOn_physicalMild
 #print axioms FourierInvFDeriv.hasFDerivAt_fourierInvBCF
+#print axioms FourierInvFDeriv.fourierInvBCF_eq_integral_spatFDeriv
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -192,7 +193,8 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``FourierInvBCF.continuousOn_uncurry_clm_fourierInvBCF,
     ``FourierInvBCF.contDiffOn_fourierInvBCF,
     ``MildJointSmooth.continuousOn_physicalMild,
-    ``FourierInvFDeriv.hasFDerivAt_fourierInvBCF]
+    ``FourierInvFDeriv.hasFDerivAt_fourierInvBCF,
+    ``FourierInvFDeriv.fourierInvBCF_eq_integral_spatFDeriv]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
