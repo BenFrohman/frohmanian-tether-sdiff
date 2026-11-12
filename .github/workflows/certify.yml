@@ -18,6 +18,10 @@ jobs:
         run: lake exe cache get
       - name: Build
         run: lake build
+      - name: Build Scratch
+        run: |
+          lake build Scratch
+          echo "Built Scratch (every Scratch/*.lean module)"
       - name: No sorry / admit / native_decide / axiom declarations in the sources
         run: python3 scripts/check_no_sorry.py
       - name: Strict axiom audit (fails on any axiom beyond propext, Classical.choice, Quot.sound)
@@ -29,6 +33,15 @@ jobs:
           grep -q "^AUDIT PASS" axioms.txt
           if grep -v "^AUDIT PASS" axioms.txt | grep -qE "AUDIT FAIL|sorryAx|ofReduceBool|error"; then cat axioms.txt; exit 1; fi
           grep "^AUDIT SUMMARY" axioms.txt
+      - name: Scratch axiom audit (headline Scratch theorems)
+        run: |
+          set -o pipefail
+          lake env lean scripts/PrintScratchAxioms.lean 2>&1 | tee scratch_axioms.txt
+      - name: Check Scratch axiom audit
+        run: |
+          grep -q "^SCRATCH AUDIT PASS" scratch_axioms.txt
+          if grep -v "^SCRATCH AUDIT PASS" scratch_axioms.txt | grep -qE "SCRATCH AUDIT FAIL|sorryAx|ofReduceBool|error"; then cat scratch_axioms.txt; exit 1; fi
+          grep "^SCRATCH AUDIT SUMMARY" scratch_axioms.txt
       - name: One-command verification (scripts/verify.sh, as documented in README and paper)
         run: bash scripts/verify.sh
       - name: Upload axiom report
@@ -39,3 +52,4 @@ jobs:
           path: |
             axioms.txt
             print_axioms.txt
+            scratch_axioms.txt
