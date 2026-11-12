@@ -1,5 +1,6 @@
 import Scratch.HeatDeriv
 import Scratch.MildExistence
+import Scratch.DuhamelUp
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 import Mathlib.Analysis.Calculus.Deriv.Add
@@ -22,7 +23,7 @@ set_option maxHeartbeats 800000
 noncomputable section
 namespace DuhamelDeriv
 
-open LerayHeat SobolevFourier SobolevHilbert Duhamel HeatDeriv MildExistence ProductHm
+open LerayHeat SobolevFourier SobolevHilbert Duhamel DuhamelUp HeatDeriv MildExistence ProductHm
 
 /-! ## Inclusion commutes with the heat semigroup -/
 
@@ -352,6 +353,109 @@ theorem hasDerivWithinAt_duhνSame_Ici
     exact add_comm _ _
   exact hsum'.congr_of_mem (fun τ hτ => hcocycle hτ) self_mem_Ici
 
+/-! ## Inclusion of the smoothing Duhamel integral -/
+
+/-- The coeFn identity for the smoothing heat kernel, read in the weaker measure `μw m`. -/
+lemma coeFn_heatUp_ae_low (m : ℕ) {τ : ℝ} (hτ : 0 < τ) (G : Hm m) :
+    (heatUp m hτ G : E3 → V) =ᵐ[μw m] fun ξ =>
+      ((gauss τ ξ : ℝ) : ℂ) • (G : E3 → V) ξ :=
+  (ac_ww (m + 1) m).ae_le (coeFn_heatUp hτ G)
+
+/-- Inclusion `Ĥ^{m+1} ↪ Ĥ^m` turns the smoothing heat kernel into the same-space one. -/
+lemma incl_heatUp_to_heatH (m : ℕ) {τ : ℝ} (hτ : 0 < τ) (G : Hm m) :
+    incl (Nat.le_succ m) (heatUp m hτ G) = heatH m τ G := by
+  refine Lp.ext ?_
+  filter_upwards [coeFn_incl (Nat.le_succ m) (heatUp m hτ G),
+    coeFn_heatUp_ae_low m hτ G, coeFn_heatH τ G] with ξ h1 h2 h3
+  rw [h1, h2, h3]
+
+lemma incl_upI_to_heatH (m : ℕ) (G : ℝ → Hm m) {t s : ℝ} (hst : s < t) :
+    incl (Nat.le_succ m) (upI G t s) = heatH m (t - s) (G s) := by
+  unfold upI
+  rw [dif_pos hst, incl_heatUp_to_heatH]
+
+lemma exists_norm_bound_Icc {E : Type*} [NormedAddCommGroup E] {G : ℝ → E}
+    (hG : Continuous G) {t : ℝ} (ht : 0 ≤ t) :
+    ∃ M, 0 ≤ M ∧ ∀ s ∈ Icc (0 : ℝ) t, ‖G s‖ ≤ M := by
+  have hC : ContinuousOn (fun s => ‖G s‖) (Icc (0 : ℝ) t) := hG.norm.continuousOn
+  obtain ⟨s, hs, hmax⟩ :=
+    (isCompact_Icc (a := (0 : ℝ)) (b := t)).exists_isMaxOn (nonempty_Icc.2 ht) hC
+  exact ⟨‖G s‖, norm_nonneg _, fun x hx => hmax hx⟩
+
+/-- Inclusion turns the smoothing Duhamel integral into the same-space Duhamel integral. -/
+lemma incl_duhUp_to_duh (m : ℕ) {G : ℝ → Hm m} (hG : Continuous G) {t : ℝ} (ht : 0 ≤ t) :
+    incl (Nat.le_succ m) (duhUp m G t) = duh m G t := by
+  rcases eq_or_lt_of_le ht with ht0 | htpos
+  · rw [← ht0]
+    unfold duhUp duh
+    rw [intervalIntegral.integral_same, intervalIntegral.integral_same, map_zero]
+  obtain ⟨M, hM0, hM⟩ := exists_norm_bound_Icc hG ht
+  have hIup : IntervalIntegrable (upI G t) volume 0 t :=
+    intervalIntegrable_upI hG ht hM0 hM
+  unfold duhUp duh
+  rw [← ContinuousLinearMap.intervalIntegral_comp_comm (incl (Nat.le_succ m)) hIup]
+  refine intervalIntegral.integral_congr_ae ?_
+  filter_upwards [measure_eq_zero_iff_ae_notMem.1 (measure_singleton (μ := volume) t)]
+    with s hs0 hs
+  have hs' : s ∈ uIoc 0 t := hs
+  rw [uIoc_of_le ht] at hs'
+  have hslt : s < t := lt_of_le_of_ne hs'.2 hs0
+  exact incl_upI_to_heatH m G hslt
+
+/-- Inclusion turns the viscosity-scaled smoothing Duhamel integral into `duhνSame`. -/
+lemma incl_duhν_to_duhνSame (m : ℕ) {ν t : ℝ} (hνt : 0 ≤ ν * t) {G : ℝ → Hm m} (hG : Continuous G) :
+    incl (Nat.le_succ m) (duhν m ν G t) = duhνSame m ν G t := by
+  unfold duhν duhνSame
+  exact incl_duhUp_to_duh m (continuous_scaleG hG) hνt
+
+
+/-- The coeFn of an inclusion, read in a still weaker measure. Isolated to avoid timeouts. -/
+lemma coeFn_incl_ae_low {m m' m'' : ℕ} (h1 : m' ≤ m) (_h2 : m'' ≤ m') (F : Hm m) :
+    (incl h1 F : E3 → V) =ᵐ[μw m''] (F : E3 → V) :=
+  (ac_ww m' m'').ae_le (coeFn_incl h1 F)
+
+lemma incl_comp {m m' m'' : ℕ} (h1 : m' ≤ m) (h2 : m'' ≤ m') (F : Hm m) :
+    incl h2 (incl h1 F) = incl (le_trans h2 h1) F := by
+  refine Lp.ext ?_
+  filter_upwards [coeFn_incl h2 (incl h1 F), coeFn_incl_ae_low h1 h2 F,
+    coeFn_incl (le_trans h2 h1) F] with ξ hA hB hC
+  rw [hA, hB, hC]
+
+lemma coeFn_heatH_ae_of_le {m m' : ℕ} (_hle : m' ≤ m) (τ : ℝ) (G : Hm m) :
+    (heatH m τ G : E3 → V) =ᵐ[μw m'] fun ξ =>
+      ((gauss τ ξ : ℝ) : ℂ) • (G : E3 → V) ξ :=
+  (ac_ww m m').ae_le (coeFn_heatH τ G)
+
+/-- Inclusion commutes with the heat semigroup for a general index drop. -/
+lemma incl_heatH_of_le {m m' : ℕ} (hle : m' ≤ m) (τ : ℝ) (G : Hm m) :
+    incl hle (heatH m τ G) = heatH m' τ (incl hle G) := by
+  refine Lp.ext ?_
+  filter_upwards [coeFn_incl hle (heatH m τ G), coeFn_heatH_ae_of_le hle τ G,
+    coeFn_heatH τ (incl hle G), coeFn_incl hle G] with ξ h1 h2 h3 h4
+  rw [h1, h2, h3, h4]
+
+lemma incl_duh_of_le {m m' : ℕ} (hle : m' ≤ m) {G : ℝ → Hm m} (hG : Continuous G) (t : ℝ) :
+    incl hle (duh m G t) = duh m' (fun s => incl hle (G s)) t := by
+  unfold duh
+  have hI : IntervalIntegrable (fun s => heatH m (t - s) (G s)) volume 0 t :=
+    (continuous_duh_integrand hG t).intervalIntegrable _ _
+  rw [← ContinuousLinearMap.intervalIntegral_comp_comm (incl hle) hI]
+  refine intervalIntegral.integral_congr fun s _ => ?_
+  exact incl_heatH_of_le hle (t - s) (G s)
+
+lemma scaleG_incl_of_le {m m' : ℕ} (hle : m' ≤ m) (ν : ℝ) (G : ℝ → Hm m) (σ : ℝ) :
+    incl hle (scaleG ν G σ) = scaleG ν (fun s => incl hle (G s)) σ := by
+  simp only [scaleG, map_smul]
+
+lemma incl_duhνSame_of_le {m m' : ℕ} (hle : m' ≤ m) (ν : ℝ)
+    {G : ℝ → Hm m} (hG : Continuous G) (t : ℝ) :
+    incl hle (duhνSame m ν G t) = duhνSame m' ν (fun s => incl hle (G s)) t := by
+  unfold duhνSame
+  rw [incl_duh_of_le hle (continuous_scaleG hG)]
+  congr 1
+  funext σ
+  exact scaleG_incl_of_le hle ν G σ
+
 #print axioms DuhamelDeriv.coeFn_heatH_ae_low
 #print axioms DuhamelDeriv.incl_heatH
 #print axioms DuhamelDeriv.duh_cocycle
@@ -368,5 +472,11 @@ theorem hasDerivWithinAt_duhνSame_Ici
 #print axioms DuhamelDeriv.duhνSame_zero
 #print axioms DuhamelDeriv.hasDerivWithinAt_Ici_translate
 #print axioms DuhamelDeriv.hasDerivWithinAt_duhνSame_Ici
+#print axioms DuhamelDeriv.incl_heatUp_to_heatH
+#print axioms DuhamelDeriv.incl_duhUp_to_duh
+#print axioms DuhamelDeriv.incl_duhν_to_duhνSame
+#print axioms DuhamelDeriv.incl_comp
+#print axioms DuhamelDeriv.incl_heatH_of_le
+#print axioms DuhamelDeriv.incl_duhνSame_of_le
 
 end DuhamelDeriv

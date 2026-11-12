@@ -55,6 +55,9 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms DuhamelDeriv.duh_cocycle
 #print axioms DuhamelDeriv.tendsto_duhνSame_avg
 #print axioms DuhamelDeriv.hasDerivWithinAt_duhνSame_Ici
+#print axioms DuhamelDeriv.incl_duhν_to_duhνSame
+#print axioms DuhamelDeriv.incl_heatH_of_le
+#print axioms DuhamelDeriv.incl_duhνSame_of_le
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -85,7 +88,10 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``IBPWholeSpace.integral_partial_inner,
     ``DuhamelDeriv.duh_cocycle,
     ``DuhamelDeriv.tendsto_duhνSame_avg,
-    ``DuhamelDeriv.hasDerivWithinAt_duhνSame_Ici]
+    ``DuhamelDeriv.hasDerivWithinAt_duhνSame_Ici,
+    ``DuhamelDeriv.incl_duhν_to_duhνSame,
+    ``DuhamelDeriv.incl_heatH_of_le,
+    ``DuhamelDeriv.incl_duhνSame_of_le]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
