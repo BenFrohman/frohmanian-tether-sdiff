@@ -1,6 +1,11 @@
 import Scratch.DuhamelDeriv
+import Scratch.DuhamelUp
 import Scratch.PersistenceHm
 import Mathlib.Analysis.Calculus.Deriv.Add
+import Mathlib.Analysis.Calculus.FDeriv.Extend
+import Mathlib.Analysis.Calculus.ContDiff.Basic
+import Mathlib.Analysis.Calculus.ContDiff.Deriv
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 
 /-! # Time derivative of a high-regularity mild path in a lower `Ĥ^m`
 
@@ -171,8 +176,150 @@ theorem hasDerivWithinAt_mildS_incl
     exact mildS_eq_duhνSame hk hm hν hT hu ht'
   exact hsum.congr_of_mem heq ⟨le_rfl, le_of_lt ht0lt⟩
 
+/-- The explicit right-derivative formula for the included mild path. -/
+def mildSDeriv {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm2 : m + 2 ≤ k)
+    {T ν : ℝ} (_hν : 0 < ν) (hT : 0 ≤ T)
+    (u₀ : Hm (k + 1)) (u : XTs k T) (t : ℝ) : Hm m :=
+  ν • heatH m (ν * t) (lapH m (incl (add_two_le_succ hm2) u₀)) -
+    (incl (incl_le_add_two m) (incl hm2 (nsnExt hk hT u t)) +
+      ν • lapH m (duhνSame (m + 2) ν
+        (fun s => incl hm2 (nsnExt hk hT u s)) t))
+
+lemma continuous_mildSDeriv {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm2 : m + 2 ≤ k)
+    {T ν : ℝ} (hν : 0 < ν) (hT : 0 ≤ T)
+    (u₀ : Hm (k + 1)) (u : XTs k T) :
+    Continuous (mildSDeriv hk hm2 hν hT u₀ u) := by
+  have hG : Continuous fun s => incl hm2 (nsnExt hk hT u s) :=
+    (incl hm2).continuous.comp (continuous_nsnExt hk hT u)
+  have hheat : Continuous fun t =>
+      heatH m (ν * t) (lapH m (incl (add_two_le_succ hm2) u₀)) :=
+    continuous_heatH_comp (continuous_const_mul ν) continuous_const
+  have hN : Continuous fun t =>
+      incl (incl_le_add_two m) (incl hm2 (nsnExt hk hT u t)) :=
+    (incl (incl_le_add_two m)).continuous.comp hG
+  have hduh : Continuous fun t =>
+      duhνSame (m + 2) ν (fun s => incl hm2 (nsnExt hk hT u s)) t :=
+    (DuhamelUp.continuous_duh (continuous_scaleG hG)).comp (continuous_const_mul ν)
+  exact (continuous_const.smul hheat).sub
+    (hN.add (continuous_const.smul ((lapH m).continuous.comp hduh)))
+
+lemma hasDerivWithinAt_mildSDeriv
+    {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm2 : m + 2 ≤ k)
+    {T ν : ℝ} (hν : 0 < ν) (hT : 0 ≤ T)
+    {u₀ : Hm (k + 1)} {u : XTs k T} (hu : IsMildS hk hT ν u₀ u)
+    {t0 : ℝ} (ht0 : t0 ∈ Ico (0 : ℝ) T) :
+    HasDerivWithinAt (inclExt (le_succ_of_add_two_le hm2) hT u)
+      (mildSDeriv hk hm2 hν hT u₀ u t0) (Icc t0 T) t0 :=
+  hasDerivWithinAt_mildS_incl hk hm2 hν hT hu ht0
+
+/-- The right derivative upgrades from `[t0, T]` to `[t0, ∞)` when `t0 < T`. -/
+lemma hasDerivWithinAt_mildSDeriv_Ici
+    {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm2 : m + 2 ≤ k)
+    {T ν : ℝ} (hν : 0 < ν) (hT : 0 ≤ T)
+    {u₀ : Hm (k + 1)} {u : XTs k T} (hu : IsMildS hk hT ν u₀ u)
+    {t0 : ℝ} (ht0 : t0 ∈ Ico (0 : ℝ) T) :
+    HasDerivWithinAt (inclExt (le_succ_of_add_two_le hm2) hT u)
+      (mildSDeriv hk hm2 hν hT u₀ u t0) (Ici t0) t0 :=
+  (hasDerivWithinAt_mildSDeriv hk hm2 hν hT hu ht0).mono_of_mem_nhdsWithin
+    (Icc_mem_nhdsGE ht0.2)
+
+/-- Averaging lemma: the interval average of a continuous path tends to its
+value at the right endpoint, as the left endpoint tends to it from the left.
+Isolated from the `Ĥᵐ` types. -/
+lemma tendsto_intervalIntegral_avg {E : Type*} [NormedAddCommGroup E]
+    [NormedSpace ℝ E] [CompleteSpace E] {g : ℝ → E} (hg : Continuous g) (t0 : ℝ) :
+    Tendsto (fun a : ℝ => (t0 - a)⁻¹ • ∫ s in a..t0, g s) (𝓝[<] t0) (𝓝 (g t0)) := by
+  have hF : HasDerivAt (fun u => ∫ x in (t0 - 1)..u, g x) (g t0) t0 :=
+    intervalIntegral.integral_hasDerivAt_right
+      (hg.intervalIntegrable (t0 - 1) t0)
+      (hg.stronglyMeasurableAtFilter volume (𝓝 t0)) hg.continuousAt
+  have hslope := hF.tendsto_slope.mono_left (nhdsLT_le_nhdsNE t0)
+  have hrew : ∀ᶠ a : ℝ in 𝓝[<] t0,
+      slope (fun u => ∫ x in (t0 - 1)..u, g x) t0 a =
+        (t0 - a)⁻¹ • ∫ s in a..t0, g s := by
+    filter_upwards [eventually_mem_nhdsWithin] with a ha
+    have hadj :=
+      intervalIntegral.integral_add_adjacent_intervals (μ := volume) (f := g)
+        (hg.intervalIntegrable (t0 - 1) t0) (hg.intervalIntegrable t0 a)
+    rw [slope_def_module, ← hadj, add_sub_cancel_left, intervalIntegral.integral_symm,
+      smul_neg, ← neg_smul, ← inv_neg, neg_sub]
+  exact hslope.congr' hrew
+
+/-- Two-sided derivative of the included mild path at an interior time. -/
+theorem hasDerivAt_mildS_incl
+    {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm2 : m + 2 ≤ k)
+    {T ν : ℝ} (hν : 0 < ν) (hT : 0 ≤ T)
+    {u₀ : Hm (k + 1)} {u : XTs k T} (hu : IsMildS hk hT ν u₀ u)
+    {t0 : ℝ} (ht0 : t0 ∈ Ioo (0 : ℝ) T) :
+    HasDerivAt (inclExt (le_succ_of_add_two_le hm2) hT u)
+      (mildSDeriv hk hm2 hν hT u₀ u t0) t0 := by
+  set f := inclExt (le_succ_of_add_two_le hm2) hT u
+  set g := mildSDeriv hk hm2 hν hT u₀ u
+  have hg : Continuous g := continuous_mildSDeriv hk hm2 hν hT u₀ u
+  have hf : Continuous f := continuous_inclExt _ hT u
+  have hright : HasDerivWithinAt f (g t0) (Ici t0) t0 :=
+    hasDerivWithinAt_mildSDeriv_Ici hk hm2 hν hT hu ⟨ht0.1.le, ht0.2⟩
+  have hleft : HasDerivWithinAt f (g t0) (Iic t0) t0 := by
+    rw [hasDerivWithinAt_iff_tendsto_slope, Iic_diff_right]
+    have havg := tendsto_intervalIntegral_avg hg t0
+    have hrew : ∀ᶠ a : ℝ in 𝓝[<] t0,
+        (t0 - a)⁻¹ • ∫ s in a..t0, g s = slope f t0 a := by
+      filter_upwards [Ioo_mem_nhdsLT ht0.1] with a ha
+      have hlt : a < t0 := ha.2
+      have ha0 : 0 < a := ha.1
+      have hFTC : (∫ s in a..t0, g s) = f t0 - f a := by
+        refine intervalIntegral.integral_eq_sub_of_hasDeriv_right_of_le hlt.le
+          hf.continuousOn (fun x hx => ?deriv) (hg.intervalIntegrable a t0)
+        have hxIco : x ∈ Ico (0 : ℝ) T :=
+          ⟨le_trans ha0.le (le_of_lt hx.1), lt_trans hx.2 ht0.2⟩
+        exact (hasDerivWithinAt_mildSDeriv_Ici hk hm2 hν hT hu hxIco).Ioi_of_Ici
+      rw [slope_def_module, hFTC, ← neg_sub t0 a, inv_neg, neg_smul, ← smul_neg, neg_sub]
+    exact havg.congr' hrew
+  simpa [Iic_union_Ici] using hleft.union hright
+
+/-- On the half-open existence interval the included mild path is differentiable in the
+one-sided sense at `t = 0`, and two-sided at every positive time. -/
+theorem hasDerivWithinAt_mildS_incl_Ico
+    {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm2 : m + 2 ≤ k)
+    {T ν : ℝ} (hν : 0 < ν) (hT : 0 ≤ T)
+    {u₀ : Hm (k + 1)} {u : XTs k T} (hu : IsMildS hk hT ν u₀ u)
+    {t0 : ℝ} (ht0 : t0 ∈ Ico (0 : ℝ) T) :
+    HasDerivWithinAt (inclExt (le_succ_of_add_two_le hm2) hT u)
+      (mildSDeriv hk hm2 hν hT u₀ u t0) (Ico 0 T) t0 := by
+  rcases eq_or_lt_of_le ht0.1 with h0 | hpos
+  · subst h0
+    exact (hasDerivWithinAt_mildSDeriv_Ici hk hm2 hν hT hu ht0).mono Ico_subset_Ici_self
+  · exact (hasDerivAt_mildS_incl hk hm2 hν hT hu ⟨hpos, ht0.2⟩).hasDerivWithinAt.mono
+      (subset_univ _)
+
+/-- The included mild path is `C¹` on `[0, T)`. -/
+theorem contDiffOn_one_inclExt
+    {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm2 : m + 2 ≤ k)
+    {T ν : ℝ} (hν : 0 < ν) (hT : 0 ≤ T)
+    {u₀ : Hm (k + 1)} {u : XTs k T} (hu : IsMildS hk hT ν u₀ u) :
+    ContDiffOn ℝ 1 (inclExt (le_succ_of_add_two_le hm2) hT u) (Ico 0 T) := by
+  by_cases hTpos : 0 < T
+  · rw [contDiffOn_one_iff_derivWithin (uniqueDiffOn_Ico (0 : ℝ) T)]
+    refine ⟨?diff, ?cont⟩
+    · intro t0 ht0
+      exact (hasDerivWithinAt_mildS_incl_Ico hk hm2 hν hT hu ht0).differentiableWithinAt
+    · have hder : ∀ t0 ∈ Ico (0 : ℝ) T,
+          derivWithin (inclExt (le_succ_of_add_two_le hm2) hT u) (Ico 0 T) t0 =
+            mildSDeriv hk hm2 hν hT u₀ u t0 :=
+        fun t0 ht0 =>
+          (hasDerivWithinAt_mildS_incl_Ico hk hm2 hν hT hu ht0).derivWithin
+            (uniqueDiffOn_Ico (0 : ℝ) T t0 ht0)
+      exact (continuous_mildSDeriv hk hm2 hν hT u₀ u).continuousOn.congr hder
+  · have hempty : Ico (0 : ℝ) T = ∅ := Ico_eq_empty_iff.2 (not_lt.2 (le_of_not_gt hTpos))
+    rw [hempty]
+    exact contDiffOn_empty
+
 #print axioms MildTimeDeriv.incl_duhHigh_to_duhνSame
 #print axioms MildTimeDeriv.mildS_eq_duhνSame
 #print axioms MildTimeDeriv.hasDerivWithinAt_mildS_incl
+#print axioms MildTimeDeriv.continuous_mildSDeriv
+#print axioms MildTimeDeriv.hasDerivAt_mildS_incl
+#print axioms MildTimeDeriv.hasDerivWithinAt_mildS_incl_Ico
+#print axioms MildTimeDeriv.contDiffOn_one_inclExt
 
 end MildTimeDeriv
