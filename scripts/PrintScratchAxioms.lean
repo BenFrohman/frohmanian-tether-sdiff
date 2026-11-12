@@ -90,6 +90,9 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms MildPathSmooth.incl_nsnExt_eq_NSNsucc
 #print axioms MildPathSmooth.mildSDeriv_eq_NSNsucc
 #print axioms MildPathSmooth.derivWithin_inclExt_eq_NSNsucc
+#print axioms MildPathSmooth.contDiff_lapH
+#print axioms MildPathSmooth.contDiffOn_inclExt
+#print axioms MildPathSmooth.contDiffOn_inclExt_of_le_two
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -151,7 +154,10 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``InclNSN.incl_incl_NSNsucc,
     ``MildPathSmooth.incl_nsnExt_eq_NSNsucc,
     ``MildPathSmooth.mildSDeriv_eq_NSNsucc,
-    ``MildPathSmooth.derivWithin_inclExt_eq_NSNsucc]
+    ``MildPathSmooth.derivWithin_inclExt_eq_NSNsucc,
+    ``MildPathSmooth.contDiff_lapH,
+    ``MildPathSmooth.contDiffOn_inclExt,
+    ``MildPathSmooth.contDiffOn_inclExt_of_le_two]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
