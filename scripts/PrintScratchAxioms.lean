@@ -12,6 +12,7 @@ import Scratch.HeatDeriv
 import Scratch.IBPWholeSpace
 import Scratch.DuhamelDeriv
 import Scratch.MildTimeDeriv
+import Scratch.NonlinearSmooth
 
 open Lean Elab Command
 
@@ -72,6 +73,12 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms MildTimeDeriv.contDiffOn_one_inclExt
 #print axioms MildTimeDeriv.lapH_heatH
 #print axioms MildTimeDeriv.mildSDeriv_eq_lap
+#print axioms NonlinearSmooth.isBoundedBilinear_mulF
+#print axioms NonlinearSmooth.contDiff_mulF
+#print axioms NonlinearSmooth.contDiff_mulF_quad
+#print axioms NonlinearSmooth.contDiff_divTensor
+#print axioms NonlinearSmooth.contDiff_NSN
+#print axioms NonlinearSmooth.contDiff_NSNsucc
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -118,7 +125,13 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``MildTimeDeriv.hasDerivWithinAt_mildS_incl_Ico,
     ``MildTimeDeriv.contDiffOn_one_inclExt,
     ``MildTimeDeriv.lapH_heatH,
-    ``MildTimeDeriv.mildSDeriv_eq_lap]
+    ``MildTimeDeriv.mildSDeriv_eq_lap,
+    ``NonlinearSmooth.isBoundedBilinear_mulF,
+    ``NonlinearSmooth.contDiff_mulF,
+    ``NonlinearSmooth.contDiff_mulF_quad,
+    ``NonlinearSmooth.contDiff_divTensor,
+    ``NonlinearSmooth.contDiff_NSN,
+    ``NonlinearSmooth.contDiff_NSNsucc]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
