@@ -9,6 +9,7 @@ import Scratch.KatoPonce
 import Scratch.FeffermanMild
 import Scratch.KatoPonceCommutator
 import Scratch.HeatDeriv
+import Scratch.IBPWholeSpace
 
 open Lean Elab Command
 
@@ -48,6 +49,8 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms HeatDeriv.hasDerivWithinAt_gauss
 #print axioms HeatDeriv.hasDerivWithinAt_heatH
 #print axioms HeatDeriv.hasDerivWithinAt_heatH_visc
+#print axioms IBPWholeSpace.integral_partial_mul
+#print axioms IBPWholeSpace.integral_partial_inner
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -73,7 +76,9 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``KatoPonceCommutator.abs_integral_commutator_order_one,
     ``HeatDeriv.lapH,
     ``HeatDeriv.hasDerivWithinAt_heatH,
-    ``HeatDeriv.hasDerivWithinAt_heatH_visc]
+    ``HeatDeriv.hasDerivWithinAt_heatH_visc,
+    ``IBPWholeSpace.integral_partial_mul,
+    ``IBPWholeSpace.integral_partial_inner]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
