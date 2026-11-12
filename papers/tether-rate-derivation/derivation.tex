@@ -1,0 +1,284 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}[Scale=0.80]
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=2.6cm]{geometry}
+\usepackage{fancyvrb}
+\usepackage{booktabs,tabularx,array}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\lean}[1]{\texttt{\detokenize{#1}}}
+\DefineVerbatimEnvironment{leancode}{Verbatim}{fontsize=\footnotesize,frame=single,framesep=2mm,baselinestretch=0.95}
+
+\title{A Step-by-Step Derivation of the Repaired Tether Rate:\\
+Identities that Close, Inequalities that Remain Open}
+\author{Frohman, Benjamin Stanley\thanks{ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}. Email: \href{mailto:frohmanbenjamin@gmail.com}{frohmanbenjamin@gmail.com}.}\\[2pt]
+\small Independent Researcher, Texas, United States}
+\date{Draft of November 11, 2026 --- working derivation, not a Clay claim}
+
+\sloppy\setlength{\emergencystretch}{3em}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We unfold the Lean proposition \lean{FrohmanianTetherRateSmooth} and derive, step by step, the evolution of $M(t)=\|\omega(t)\|_\infty$ along a local solution in Fefferman's smooth class on $\R^3\times[0,T)$. Every calculus identity that closes is kernel-checked in Lean~4 (\lean{v4.30.0-rc1}, Mathlib rev \lean{0c154d67}), using only the axioms \lean{propext}, \lean{Classical.choice} and \lean{Quot.sound}, with no \lean{sorry}. Every inequality that does not close is written as a named \lean{Prop}, tested against Navier--Stokes parabolic scaling, and compared with known counterexamples. The statement of \lean{FrohmanianTetherRateSmooth} is unchanged, and it is not proved for general Fefferman data. This document does not resolve any Clay Millennium Problem.
+\end{abstract}
+
+\tableofcontents
+
+\section{The statement, unfolded}
+
+In the repository \lean{frohmanian-tether-sdiff}, on the branch used for this derivation, the repaired rate is \lean{RepairedTether.FrohmanianTetherRateSmooth} in \lean{Scratch/RepairedTetherRate.lean:72--79}. It reads, verbatim:
+
+The definitions it unfolds to, quoted verbatim from
+\lean{Scratch/RepairedTetherRate.lean:54--79}, are:
+
+\begin{leancode}
+@[expose] public def IsFeffermanSolutionOn (ν T : ℝ) (u₀ : VelocityField)
+    (u : TimeDependentVelocity) (p : TimeDependentPressure) : Prop :=
+  ContDiffOn ℝ ∞ (fun q : T3 × ℝ => u q.2 q.1) (Set.univ ×ˢ Set.Ico (0 : ℝ) T) ∧
+  ContDiffOn ℝ ∞ (fun q : T3 × ℝ => p q.2 q.1) (Set.univ ×ˢ Set.Ico (0 : ℝ) T) ∧
+  (∀ t ∈ Set.Ico (0 : ℝ) T, ∀ x : T3,
+    derivWithin (fun s => u s x) (Set.Ici 0) t + convective (u t) (u t) x +
+        pressureGradient (p t) x = ν • laplacian (u t) x + 0 ∧
+      div (u t) x = 0) ∧
+  (∀ x : T3, u 0 x = u₀ x) ∧
+  (∀ t ∈ Set.Ico (0 : ℝ) T, ∫⁻ x, ‖u t x‖ₑ ^ 2 ≤ ∫⁻ x, ‖u₀ x‖ₑ ^ 2)
+
+@[expose] public def Mω (u : TimeDependentVelocity) (t : ℝ) : ℝ :=
+  vorticity_sup_norm (vorticity (u t))
+
+@[expose] public def FrohmanianTetherRateSmooth (u₀ : VelocityField) (ν : ℝ) : Prop :=
+  ∃ C kap : ℝ, 0 < C ∧ 0 < kap ∧
+    ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
+      IsFeffermanSolutionOn ν T u₀ u p →
+        ContinuousOn (Mω u) (Set.Ico (0 : ℝ) T) ∧
+        (∀ s ∈ Set.Ico (0 : ℝ) T, ∃ d : ℝ,
+          HasDerivWithinAt (Mω u) d (Set.Ici s) s ∧
+          d ≤ C * Mω u s ^ 2 - kap * Mω u s ^ 3) ∧
+        (∀ t ∈ Set.Ico (0 : ℝ) T, BddAbove (Set.range fun x => ‖vorticity (u t) x‖))
+\end{leancode}
+
+The auxiliary pieces, all definitional, are as follows.
+
+\paragraph{$M(t)$.} By definition $M(t)=\|\omega(t)\|_\infty$, written in Lean as
+\lean{Mω u t := vorticity_sup_norm (vorticity (u t))}
+with
+\lean{vorticity_sup_norm omega := iSup fun x => ||omega x||}
+(\lean{NS_Equations.lean:2787}). This is a real supremum. On an unbounded range Mathlib sets it to $0$, which is why the rate carries an explicit \lean{BddAbove} conjunct.
+
+\paragraph{The solution class.} \lean{IsFeffermanSolutionOn nu T u0 u p} (\lean{RepairedTetherRate.lean:54--63}) requires: joint smoothness of $(u,p)$ on $\R^3\times[0,T)$; the incompressible Navier--Stokes equations with $f\equiv 0$ and a one-sided time derivative at $t=0$; the initial condition $u(\cdot,0)=u_0$; and the energy inequality $\int_{\R^3}|u(t)|^2\le\int_{\R^3}|u_0|^2$.
+
+\paragraph{What must be shown.} For every Fefferman datum $u_0$ and every $\nu>0$, there exist constants $C,\kappa>0$, depending only on $u_0$ and $\nu$, such that along \emph{every} local Fefferman-class solution issuing from $u_0$, the function $M$ is finite and continuous on $[0,T)$, is right-differentiable, and obeys
+\begin{equation}
+\label{eq:rate}
+M'(t)\;\le\; C\,M(t)^2-\kappa\,M(t)^3.
+\end{equation}
+The zero datum is already proved: \lean{frohmanianTetherRateSmooth_zero}. For general data the proposition is unsettled. The original (unrepaired) rate \lean{FrohmanianTetherRate} is kernel-checked disproved, as written, by \lean{not_forall_frohmanianTetherRate}.
+
+The Lean development of the identities below lives in \lean{Scratch/TetherRateDerivation.lean} on the branch \lean{feat/tether-rate-derivation}.
+
+\section{The evolution identity}
+\label{sec:evolution}
+
+Start from the vorticity formulation of Navier--Stokes, obtained by taking the curl of the momentum equation. For a two-sided solution this is the existing kernel-checked identity \lean{vorticity_transport_at} (\lean{NS_Equations.lean:2162}):
+\begin{equation}
+\label{eq:transport}
+\partial_t\omega+(u\cdot\nabla)\omega
+=(\omega\cdot\nabla)u+\nu\Delta\omega.
+\end{equation}
+On a Fefferman solution the time derivative in the momentum equation is one-sided at $t=0$. For times $t\in(0,T)$ the one-sided derivative coincides with the two-sided derivative, because $[0,\infty)$ is a neighbourhood of $t$. This is
+\lean{fefferman_two_sided_eq_interior} (\lean{TetherRateDerivation.lean:431}), together with
+\lean{derivWithin_Ici_eq_deriv_of_pos} and the interior smoothness lemmas
+\lean{fefferman_u_contDiffAt_interior}, \lean{fefferman_p_contDiffAt_interior}. Status: \textbf{kernel-checked proved}. At $t=0$ the transport identity must be read with a right derivative; that one-sided commutation of curl and $\partial_t$ is not formalized in this file.
+
+Take the inner product of~\eqref{eq:transport} with $\omega$ and use the identity
+\[
+\partial_t\Bigl(\tfrac12|\omega|^2\Bigr)
+=\langle\omega,\partial_t\omega\rangle,
+\]
+which is \lean{hasDerivAt_halfNormSq_time}. One obtains the pointwise energy law
+\begin{equation}
+\label{eq:pointwise}
+\partial_t\Bigl(\tfrac12|\omega|^2\Bigr)
++\langle\omega,(u\cdot\nabla)\omega\rangle
+=\langle\omega,(\omega\cdot\nabla)u\rangle
++\nu\langle\omega,\Delta\omega\rangle.
+\end{equation}
+
+\paragraph{Bochner identity.} Write $|\nabla\omega|_{\mathrm{HS}}^2=\sum_{i=1}^3|\partial_i\omega|^2$ (\lean{hsSq}) and write $\Delta$ for the scalar Laplacian (\lean{scalarLaplacian}). For a $C^2$ field,
+\begin{equation}
+\label{eq:bochner}
+\langle\omega,\Delta\omega\rangle
+=\Delta\bigl(\tfrac12|\omega|^2\bigr)-|\nabla\omega|_{\mathrm{HS}}^2.
+\end{equation}
+This is \lean{bochner_identity} (\lean{TetherRateDerivation.lean:78}). Status: \textbf{kernel-checked proved}.
+
+\paragraph{At a spatial maximum.} Suppose $x$ is a local spatial maximum of $y\mapsto|\omega(y)|$. Then it is a local maximum of $\tfrac12|\omega|^2$ (\lean{isLocalMax_halfNormSq_of_isLocalMax_norm}), the Fr\'echet derivative of $\tfrac12|\omega|^2$ vanishes (\lean{fderiv_halfNormSq_eq_zero_of_isLocalMax}), and therefore the transport pairing vanishes:
+\begin{equation}
+\label{eq:transportcancel}
+\langle\omega,(u\cdot\nabla)\omega\rangle(x)=0.
+\end{equation}
+This is \lean{transport_vanishes_at_local_max} (\lean{TetherRateDerivation.lean:147}), recovering the existing pointwise fact \lean{transport_inner_vanishes_of_grad_zero}. Moreover, the Laplacian of a $C^2$ scalar is nonpositive at a local maximum (\lean{scalarLaplacian_nonpos_of_isLocalMax}, \lean{TetherRateDerivation.lean:202}, from the one-dimensional second-derivative test). Combined with~\eqref{eq:bochner},
+\begin{equation}
+\label{eq:visc}
+\langle\omega,\Delta\omega\rangle(x)
+\;\le\;
+-|\nabla\omega(x)|_{\mathrm{HS}}^2
+\;\le\;0.
+\end{equation}
+This is \lean{viscPair_le_neg_hsSq_at_local_max} (\lean{TetherRateDerivation.lean:256}). Status of~\eqref{eq:transportcancel}--\eqref{eq:visc}: \textbf{kernel-checked proved}.
+
+\paragraph{Envelope for $M$.} If $M(s)=|\omega(s,x(s))|$ along a differentiable maximizing trajectory, and if the spatial gradient of $\tfrac12|\omega|^2$ vanishes at $x(t)$, the chain rule and~\eqref{eq:transportcancel} give, whenever $M(t)>0$,
+\begin{equation}
+\label{eq:danskin}
+M'(t)
+=\frac{\langle\omega,\partial_t\omega\rangle}{M(t)}(t,x(t)).
+\end{equation}
+This is \lean{envelope_along_differentiable_maximizer} (\lean{TetherRateDerivation.lean:317}), using \lean{hasDerivAt_norm_of_ne_zero}. Status: \textbf{kernel-checked proved}, conditionally on the existence of such a path and on the splitting of the path derivative into $\partial_t\omega+(x'\cdot\nabla)\omega$. Existence of a (differentiable) maximizer on $\R^3$ is not implied by \lean{IsFeffermanSolutionOn} as written, and is recorded as the named propositions \lean{VorticityMaximumAttained} and \lean{DifferentiableMaximizer}. Both are \textbf{unsettled}.
+
+A difference-quotient form of Danskin's inequality, using a maximizer at time $t+h$ rather than at time $t$, is
+\lean{danskin_difference_quotient} (\lean{TetherRateDerivation.lean:351}). Status: \textbf{kernel-checked proved}. The comparison that uses only a maximizer at time $t$ goes the wrong way and does not bound $M'$ from above.
+
+Combining~\eqref{eq:pointwise},~\eqref{eq:transportcancel},~\eqref{eq:visc} and~\eqref{eq:danskin} at a spatial maximum with $M>0$ yields
+\begin{equation}
+\label{eq:Mprime}
+M'
+\;\le\;
+\frac{\langle\omega,(\omega\cdot\nabla)u\rangle+\nu\langle\omega,\Delta\omega\rangle}{M}
+\;\le\;
+\frac{\langle\omega,(\omega\cdot\nabla)u\rangle}{M}
+-\nu\frac{|\nabla\omega|_{\mathrm{HS}}^2}{M}.
+\end{equation}
+
+\section{Bounding the two terms}
+\label{sec:bounds}
+
+\subsection{The stretching term, aiming at $C M^2$}
+
+By Cauchy--Schwarz and the definition of the operator-norm strain proxy \lean{strain_sup_norm},
+\[
+\langle\omega,(\omega\cdot\nabla)u\rangle
+\;\le\;
+\|\nabla u\|_\infty\,|\omega|^2
+\;\le\;
+\|\nabla u\|_\infty\,M^2,
+\]
+at any point, once the strain is bounded. This is the existing identity \lean{inner_convective_le_strain}, wrapped as
+\lean{stretching_le_strain_mul_norm_sq} (\lean{TetherRateDerivation.lean:363}). Status: \textbf{kernel-checked proved} (linear algebra, not a Calder\'on--Zygmund estimate).
+
+To pass from this to a source $C M^3$, and hence after division by $M$ to the quadratic term $C M^2$ in~\eqref{eq:rate}, one needs a bound of the form
+\[
+\|\nabla u(t)\|_\infty
+\;\le\;
+C\,M(t)
+\]
+uniformly in $t\in[0,T)$, with $C$ depending only on $u_0$ and $\nu$. This is the named proposition \lean{StrainControlledByVorticity} (\lean{TetherRateDerivation.lean:465}). Status: \textbf{unsettled} along Fefferman-class solutions.
+
+A \emph{universal} pointwise bound $\|\nabla u(x)\|\le C\|\omega\|_\infty$, holding for every (not necessarily decaying, not necessarily Biot--Savart) smooth field and a constant $C$ independent of the field, is kernel-checked disproved by
+\lean{StrainBoundRefutation.not_forall_strain_le_sup_vorticity}. The counterexample is an irrotational linear pure-strain field: it has $\omega=0$ and $\nabla u\neq 0$. That field does not decay and is not recovered from vorticity by the Biot--Savart law, so the refutation does not by itself disprove \lean{StrainControlledByVorticity} on Fefferman snapshots. On decaying divergence-free fields the map $\omega\mapsto\nabla u$ is a Calder\'on--Zygmund operator, which is unbounded on $L^\infty$; the standard substitute is a logarithmic estimate involving a higher norm. Whether a constant $C=C(u_0,\nu)$ nevertheless controls $\|\nabla u\|_\infty/M$ uniformly in time along every local Fefferman solution is unsettled.
+
+\subsection{The dissipative term, aiming at $-\kappa M^3$}
+
+From~\eqref{eq:visc}, the viscous contribution to $M'$ is at most $-\nu|\nabla\omega|_{\mathrm{HS}}^2/M$. At a spatial maximum of $|\omega|$, the polar decomposition $\nabla\omega=(\nabla|\omega|)\otimes\xi+|\omega|\nabla\xi$ and $\nabla|\omega|=0$ give $|\nabla\omega|_{\mathrm{HS}}^2=M^2|\nabla\xi|_{\mathrm{HS}}^2$ (the algebraic Pythagoras identities \lean{polar_pythagoras_directional_deriv} and \lean{concrete_bochner_polar_viscous_damping_at_max} in \lean{SymplecticConstraint.lean} already record this reduction). The cubic sink $-\kappa M^3$ in~\eqref{eq:rate} is then equivalent, after dividing by $M$, to a lower bound
+\begin{equation}
+\label{eq:coercivity}
+|\nabla\omega|_{\mathrm{HS}}^2
+\;\ge\;
+\kappa\,M^4
+\qquad\text{i.e.}\qquad
+|\nabla\xi|_{\mathrm{HS}}^2
+\;\ge\;
+\kappa\,M^2
+\end{equation}
+at the attained maximum, with $\kappa>0$ independent of $t$. This is the named proposition \lean{DirectionCoercivityAtMax} (\lean{TetherRateDerivation.lean:476}). Status along Navier--Stokes trajectories: \textbf{unsettled}.
+
+The same lower bound, imposed on arbitrary smooth snapshots rather than on a Navier--Stokes trajectory, is not a general fact about maxima of $|\omega|$. A rigid rotation $u(x)=(-x_2,x_1,0)$ has constant vorticity $\omega=(0,0,2)$, so every point is a maximum, $M=2$, and $|\nabla\omega|_{\mathrm{HS}}=0$. The dissipation term vanishes identically, and~\eqref{eq:coercivity} fails for every $\kappa>0$. This field does not decay and is not a Fefferman datum; the example shows only that~\eqref{eq:coercivity} cannot be a universal static inequality, so if it holds along a solution it must use the dynamics. A wide, nearly rigid Gaussian vortex $u(x)=e^{-\varepsilon|x|^2}(-x_2,x_1,0)$ produces the same vanishing of $|\nabla\omega|$ at the origin and a dissipation of size $O(\varepsilon)$, with $M=2$ fixed as $\varepsilon\to 0$. That calculation is recorded here as an analytic test, not as a kernel-checked Lean theorem in this commit.
+
+\subsection{Algebraic assembly}
+
+Once stretching is at most $C M^3$ and $\nu\langle\omega,\Delta\omega\rangle$ is at most $-\kappa M^4$, division by $M>0$ yields~\eqref{eq:rate}. This is
+\lean{cubic_rate_of_stretching_and_visc} and
+\lean{cubic_rate_of_strain_and_hsSq}
+(\lean{TetherRateDerivation.lean:373} and \lean{:390}), and the hook
+\lean{cubic_rate_from_named_hypotheses}. Status: \textbf{kernel-checked proved} as an implication. It does not prove the two hypotheses, and it does not prove \lean{FrohmanianTetherRateSmooth}.
+
+\section{Scaling analysis}
+\label{sec:scaling}
+
+The Navier--Stokes scaling is $u_\lambda(x,t)=\lambda u(\lambda x,\lambda^2 t)$, formalized as \lean{rescaleFlow}. The vorticity scales as $\omega_\lambda(x,t)=\lambda^2\omega(\lambda x,\lambda^2 t)$ (\lean{vorticity_rescaleFlow}, extending the existing spatial identity \lean{ScalingIdentities.vorticity_rescale}). Consequently, for $\lambda\neq 0$,
+\[
+M(u_\lambda,t)=|\lambda|^2\,M(u,\lambda^2 t),
+\]
+which is \lean{Mω_rescaleFlow} (\lean{TetherRateDerivation.lean:515}). If $M$ is differentiable at $\lambda^2 t$ and $\lambda>0$, the rescaled ceiling has derivative $\lambda^4 M'(\lambda^2 t)$ (\lean{hasDerivAt_Mω_rescale_of_hasDerivAt}).
+
+The form of the proposed rate is not homogeneous of a single degree. Writing $s=\lambda^2 t$ and $M_\lambda(\tau)=\lambda^2 M(\lambda^2\tau)$, the identity
+\[
+\lambda^4 M'(s)
+\;\le\;
+C\,M_\lambda(t)^2-\kappa\,M_\lambda(t)^3
+\quad\Longleftrightarrow\quad
+M'(s)
+\;\le\;
+C\,M(s)^2-\kappa\lambda^2 M(s)^3
+\]
+is \lean{rate_form_rescale_iff} (\lean{TetherRateDerivation.lean:568}). Status: \textbf{kernel-checked proved}.
+
+The quadratic term $C M^2$ scales as the time derivative of $M$ (degree $\lambda^4$). The cubic sink $-\kappa M^3$ scales as $\lambda^6$. It is therefore one degree supercritical for Navier--Stokes scaling: a pair $(C,\kappa)$ that is independent of the concentration parameter $\lambda$ is not preserved under rescaling of a single profile. This does not disprove \lean{FrohmanianTetherRateSmooth}, whose constants are allowed to depend on $u_0$. It does constrain that dependence: for data concentrated at scale $\lambda^{-1}$, any admissible $\kappa$ must shrink at least as $\lambda^{-2}$.
+
+The kinetic energy of the rescaled field is $\lambda^{-1}$ times the original energy, which is the usual statement that the three-dimensional energy is supercritical relative to the scaling of $\|\omega\|_\infty$.
+
+\section{What is proved, what is disproved, and what is unsettled}
+
+{\footnotesize
+\noindent
+\begin{tabularx}{\textwidth}{@{}
+  >{\raggedright\arraybackslash}p{4.7cm}
+  >{\raggedright\arraybackslash}p{2.15cm}
+  >{\raggedright\arraybackslash}X @{}}
+\toprule
+Claim & Status & Lean name, file:line \\
+\midrule
+Bochner identity~\eqref{eq:bochner} & proved & \lean{bochner_identity}, :78 \\
+Transport cancels at a local max & proved & \lean{transport_vanishes_at_local_max}, :147 \\
+$\Delta(\tfrac12|\omega|^2)\le 0$ at a local max & proved & \lean{scalarLaplacian_nonpos_of_isLocalMax}, :202 \\
+$\langle\omega,\Delta\omega\rangle\le-|\nabla\omega|_{\mathrm{HS}}^2$ at a local max & proved & \lean{viscPair_le_neg_hsSq_at_local_max}, :256 \\
+Envelope~\eqref{eq:danskin} along a $C^1$ maximizer & proved, conditional on a path & \lean{envelope_along_differentiable_maximizer}, :317 \\
+Danskin difference quotient & proved & \lean{danskin_difference_quotient}, :351 \\
+Stretching $\le\|\nabla u\|_\infty M^2$ & proved & \lean{stretching_le_strain_mul_norm_sq}, :363 \\
+Two-sided NS equation on $(0,T)$ & proved & \lean{fefferman_two_sided_eq_interior}, :431 \\
+Algebraic assembly into~\eqref{eq:rate} & proved as an implication & \lean{cubic_rate_of_strain_and_hsSq}, :390 \\
+$M$ and $M'$ under parabolic scaling & proved & \lean{Mω_rescaleFlow}, :515; \lean{rate_form_rescale_iff}, :568 \\
+Universal $\|\nabla u\|\le C\|\omega\|_\infty$ for arbitrary fields & disproved & \lean{not_forall_strain_le_sup_vorticity} in \lean{StrainBoundRefutation} \\
+Existence of a spatial maximizer on $\R^3$ & unsettled & \lean{VorticityMaximumAttained}, :448 \\
+Differentiable maximizing path on $(0,T)$ & unsettled & \lean{DifferentiableMaximizer}, :454 \\
+Danskin rate without a $C^1$ path & unsettled & \lean{DanskinRateAt}, :485 \\
+$\|\nabla u\|_\infty\le C(u_0,\nu)\,M$ along solutions & unsettled & \lean{StrainControlledByVorticity}, :465 \\
+$|\nabla\omega|_{\mathrm{HS}}^2\ge\kappa(u_0,\nu)\,M^4$ along solutions & unsettled & \lean{DirectionCoercivityAtMax}, :476 \\
+\lean{FrohmanianTetherRateSmooth} for general data & unsettled & statement unchanged, \lean{RepairedTetherRate.lean:72} \\
+\lean{FrohmanianTetherRateSmooth} at $u_0=0$ & proved (pre-existing) & \lean{frohmanianTetherRateSmooth_zero} \\
+\lean{FrohmanianTetherRate} as originally written & disproved (pre-existing) & \lean{not_forall_frohmanianTetherRate} \\
+\bottomrule
+\end{tabularx}
+}
+
+\section{Toolchain, axioms, and rebuild}
+
+The identities were checked with Lean \lean{v4.30.0-rc1} and Mathlib revision \lean{0c154d67103f74be3a0f2c509f72ccbf5be9f2a7} (\lean{v4.30.0-rc1}), on the branch \lean{feat/tether-rate-derivation} of \lean{github.com/BenFrohman/frohmanian-tether-sdiff}. Every printed theorem in \lean{Scratch/TetherRateDerivation.lean} depends only on \lean{propext}, \lean{Classical.choice} and \lean{Quot.sound}. There is no \lean{sorry} in the file. Rebuild with
+\begin{leancode}
+lake build Scratch.TetherRateDerivation
+\end{leancode}
+from a checkout of that branch, after the Mathlib package at the pinned revision is present. The statement of \lean{FrohmanianTetherRateSmooth} was not changed, and this work does not prove it for general Fefferman data.
+
+\end{document}

@@ -1,0 +1,18 @@
+306:info: Scratch/TetherRateDerivation.lean:621:0: 'TetherRateDerivation.bochner_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
+307:info: Scratch/TetherRateDerivation.lean:622:0: 'TetherRateDerivation.transport_vanishes_at_local_max' depends on axioms: [propext, Classical.choice, Quot.sound]
+308:info: Scratch/TetherRateDerivation.lean:623:0: 'TetherRateDerivation.viscPair_le_neg_hsSq_at_local_max' depends on axioms: [propext, Classical.choice, Quot.sound]
+309:info: Scratch/TetherRateDerivation.lean:624:0: 'TetherRateDerivation.scalarLaplacian_nonpos_of_isLocalMax' depends on axioms: [propext, Classical.choice, Quot.sound]
+310:info: Scratch/TetherRateDerivation.lean:625:0: 'TetherRateDerivation.envelope_along_differentiable_maximizer' depends on axioms: [propext,
+311- Classical.choice,
+312- Quot.sound]
+313:info: Scratch/TetherRateDerivation.lean:626:0: 'TetherRateDerivation.danskin_difference_quotient' depends on axioms: [propext, Classical.choice, Quot.sound]
+314:info: Scratch/TetherRateDerivation.lean:627:0: 'TetherRateDerivation.stretching_le_strain_mul_norm_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
+315:info: Scratch/TetherRateDerivation.lean:628:0: 'TetherRateDerivation.cubic_rate_of_stretching_and_visc' depends on axioms: [propext, Classical.choice, Quot.sound]
+316:info: Scratch/TetherRateDerivation.lean:629:0: 'TetherRateDerivation.cubic_rate_of_strain_and_hsSq' depends on axioms: [propext, Classical.choice, Quot.sound]
+317:info: Scratch/TetherRateDerivation.lean:630:0: 'TetherRateDerivation.fefferman_two_sided_eq_interior' depends on axioms: [propext, Classical.choice, Quot.sound]
+318:info: Scratch/TetherRateDerivation.lean:631:0: 'TetherRateDerivation.vorticity_rescaleFlow' depends on axioms: [propext, Classical.choice, Quot.sound]
+319:info: Scratch/TetherRateDerivation.lean:632:0: 'TetherRateDerivation.Mω_rescaleFlow' depends on axioms: [propext, Classical.choice, Quot.sound]
+320:info: Scratch/TetherRateDerivation.lean:633:0: 'TetherRateDerivation.hasDerivAt_Mω_rescale_of_hasDerivAt' depends on axioms: [propext, Classical.choice, Quot.sound]
+321:info: Scratch/TetherRateDerivation.lean:634:0: 'TetherRateDerivation.rate_form_rescale_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+322:info: Scratch/TetherRateDerivation.lean:635:0: 'TetherRateDerivation.hasDerivAt_norm_of_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+323-Build completed successfully (2717 jobs).
