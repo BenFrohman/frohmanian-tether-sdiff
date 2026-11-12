@@ -1023,6 +1023,34 @@ theorem contDiff_one_uncurryFourierInvBCF {m : ℕ} (hm : 4 ≤ m) :
     funext fun p => fderiv_uncurryFourierInvBCF (four_le hm) p.1 p.2
   exact hfun ▸ continuous_jointFDeriv hm
 
+/-- Post-composing the uncurried inverse Fourier transform with a `C¹` path
+in `Ĥ^m` (`m ≥ 4`) yields a jointly `C¹` field on `ℝ³ × [0, T)`, including
+the one-sided time derivative at `t = 0`. -/
+theorem contDiffOn_uncurryFourierInvBCF_path {m : ℕ} (hm : 4 ≤ m)
+    {T : ℝ} {γ : ℝ → Hm m} (hγ : ContDiffOn ℝ 1 γ (Ico 0 T)) :
+    ContDiffOn ℝ 1
+      (fun q : E3 × ℝ =>
+        uncurryFourierInvBCF (two_le_of_three (four_le hm)) (q.1, γ q.2))
+      (univ ×ˢ Ico 0 T) := by
+  have hΦ : ContDiff ℝ 1
+      (uncurryFourierInvBCF (two_le_of_three (four_le hm))) :=
+    contDiff_one_uncurryFourierInvBCF hm
+  have hpath : ContDiffOn ℝ 1 (fun q : E3 × ℝ => (q.1, γ q.2))
+      (univ ×ˢ Ico 0 T) :=
+    ContDiffOn.prodMk contDiff_fst.contDiffOn
+      (hγ.comp contDiffOn_snd fun q hq => hq.2)
+  exact hΦ.comp_contDiffOn hpath
+
+/-- The same joint `C¹` regularity after post-composing with a continuous
+linear map (e.g. taking real parts). -/
+theorem contDiffOn_uncurry_clm_fourierInvBCF_one {m : ℕ} (hm : 4 ≤ m)
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] (L : V →L[ℝ] F)
+    {T : ℝ} {γ : ℝ → Hm m} (hγ : ContDiffOn ℝ 1 γ (Ico 0 T)) :
+    ContDiffOn ℝ 1 (fun q : E3 × ℝ =>
+      L (uncurryFourierInvBCF (two_le_of_three (four_le hm)) (q.1, γ q.2)))
+      (univ ×ˢ Ico 0 T) :=
+  L.contDiff.comp_contDiffOn (contDiffOn_uncurryFourierInvBCF_path hm hγ)
+
 #print axioms FourierInvFDeriv.spatFDeriv_apply
 #print axioms FourierInvFDeriv.coeFn_sum_dH
 #print axioms FourierInvFDeriv.fourierInv_sum_smul
@@ -1046,5 +1074,7 @@ theorem contDiff_one_uncurryFourierInvBCF {m : ℕ} (hm : 4 ≤ m) :
 #print axioms FourierInvFDeriv.norm_jointFDeriv_sub_le
 #print axioms FourierInvFDeriv.continuous_jointFDeriv
 #print axioms FourierInvFDeriv.contDiff_one_uncurryFourierInvBCF
+#print axioms FourierInvFDeriv.contDiffOn_uncurryFourierInvBCF_path
+#print axioms FourierInvFDeriv.contDiffOn_uncurry_clm_fourierInvBCF_one
 
 end FourierInvFDeriv
