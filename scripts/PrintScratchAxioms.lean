@@ -46,6 +46,8 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms FeffermanMild.contDiff_physicalMild
 #print axioms KatoPonceCommutator.convectiveCommutator_order_one
 #print axioms KatoPonceCommutator.abs_integral_commutator_order_one
+#print axioms KatoPonceCommutator.integral_gradNormSq_sq
+#print axioms KatoPonceCommutator.integral_gradNormSq_sq_le_of_hasCompactSupport
 #print axioms HeatDeriv.lapH
 #print axioms HeatDeriv.hasDerivWithinAt_gauss
 #print axioms HeatDeriv.hasDerivWithinAt_heatH
@@ -81,6 +83,8 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``FeffermanMild.contDiff_physicalMild,
     ``KatoPonceCommutator.convectiveCommutator_order_one,
     ``KatoPonceCommutator.abs_integral_commutator_order_one,
+    ``KatoPonceCommutator.integral_gradNormSq_sq,
+    ``KatoPonceCommutator.integral_gradNormSq_sq_le_of_hasCompactSupport,
     ``HeatDeriv.lapH,
     ``HeatDeriv.hasDerivWithinAt_heatH,
     ``HeatDeriv.hasDerivWithinAt_heatH_visc,
