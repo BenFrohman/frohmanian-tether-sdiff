@@ -1,0 +1,1108 @@
+% Copyright 2026 Benjamin Stanley Frohman (ORCID 0009-0006-7068-3718).
+% Licensed under the Apache License, Version 2.0.
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}[Scale=0.80]
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{fancyvrb}
+\usepackage{booktabs,tabularx,array,longtable}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{microtype}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\T}{\mathbb{T}}
+\newcommand{\Hs}{H^{s}}
+\newcommand{\lean}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\ratecommit}{\texttt{5d8e6d6}}
+\newcommand{\ratehash}{\texttt{5d8e6d679666d4cbd785326422695165655ab1ef}}
+\newcommand{\katocommit}{\texttt{b497281}}
+\newcommand{\katohash}{\texttt{b497281f935f256d2a05372d5955296794f1d46d}}
+\newcommand{\jointcommit}{\texttt{4722241}}
+\newcommand{\jointhash}{\texttt{4722241ed9005aab3eb825a5a0adbbdb189e0a89}}
+\newcommand{\mathlibrev}{\texttt{0c154d67103f74be3a0f2c509f72ccbf5be9f2a7}}
+\DefineVerbatimEnvironment{leancode}{Verbatim}{fontsize=\footnotesize,frame=single,framesep=2mm,baselinestretch=0.95}
+
+\title{A Kernel-Checked Conditional Reduction of Fefferman's Navier--Stokes Problem~(A) to a Lipschitz Tether Rate and a Kato Maximal Solution}
+\author{Benjamin Stanley Frohman\thanks{Also cited as B.S.\ Frohman. ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}. Email: \href{mailto:frohmanbenjamin@gmail.com}{frohmanbenjamin@gmail.com}.}\\[2pt]
+\small Independent Researcher, Texas, United States}
+\date{Draft of November 11, 2026 --- preprint, not peer-reviewed}
+
+\sloppy\setlength{\emergencystretch}{3em}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This paper records a \textbf{conditional} reduction of Fefferman's official Clay Millennium Problem~(A) on $\R^3$ to two named hypotheses, together with a step-by-step derivation of every calculus identity in the reduction that the Lean~4 kernel has checked. The toolchain is Lean~\lean{v4.30.0-rc1} and Mathlib revision \mathlibrev. Every theorem printed in the reproducibility appendix depends only on the axioms \lean{propext}, \lean{Classical.choice} and \lean{Quot.sound}, and contains no \lean{sorry}.
+
+The main theorem, \lean{clay_A_fefferman_of_rateLipschitz_of_kato}, states: if the Lipschitz / almost-everywhere form of the repaired tether rate, \lean{FrohmanianTetherRateLipschitz}, holds for every Fefferman datum and every $\nu>0$, and if \lean{KatoMaximalSolution} holds for every such datum, then \lean{Clay_A_Fefferman} holds. A parallel route, \lean{clay_A_fefferman_of_rate_of_kato}, uses the earlier right-derivative form \lean{FrohmanianTetherRateSmooth} in place of the Lipschitz form. As written, the two rate hypotheses are not comparable: a right derivative with only an upper bound need not be locally Lipschitz, and a Lipschitz function need not be right-differentiable at every time. A partial implication Smooth${}\Rightarrow{}$Lipschitz is proved under an extra local bound on the right derivative.
+
+Additional kernel-checked Kato infrastructure---including the Gagliardo--Nirenberg inequality and Kato--Ponce commutator estimate used by the $H^3$ energy bound, local $\Hs$ persistence on the $H^3$ existence interval, $C^n$ regularity in time of the mild path, the identity $\partial_t u=\nu\Delta u-N(u)$ in $\widehat{H}^m$, joint $C^2$ regularity of the realized mild field (including the one-sided time derivative at $t=0$), a Leray pressure, and the vanishing of $\int_{\R^3}\mathrm{div}\,F$ for a $C^1$ integrable field with integrable divergence---is recorded in Section~\ref{sec:kato}. These results do not discharge \lean{KatoMaximalSolution}.
+
+\textbf{This paper does not resolve any Clay Millennium Problem, and it does not claim unconditional three-dimensional Navier--Stokes regularity.} The official statement of Problem~(A) is reproduced unchanged. Both \lean{FrohmanianTetherRateLipschitz} and \lean{KatoMaximalSolution} remain unsettled for general Fefferman data (each is proved at the zero datum). The Beale--Kato--Majda logarithmic inequality is proved. The remaining analytic gaps in the rate are strain control along solutions and direction coercivity at a vorticity maximum.
+\end{abstract}
+
+\tableofcontents
+
+
+%======================================================================
+\section{Introduction and non-claims}
+\label{sec:intro}
+
+Fefferman's official statement of Clay Problem~(A)~\cite{Fefferman} asks for a globally smooth, finite-energy solution of the incompressible Navier--Stokes equations on $\R^3\times[0,\infty)$, with $f\equiv 0$ and $\nu>0$, issuing from an arbitrary smooth, divergence-free initial datum that satisfies the pointwise decay~(4). This paper does not prove that statement. It proves that the statement follows from two named hypotheses, and it records, with a Lean theorem name, file, line and commit next to each step, every identity in the argument that has been kernel-checked.
+
+\paragraph{What is proved.}
+\begin{enumerate}[label=(\arabic*)]
+\item A literal Lean transcription \lean{Clay_A_Fefferman} of Fefferman's Problem~(A) (Section~\ref{sec:fefferman}).
+\item The Lipschitz / almost-everywhere rate \lean{FrohmanianTetherRateLipschitz}, together with \lean{KatoMaximalSolution}, implies \lean{Clay_A_Fefferman} (Theorem~\ref{thm:main-lip}; \lean{clay_A_fefferman_of_rateLipschitz_of_kato}, \lean{Scratch/TetherRateLipschitz.lean:251}, commit \ratecommit).
+\item The earlier Smooth form of the rate, together with the same Kato hypothesis, also implies \lean{Clay_A_Fefferman} (Theorem~\ref{thm:main-smooth}; \lean{clay_A_fefferman_of_rate_of_kato}, \lean{Scratch/LogBoundLocal.lean:719}).
+\item A comparison lemma that turns a locally Lipschitz cubic differential inequality holding almost everywhere into a uniform ceiling $M(t)\le\max\bigl(M(0),C/\kappa\bigr)$ (Section~\ref{sec:comparison}).
+\item The Beale--Kato--Majda logarithmic inequality on $\R^3$, as a theorem, not a hypothesis (Section~\ref{sec:bkm}; \lean{bkmLogInequality}, \lean{Scratch/LogBoundLocal.lean:659}).
+\item The evolution identities for $|\omega|$ at a spatial maximum, the algebraic assembly of the cubic rate, parabolic scaling of $M$, attainment of the vorticity maximum under decay at infinity, a shear counterexample to attainment without decay, and Lipschitz / Rademacher / Danskin regularity of $M$ under a uniform bound on $\partial_t\omega$ (Sections~\ref{sec:evolution}--\ref{sec:scaling}).
+\item A kernel-checked refutation of a universal pointwise strain bound, and a kernel-checked refutation of the original (unrepaired) tether rate (Sections~\ref{sec:strain} and~\ref{sec:refute}).
+\item A body of Kato-type infrastructure on the Fourier-side spaces $\Hs$: the Leray projector and heat semigroup, equality of Fourier and spatial $\Hs$ energies, heat smoothing, Duhamel estimates, a tame product estimate for $s\ge 3$, the bilinear map $\mathrm{NSN}:\Hs\to H^{s-1}$, local mild existence and uniqueness in $H^3$, local persistence of $\Hs$ regularity on the $H^3$ existence interval, $C^n$ regularity in time of the mild path in $\widehat{H}^m$, the identity $\partial_t u=\nu\Delta u-N(u)$ in those spaces, joint $C^2$ regularity of the realized mild field (including the one-sided time derivative at $t=0$), a Gagliardo--Nirenberg inequality and Kato--Ponce commutator estimate, a Leray pressure, and the vanishing of $\int_{\R^3}\mathrm{div}\,F$ under an integrability hypothesis (Section~\ref{sec:kato}).
+\end{enumerate}
+
+\paragraph{What remains unsettled.}
+\begin{enumerate}[label=(\arabic*)]
+\item \lean{FrohmanianTetherRateLipschitz} (and likewise \lean{FrohmanianTetherRateSmooth}) for general Fefferman data. Both are proved at $u_0=0$.
+\item \lean{KatoMaximalSolution} for general Fefferman data. It is proved at $u_0=0$. Local persistence of $\Hs$ regularity on the $H^3$ existence interval and the Kato--Ponce commutator estimate are proved. The remaining formal pieces are listed in Section~\ref{sec:kato}: joint $C^\infty$ regularity of the realized mild field, the pointwise incompressible momentum equation with a pressure, the energy inequality in the Fefferman class, the energy right-derivative formula, the vanishing-flux package \lean{H3IBPVanishingFlux}, and assembly of the maximal interval with the $H^3$ blow-up alternative.
+\item \lean{StrainControlledByVorticity} (inequality~3) and \lean{DirectionCoercivityAtMax} (inequality~4), along Navier--Stokes solutions.
+\item Propagation of Fefferman decay (or vanishing of vorticity at infinity) from $t=0$ to later snapshots.
+\end{enumerate}
+
+The gaps ledger T1--T10 from the earlier strain-kernel record~\cite{GapsLedger} is restated in Section~\ref{sec:t1t10}. None of those ten items is marked proved or disproved by the Lean work recorded here.
+
+No sentence in this paper should be read as a claim that three-dimensional Navier--Stokes solutions are regular, or that Clay Problem~(A) is solved.
+
+%======================================================================
+\section{Setting and conventions}
+\label{sec:setting}
+
+Throughout, Sobolev spaces are written $\Hs$, where $s\in\mathbb{N}$ is a nonnegative integer. (The letter $m$ is reserved for miscellaneous integers and is never used as a Sobolev index in the prose.) In the Lean development the same spaces appear as \lean{R3BKM.sobolevEnergy s} (spatial energy) and as the Fourier-side Hilbert space \lean{Hm s}. When a theorem requires a definite integer threshold, that threshold is written explicitly (for instance $s=3$, or $s\ge 3$).
+
+In Lean, $\R^3$ is \lean{T3 := EuclideanSpace ℝ (Fin 3)}. Velocity fields are maps \lean{T3 → EuclideanSpace ℝ (Fin 3)}, and time-dependent fields are maps \lean{ℝ → T3 → \(\ldots\)}. Spatial operators (\lean{convective}, \lean{laplacian}, \lean{div}, \lean{curl}, \lean{pressureGradient}) are defined through Mathlib's Fr\'echet derivative \lean{fderiv}, and ordinary time derivatives through \lean{deriv}. Mathlib follows the standard convention that \lean{fderiv ℝ f x = 0} and \lean{deriv f x = 0} when $f$ is not differentiable at $x$. A real supremum $\sup_x\|\omega(x)\|$ (Lean \lean{iSup}) is $0$ on an unbounded range. This is why several propositions carry an explicit \lean{BddAbove} conjunct.
+
+Write
+\[
+M(t)\;:=\;\|\omega(t)\|_\infty
+\;:=\;
+\sup_{x\in\R^3}\bigl|\omega(x,t)\bigr|,
+\]
+which is \lean{RepairedTether.Mω} in \lean{Scratch/RepairedTetherRate.lean:68}. The viscous coefficient is $\nu$, and the forcing is identically zero.
+
+Every mathematical claim in the body is either (i)~a kernel-checked Lean theorem, cited by name, file, line and commit, or (ii)~explicitly labelled as unformalized background (for example, a classical citation of Kato~\cite{Kato} or an analytic test that has no Lean theorem in the cited commits).
+
+The Lean sources for the rate, the comparison lemma, attainment, and the Clay reduction live on the branch \lean{feat/tether-rate-derivation} of \lean{github.com/BenFrohman/frohmanian-tether-sdiff} at commit \ratehash\ (the Lipschitz rate was introduced at \texttt{c9ffdeb1bfe8b7252bf93e6bd97f5455ed5afff7}; the tip \ratecommit\ updates docstrings only). The Kato infrastructure cited in Section~\ref{sec:kato} lives on the diverged branch \lean{feat/r3-bkm-continuation} at commit \katohash. The two branches share the merge-base \texttt{5dd8458aa85cd118962b8b7ef2f37480cf2cd0f7}. Line numbers for files present on both branches were checked at both tips; the one exception recorded here is \lean{InverseSobolev.contDiff_fourierInv_of_all_energy}, which is at line~377 of \lean{Scratch/InverseSobolev.lean} on the Kato branch (the pin used below) and at line~282 on the rate branch. Persistence of $\Hs$ regularity on the $H^3$ existence interval is a kernel-checked theorem on the Kato branch (\lean{PersistenceHm.persist_on_H3_time}, \lean{FeffermanMild.persist_fefferman}), not a draft.
+
+
+%======================================================================
+\section{Fefferman's Problem~(A), stated literally}
+\label{sec:fefferman}
+
+Fefferman's official problem description~\cite{Fefferman} poses Problem~(A) as follows. Take $\nu>0$ and $n=3$. Let $u^\circ$ be a smooth divergence-free vector field on $\R^3$ satisfying
+\begin{equation}
+\tag{4}
+\bigl|\partial_x^\alpha u^\circ(x)\bigr|
+\le
+C_{\alpha K}\,(1+|x|)^{-K}
+\quad\text{on }\R^3,\text{ for any }\alpha,K.
+\end{equation}
+Take $f\equiv 0$. Then there exist smooth functions $p(x,t)$ and $u_i(x,t)$ on $\R^3\times[0,\infty)$ that satisfy (1)~(the momentum equation), (2)~($\operatorname{div}u=0$), (3)~($u(x,0)=u^\circ(x)$), (6)~($p,u\in C^\infty(\R^3\times[0,\infty))$) and (7)~($\int_{\R^3}|u(x,t)|^2\,dx<C$ for all $t\ge 0$).
+
+The Lean transcription, from \lean{Scratch/RepairedTetherRate.lean:23--50} at \ratecommit, is the following. It is the conclusion of every reduction theorem in this paper, and it is not altered.
+
+\begin{leancode}
+def FeffermanDecay (u₀ : VelocityField) : Prop :=
+  ∀ (k : ℕ) (α : Fin k → Fin 3) (K : ℝ), ∃ C : ℝ, ∀ x : T3,
+    ‖iteratedFDeriv ℝ k u₀ x (fun j => EuclideanSpace.single (α j) (1 : ℝ))‖ ≤
+      C * (1 + ‖x‖) ^ (-K)
+
+def FeffermanGlobalSolution (ν : ℝ) (u₀ : VelocityField)
+    (u : TimeDependentVelocity) (p : TimeDependentPressure) : Prop :=
+  ContDiffOn ℝ ∞ (fun q : T3 × ℝ => u q.2 q.1) (Set.univ ×ˢ Set.Ici (0 : ℝ)) ∧
+  ContDiffOn ℝ ∞ (fun q : T3 × ℝ => p q.2 q.1) (Set.univ ×ˢ Set.Ici (0 : ℝ)) ∧
+  ClayStatements.navier_stokes_eq_Ici u p ν (fun _ _ => 0) ∧
+  (∀ x : T3, u 0 x = u₀ x) ∧
+  ∃ C : ℝ, ∀ t ≥ (0 : ℝ), ∫⁻ x, ‖u t x‖ₑ ^ 2 < ENNReal.ofReal C
+
+def Clay_A_Fefferman : Prop :=
+  ∀ (ν : ℝ) (u₀ : VelocityField),
+    0 < ν → ContDiff ℝ ∞ u₀ → (∀ x, div u₀ x = 0) → FeffermanDecay u₀ →
+      ∃ (u : TimeDependentVelocity) (p : TimeDependentPressure),
+        FeffermanGlobalSolution ν u₀ u p
+\end{leancode}
+
+The one-sided time derivative in \lean{navier_stokes_eq_Ici} is \lean{derivWithin (fun s => u s x) (Set.Ici 0)}, so the equation at $t=0$ does not depend on values for $t<0$. The energy condition~(7) is a strict inequality on the lower Lebesgue integral, so the Mathlib convention that a nonintegrable nonnegative function has integral $0$ cannot discharge it.
+
+\subsection{Comparison with the repository's earlier \texttt{Clay\_A}}
+
+The earlier statement \lean{FrohmanianTether.ClayStatements.Clay_A} differs from Fefferman's text in one substantive respect: it uses a two-sided \lean{deriv} at $t=0$, which depends on an extension to $t<0$ that the statement leaves unconstrained, and which takes the junk value $0$ if that extension is not differentiable at $0$. The decay condition in \lean{Clay_A} uses the operator norm of the whole $k$-th derivative with $K\in\mathbb{N}$ and the form $C/(1+|x|)^K$; \lean{FeffermanDecay} transcribes each multi-index on coordinate unit vectors, with $K\in\R$ and $C(1+|x|)^{-K}$. The energy in \lean{Clay_A} is a non-strict Bochner integral together with an \lean{Integrable} conjunct. Only the first of these differences is substantive. The official statement used in this paper is exclusively \lean{Clay_A_Fefferman}.
+
+\paragraph{Sanity check.} The conclusion of Problem~(A) is satisfiable at $u_0=0$ by the zero solution (\lean{clay_A_fefferman_instance_zero}, \lean{RepairedTetherRate.lean:144}), and \lean{feffermanDecay_zero} (\lean{RepairedTetherRate.lean:125}) shows that $u_0=0$ satisfies~(4).
+
+%======================================================================
+\section{The two rate hypotheses and the main conditional theorems}
+\label{sec:main}
+
+The local solution class on which both rates are posed is \lean{IsFeffermanSolutionOn} (\lean{RepairedTetherRate.lean:56--65}): joint $C^\infty$ regularity of $(u,p)$ on $\R^3\times[0,T)$; the incompressible Navier--Stokes equations with $f\equiv 0$ and a one-sided time derivative at $t=0$; the initial condition $u(\cdot,0)=u_0$; and the energy inequality $\int_{\R^3}|u(t)|^2\le\int_{\R^3}|u_0|^2$, written as a comparison of lower Lebesgue integrals. The Lean docstring of this definition mentions that the energy \emph{equality} holds for classical solutions; the formal proposition is the inequality just written, not an equality.
+
+\subsection{The Lipschitz / almost-everywhere rate}
+
+\begin{definition}[Lipschitz tether rate]
+\label{def:lip}
+The proposition \lean{FrohmanianTetherRateLipschitz} (\lean{Scratch/TetherRateLipschitz.lean:44--52}, commit \ratecommit) states: there exist constants $C,\kappa>0$, depending only on $u_0$ and $\nu$, such that along every local Fefferman-class solution issuing from $u_0$ on $[0,T)$,
+\begin{enumerate}[label=(\roman*)]
+\item $M(t)$ is finite for every $t\in[0,T)$ (the range of $|\omega(t)|$ is bounded above);
+\item $M$ is locally Lipschitz on $[0,T)$: for every $b\in[0,T)$ there is a Lipschitz constant of $M$ on the compact interval $[0,b]$;
+\item for almost every $s\in(0,T)$, $M$ is two-sided differentiable at $s$ and
+\begin{equation}
+\label{eq:rate-lip}
+M'(s)\;\le\; C\,M(s)^2-\kappa\,M(s)^3.
+\end{equation}
+\end{enumerate}
+\end{definition}
+
+This proposition is unsettled for general Fefferman data. It is proved at the zero datum: \lean{frohmanianTetherRateLipschitz_zero} (\lean{TetherRateLipschitz.lean:263}).
+
+\subsection{The Smooth / right-derivative rate}
+
+\begin{definition}[Smooth tether rate]
+\label{def:smooth}
+The proposition \lean{FrohmanianTetherRateSmooth} (\lean{Scratch/RepairedTetherRate.lean:74--81}) states: there exist $C,\kappa>0$, depending only on $u_0$ and $\nu$, such that along every local Fefferman-class solution issuing from $u_0$ on $[0,T)$, $M$ is finite and continuous on $[0,T)$, and at every $s\in[0,T)$ there is a right derivative $d$ of $M$ at $s$ satisfying $d\le C M(s)^2-\kappa M(s)^3$.
+\end{definition}
+
+This proposition is likewise unsettled for general Fefferman data, and is proved at the zero datum: \lean{frohmanianTetherRateSmooth_zero} (\lean{RepairedTetherRate.lean:170}). Its statement is not edited in this work.
+
+\subsection{The two forms are not comparable as written}
+\label{sec:incomparable}
+
+A finite right derivative equipped only with an upper bound need not be locally Lipschitz: a lower bound on the right derivative is missing. Conversely, Lipschitz regularity yields a two-sided derivative only almost everywhere (Rademacher), not a right derivative at every time, and in particular not at $t=0$. Therefore, as written, neither \lean{FrohmanianTetherRateSmooth} nor \lean{FrohmanianTetherRateLipschitz} implies the other.
+
+What is proved is a partial implication. If, in addition to \lean{FrohmanianTetherRateSmooth}, the right derivative of $M$ is locally bounded on every compact $[0,b]\subset[0,T)$, then the Lipschitz / almost-everywhere rate holds, with the same constants $C,\kappa$. This is \lean{frohmanianTetherRateLipschitz_of_smooth_of_locallyBddRightDeriv} (\lean{TetherRateLipschitz.lean:361}). The local bound is not part of \lean{FrohmanianTetherRateSmooth}. As a statement about Fefferman solutions with no extra bound, the implication Smooth${}\Rightarrow{}$Lipschitz is unsettled.
+
+\subsection{Main theorems}
+
+\begin{theorem}[Conditional reduction, Lipschitz route]
+\label{thm:main-lip}
+Assume
+\begin{enumerate}[label=(\alph*)]
+\item for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), the proposition \lean{FrohmanianTetherRateLipschitz}\ $u_0$ $\nu$ holds;
+\item for every such $\nu$ and $u_0$, the proposition \lean{KatoMaximalSolution}\ $\nu$ $u_0$ holds.
+\end{enumerate}
+Then \lean{Clay_A_Fefferman} holds.
+\end{theorem}
+
+This is \lean{clay_A_fefferman_of_rateLipschitz_of_kato} (\lean{Scratch/TetherRateLipschitz.lean:251--258}, commit \ratecommit). The proof uses the already-proved logarithmic inequality \lean{bkmLogInequality} (Section~\ref{sec:bkm}) and the assembly \lean{r3BKMContinuation_of_kato_of_log} (\lean{Scratch/R3BKMContinuation.lean:272}): the rate produces a uniform ceiling on $M$ along every local solution (Section~\ref{sec:comparison}), and that ceiling is exactly the premise that turns \lean{KatoMaximalSolution} into a global Fefferman solution.
+
+An equivalent packaging, with the classical continuation hypothesis left named rather than reduced to Kato plus the log inequality, is \lean{clay_A_fefferman_of_frohmanianTetherRateLipschitz} (\lean{TetherRateLipschitz.lean:239}).
+
+\begin{theorem}[Conditional reduction, Smooth route]
+\label{thm:main-smooth}
+The same conclusion \lean{Clay_A_Fefferman} follows if, in Theorem~\ref{thm:main-lip}, hypothesis~(a) is replaced by \lean{FrohmanianTetherRateSmooth} for every Fefferman datum and every $\nu>0$.
+\end{theorem}
+
+This is \lean{clay_A_fefferman_of_rate_of_kato} (\lean{Scratch/LogBoundLocal.lean:719--725}). The older packaging with an unreduced continuation hypothesis is \lean{clay_A_fefferman_of_frohmanianTetherRateSmooth} (\lean{RepairedTetherRate.lean:115}).
+
+\subsection{Non-vacuity, and a global form that cannot feed Problem~(A)}
+
+Both rate hypotheses, the Kato hypothesis, Fefferman decay, and the conclusion of Problem~(A) are inhabited at $u_0=0$:
+\lean{frohmanianTetherRateLipschitz_zero},
+\lean{frohmanianTetherRateSmooth_zero},
+\lean{katoMaximalSolution_zero} (\lean{R3BKMContinuation.lean:254}),
+\lean{feffermanDecay_zero},
+\lean{r3BKMContinuationAt_zero},
+\lean{clay_A_fefferman_instance_zero}.
+The zero solution is used, via the energy inequality in \lean{IsFeffermanSolutionOn}, to show that every local Fefferman-class solution from $u_0=0$ vanishes (\lean{eq_zero_of_isFeffermanSolutionOn_zero}, \lean{RepairedTetherRate.lean:149}).
+
+A global-solution form of the Smooth rate, \lean{FrohmanianTetherRateSmoothGlobal} (\lean{RepairedTetherRate.lean:189}), quantifies only over globally defined smooth physical solutions. It holds automatically for any datum that has no such solution (\lean{frohmanianTetherRateSmoothGlobal_of_no_global_solution}, \lean{RepairedTetherRate.lean:201}). That form therefore carries no information about existence, and is not used in either reduction.
+
+
+%======================================================================
+\section{The comparison ODE lemma}
+\label{sec:comparison}
+
+Write $\varphi(y)=C y^2-\kappa y^3$ for the cubic majorant, with $C,\kappa>0$.
+
+\begin{lemma}[Antitone majorant]
+\label{lem:antitone}
+If $C/\kappa\le x\le y$, then $\varphi(y)\le\varphi(x)$. In particular, if $C/\kappa<Z$, then $\varphi(Z)<0$, and $\varphi(y)\le\varphi(Z)$ whenever $y\ge Z$.
+\end{lemma}
+
+This is \lean{majorant_vector_field_antitoneOn} (\lean{TetherRateLipschitz.lean:57}) together with the existing sign lemma \lean{AnalyticPipeline.majorant_vector_field_neg_of_gt}. Indeed, $\varphi(y)=y^2(C-\kappa y)$, the factor $C-\kappa y$ is nonpositive and nonincreasing on $[C/\kappa,\infty)$, and $y^2$ is nondecreasing on $[0,\infty)$, so the product is nonincreasing there.
+
+\begin{lemma}[Finite-horizon Riccati comparison, Lipschitz / a.e.\ form]
+\label{lem:comparison}
+Let $M:\R\to\R$ satisfy $M\ge 0$ on $[0,T)$. Suppose $M$ is Lipschitz on every compact interval $[0,b]\subset[0,T)$, and
+\[
+M'(s)\;\le\; C\,M(s)^2-\kappa\,M(s)^3
+\]
+for almost every $s\in(0,T)$, at points of two-sided differentiability. Then, for every $t\in[0,T)$,
+\begin{equation}
+\label{eq:ceiling}
+M(t)\;\le\;\max\bigl(M(0),\,C/\kappa\bigr).
+\end{equation}
+\end{lemma}
+
+This is \lean{comparison_ode_stability_lipschitz} (\lean{Scratch/TetherRateLipschitz.lean:82--219}, commit \ratecommit). The argument is as follows.
+
+\begin{proof}
+The claim is immediate at $t=0$. Fix $t\in(0,T)$ and write $Y:=\max\bigl(M(0),C/\kappa\bigr)$. It is enough to show $M(t)\le Y+\varepsilon$ for every $\varepsilon>0$. Set $Z:=Y+\varepsilon$, so $C/\kappa<Z$ and therefore $\varphi(Z)<0$ by Lemma~\ref{lem:antitone}. Also $M(0)\le Z$.
+
+Let $K$ be a Lipschitz constant of $M$ on $[0,t]$. Then $M$ is continuous on the compact interval $I=[0,t]$, and (being Lipschitz) is absolutely continuous on $[0,t]$. Suppose, for a contradiction, that $Z<M(t)$. Let
+\[
+S:=\bigl\{s\in I: M(s)\le Z\bigr\}.
+\]
+Continuity of $M$ makes $S$ closed in $I$, hence compact, and $0\in S$, so $S$ is nonempty. Let $a:=\max S$. Then $a<t$ (since $M(t)>Z$), and $M(a)\le Z$. In fact $M(a)=Z$: if $M(a)<Z$, continuity would provide a point of $S$ strictly to the right of $a$. Thus $a$ is a last-crossing time of the barrier $Z$.
+
+Absolute continuity and the fundamental theorem of calculus give
+\[
+M(t)-M(a)
+=
+\int_a^t M'(s)\,ds.
+\]
+The almost-everywhere bound $M'\le\varphi(M)$ holds on $(0,T)$, hence almost everywhere on $(a,t)$. On that interval, $M(s)>Z$ (no point of $S$ lies strictly to the right of $a$), so Lemma~\ref{lem:antitone} yields $\varphi(M(s))\le\varphi(Z)$. Therefore
+\begin{align*}
+M(t)-M(a)
+&\le
+\int_a^t \varphi\bigl(M(s)\bigr)\,ds
+\le
+\int_a^t \varphi(Z)\,ds
+=
+(t-a)\,\varphi(Z)
+<0,
+\end{align*}
+since $t-a>0$ and $\varphi(Z)<0$. Hence $M(t)<M(a)=Z$, contradicting $M(t)>Z$. Thus $M(t)\le Z$ for every $\varepsilon>0$, and $M(t)\le Y$.
+\end{proof}
+
+\begin{theorem}[Ceiling from the Lipschitz rate]
+\label{thm:ceiling-lip}
+If \lean{FrohmanianTetherRateLipschitz}\ $u_0$ $\nu$ holds, then there is a single ceiling
+\[
+Y\;=\;\max\bigl(\|\omega(u_0)\|_\infty,\,C/\kappa\bigr)
+\]
+such that, along every local Fefferman-class solution from $u_0$, one has $M(t)\le Y$ and the range of $|\omega(t)|$ is bounded, for every $t$ in the existence interval.
+\end{theorem}
+
+This is \lean{ceiling_of_rateLipschitz} (\lean{TetherRateLipschitz.lean:224}). The identification $M(0)=\|\omega(u_0)\|_\infty$ uses $u(0)=u_0$.
+
+The Smooth-form comparison, used in Theorem~\ref{thm:main-smooth}, is the pre-existing right-derivative lemma \lean{TetheredLyapunov.comparison_ode_stability_Icc_right} (\lean{FrohmanianTether/TetheredLyapunov.lean:1520}): if $M$ is continuous on $[0,t]$ and has at every $s\in[0,t)$ a right derivative $d\le\varphi(M(s))$, then the same ceiling~\eqref{eq:ceiling} holds. Its proof is a barrier comparison with a strictly negative right slope at any contact point with $Y+\varepsilon$, rather than an integral identity. The corresponding ceiling for the Smooth rate is \lean{ceiling_of_rate} (\lean{RepairedTetherRate.lean:99}).
+
+%======================================================================
+\section{Evolution identities for the vorticity maximum}
+\label{sec:evolution}
+
+This section unfolds the cubic inequality~\eqref{eq:rate-lip} into identities that close and inequalities that do not. The Lean development is \lean{Scratch/TetherRateDerivation.lean} at commit \ratecommit.
+
+\subsection{The vorticity equation in the interior}
+
+For a two-sided solution, the vorticity formulation of Navier--Stokes is the existing identity \lean{vorticity_transport_at} (\lean{FrohmanianTether/NS_Equations.lean:2162}):
+\begin{equation}
+\label{eq:transport}
+\partial_t\omega+(u\cdot\nabla)\omega
+=
+(\omega\cdot\nabla)u+\nu\Delta\omega.
+\end{equation}
+On a Fefferman solution the time derivative in the momentum equation is one-sided at $t=0$. For times $t\in(0,T)$, the one-sided derivative coincides with the two-sided derivative, because $[0,\infty)$ is a neighbourhood of $t$. This is \lean{fefferman_two_sided_eq_interior} (\lean{TetherRateDerivation.lean:431}), together with \lean{derivWithin_Ici_eq_deriv_of_pos} and the interior smoothness lemmas \lean{fefferman_u_contDiffAt_interior}, \lean{fefferman_p_contDiffAt_interior} (\lean{TetherRateDerivation.lean:411--425}). Status: kernel-checked proved. At $t=0$ the transport identity must be read with a right derivative; that one-sided commutation of curl and $\partial_t$ is not formalized in this file, and is not claimed here.
+
+Take the inner product of~\eqref{eq:transport} with $\omega$ and use
+\[
+\partial_t\Bigl(\tfrac12|\omega|^2\Bigr)
+=
+\langle\omega,\partial_t\omega\rangle,
+\]
+which is \lean{hasDerivAt_halfNormSq_time} (\lean{TetherRateDerivation.lean:281}). One obtains the pointwise energy law
+\begin{equation}
+\label{eq:pointwise}
+\partial_t\Bigl(\tfrac12|\omega|^2\Bigr)
++\langle\omega,(u\cdot\nabla)\omega\rangle
+=
+\langle\omega,(\omega\cdot\nabla)u\rangle
++\nu\langle\omega,\Delta\omega\rangle.
+\end{equation}
+
+\subsection{The Bochner identity}
+
+Write $|\nabla\omega|_{\mathrm{HS}}^2=\sum_{i=1}^3|\partial_i\omega|^2$ (\lean{TetherRateDerivation.hsSq}) and write $\Delta$ for the scalar Laplacian (\lean{scalarLaplacian}). For a $C^2$ field,
+\begin{equation}
+\label{eq:bochner}
+\langle\omega,\Delta\omega\rangle
+=
+\Delta\bigl(\tfrac12|\omega|^2\bigr)-|\nabla\omega|_{\mathrm{HS}}^2.
+\end{equation}
+This is \lean{bochner_identity} (\lean{TetherRateDerivation.lean:78}). Status: kernel-checked proved.
+
+\subsection{At a spatial maximum}
+
+Suppose $x$ is a local spatial maximum of $y\mapsto|\omega(y)|$. Then it is a local maximum of $\tfrac12|\omega|^2$ (\lean{isLocalMax_halfNormSq_of_isLocalMax_norm}, \lean{TetherRateDerivation.lean:114}), the Fr\'echet derivative of $\tfrac12|\omega|^2$ vanishes (\lean{fderiv_halfNormSq_eq_zero_of_isLocalMax}, :127), and therefore the transport pairing vanishes:
+\begin{equation}
+\label{eq:transportcancel}
+\langle\omega,(u\cdot\nabla)\omega\rangle(x)=0.
+\end{equation}
+This is \lean{transport_vanishes_at_local_max} (\lean{TetherRateDerivation.lean:147}). Moreover, the scalar Laplacian of a $C^2$ function is nonpositive at a local maximum (\lean{scalarLaplacian_nonpos_of_isLocalMax}, \lean{TetherRateDerivation.lean:202}, from the one-dimensional second-derivative test \lean{deriv_deriv_nonpos_of_isLocalMax}). Combined with~\eqref{eq:bochner},
+\begin{equation}
+\label{eq:visc}
+\langle\omega,\Delta\omega\rangle(x)
+\;\le\;
+-\,|\nabla\omega(x)|_{\mathrm{HS}}^2
+\;\le\;0.
+\end{equation}
+This is \lean{viscPair_le_neg_hsSq_at_local_max} (\lean{TetherRateDerivation.lean:256}). Status of~\eqref{eq:transportcancel}--\eqref{eq:visc}: kernel-checked proved.
+
+\subsection{Envelope identities for $M$}
+
+If $M(s)=|\omega(s,x(s))|$ along a differentiable maximizing trajectory, and if the spatial gradient of $\tfrac12|\omega|^2$ vanishes at $x(t)$, the chain rule and~\eqref{eq:transportcancel} give, whenever $M(t)>0$,
+\begin{equation}
+\label{eq:danskin-path}
+M'(t)
+=
+\frac{\langle\omega,\partial_t\omega\rangle}{M(t)}\,(t,x(t)),
+\end{equation}
+provided the path derivative of $\omega(s,x(s))$ splits as $\partial_t\omega+(x'\cdot\nabla)\omega$. This is \lean{envelope_along_differentiable_maximizer} (\lean{TetherRateDerivation.lean:317}), using \lean{hasDerivAt_norm_of_ne_zero} (:291). Status: kernel-checked proved, conditionally on those path hypotheses. Existence of a differentiable maximizing path is the named proposition \lean{DifferentiableMaximizer} (\lean{TetherRateDerivation.lean:454}), and is unsettled. The Lipschitz route in Sections~\ref{sec:attain}--\ref{sec:danskin} does not use such a path.
+
+A difference-quotient form of Danskin's inequality, using a maximizer at time $t+h$ rather than at time $t$, is \lean{danskin_difference_quotient} (\lean{TetherRateDerivation.lean:351}). Status: kernel-checked proved. The comparison that uses only a maximizer at time $t$ goes the wrong way and does not bound $M'$ from above.
+
+Combining~\eqref{eq:pointwise},~\eqref{eq:transportcancel},~\eqref{eq:visc} and an envelope formula at a spatial maximum with $M>0$ yields
+\begin{equation}
+\label{eq:Mprime}
+M'
+\;\le\;
+\frac{\langle\omega,(\omega\cdot\nabla)u\rangle+\nu\langle\omega,\Delta\omega\rangle}{M}
+\;\le\;
+\frac{\langle\omega,(\omega\cdot\nabla)u\rangle}{M}
+-\nu\frac{|\nabla\omega|_{\mathrm{HS}}^2}{M}.
+\end{equation}
+
+\subsection{The stretching term, aiming at $C M^2$}
+
+By Cauchy--Schwarz and the definition of the operator-norm strain proxy \lean{strain_sup_norm},
+\[
+\langle\omega,(\omega\cdot\nabla)u\rangle
+\;\le\;
+\|\nabla u\|_\infty\,|\omega|^2
+\;\le\;
+\|\nabla u\|_\infty\,M^2,
+\]
+at any point, once the strain is bounded above. This is the existing identity \lean{inner_convective_le_strain}, wrapped as \lean{stretching_le_strain_mul_norm_sq} (\lean{TetherRateDerivation.lean:363}). Status: kernel-checked proved, as linear algebra, not as a Calder\'on--Zygmund estimate.
+
+To pass from this to a source $C M^3$, and hence after division by $M$ to the quadratic term $C M^2$, one needs
+\begin{equation}
+\label{eq:strain}
+\|\nabla u(t)\|_\infty
+\;\le\;
+C\,M(t)
+\end{equation}
+uniformly in $t\in[0,T)$, with $C$ depending only on $u_0$ and $\nu$. This is the named proposition \lean{StrainControlledByVorticity} (\lean{TetherRateDerivation.lean:465}). Status: unsettled along Fefferman-class solutions. A universal bound of the same shape, imposed on arbitrary fields, is disproved in Section~\ref{sec:strain}.
+
+\subsection{The dissipative term, aiming at $-\kappa M^3$}
+
+From~\eqref{eq:visc}, the viscous contribution to $M'$ is at most $-\nu|\nabla\omega|_{\mathrm{HS}}^2/M$. At a spatial maximum of $|\omega|$, the polar decomposition $\nabla\omega=(\nabla|\omega|)\otimes\xi+|\omega|\nabla\xi$ and $\nabla|\omega|=0$ give $|\nabla\omega|_{\mathrm{HS}}^2=M^2|\nabla\xi|_{\mathrm{HS}}^2$. The algebraic Pythagoras identities that record this reduction are \lean{polar_pythagoras_directional_deriv} and \lean{concrete_bochner_polar_viscous_damping_at_max} in \lean{FrohmanianTether/SymplecticConstraint.lean:567} and :614. The cubic sink in~\eqref{eq:rate-lip} is then equivalent, after dividing by $M$ and absorbing $\nu>0$ into the constant, to a lower bound
+\begin{equation}
+\label{eq:coercivity}
+|\nabla\omega|_{\mathrm{HS}}^2
+\;\ge\;
+\kappa\,M^4
+\end{equation}
+at the attained maximum, with $\kappa>0$ independent of $t$. This is the named proposition \lean{DirectionCoercivityAtMax} (\lean{TetherRateDerivation.lean:474}). Status along Navier--Stokes trajectories: unsettled. Section~\ref{sec:strain} records why the same lower bound cannot be a universal static fact; that discussion is labelled as unformalized background where no Lean theorem exists.
+
+\subsection{Algebraic assembly}
+
+\begin{lemma}[Cubic assembly]
+\label{lem:assembly}
+Suppose $M>0$, $\nu\ge 0$, $M'\le\bigl(\mathrm{stretch}+\nu\cdot\mathrm{visc}\bigr)/M$, $\mathrm{stretch}\le C M^3$, $\mathrm{visc}\le -|\nabla\omega|_{\mathrm{HS}}^2$, and $\kappa M^4\le|\nabla\omega|_{\mathrm{HS}}^2$. Then
+\[
+M'\;\le\; C M^2-\nu\kappa\,M^3.
+\]
+\end{lemma}
+
+This is \lean{cubic_rate_of_strain_and_hsSq} (\lean{TetherRateDerivation.lean:390}), built from \lean{cubic_rate_of_stretching_and_visc} (:373). Status: kernel-checked proved, as an implication. It does not discharge the two inequalities it assumes. For $\nu>0$ the factor $\nu\kappa$ may be renamed as the constant in~\eqref{eq:rate-lip}; for $\nu=0$ the cubic sink produced by this assembly vanishes. Clay Problem~(A) has $\nu>0$. The wrapper \lean{cubic_rate_from_named_hypotheses} (:609) records the same implication and does not claim the hypotheses or prove either rate proposition for general data.
+
+
+%======================================================================
+\section{Attainment of the vorticity maximum, and a shear counterexample}
+\label{sec:attain}
+
+Write \lean{VorticityMaximumAttained}\ $u$ $T$ $x_{\max}$ for the statement that for every $t\in[0,T)$, the point $x_{\max}(t)$ is a global spatial maximizer of $y\mapsto|\omega(y,t)|$ (\lean{TetherRateDerivation.lean:448}). As a claim about every solution of class \lean{IsFeffermanSolutionOn}, this is false. Under a decay hypothesis, it is true.
+
+\begin{lemma}[Attainment for a continuous function vanishing at infinity]
+\label{lem:attain-generic}
+A continuous nonnegative function $f:\R^3\to\R$ that tends to $0$ at infinity attains a global maximum.
+\end{lemma}
+
+This is \lean{exists_isMaxOn_of_tendsto_zero} (\lean{Scratch/VorticityMaxAttained.lean:58}, commit \ratecommit). Nonnegativity is used: a negative function approaching $0$ need not attain its supremum $0$. If $f$ vanishes identically the claim is trivial. Otherwise pick $x_0$ with $f(x_0)>0$; vanishing at infinity supplies a compact set outside which $f<f(x_0)$; adjoining $x_0$ yields a nonempty compact on which a continuous function attains its maximum, and that maximum is global.
+
+\begin{lemma}[Decay of vorticity under Fefferman decay]
+\label{lem:vort-decay}
+If $u$ is $C^1$ and satisfies \lean{FeffermanDecay}, then $|\omega(x)|\to 0$ as $|x|\to\infty$.
+\end{lemma}
+
+This is \lean{vorticity_tendsto_zero_of_feffermanDecay} (\lean{VorticityMaxAttained.lean:269}). The proof bounds $|\mathrm{curl}\,u|$ by six times the operator norm of $\nabla u$ (\lean{norm_curl_le_six_fderiv}, :164), applies \lean{FeffermanDecay} at order one to obtain $|\nabla u(x)|\le C(1+|x|)^{-1}$, and squeezes to zero at infinity. Consequently, a $C^1$ snapshot with Fefferman decay attains a global maximum of $|\omega|$ (\lean{exists_isMaxOn_vorticity_of_feffermanDecay}, :297). An attained maximum is a genuine $L^\infty$ representative: the range is bounded and $\|\omega\|_\infty=|\omega(x)|$ (\lean{isMaxOn_vorticity_sup_norm_eq}, :95).
+
+\begin{theorem}[Attainment under snapshot decay]
+\label{thm:attain-snapshot}
+Let $(u,p)$ be a local Fefferman-class solution on $[0,T)$. If every snapshot $u(t)$ has continuous $|\omega(t)|$ vanishing at infinity, then there exists a (not necessarily measurable) map $x_{\max}$ such that \lean{VorticityMaximumAttained}\ $u$ $T$ $x_{\max}$ holds. The same conclusion holds if every snapshot satisfies \lean{FeffermanDecay}.
+\end{theorem}
+
+These are \lean{exists_vorticityMaximumAttained_of_tendsto_zero} (\lean{VorticityMaxAttained.lean:321}) and \lean{exists_vorticityMaximumAttained_of_snapshot_feffermanDecay} (:335). Joint Fefferman smoothness implies that every snapshot is spatially $C^\infty$ (\lean{fefferman_snapshot_contDiff}, :307).
+
+\begin{theorem}[Attainment at time zero]
+\label{thm:attain-t0}
+If $(u,p)$ is a local Fefferman-class solution on an interval with $0<T$, and if the initial datum $u_0$ satisfies \lean{FeffermanDecay}, then $|\omega(0)|$ attains a global maximum.
+\end{theorem}
+
+This is \lean{exists_isMaxOn_vorticity_at_zero} (\lean{VorticityMaxAttained.lean:350}). Status: kernel-checked proved. Propagation of Fefferman decay, or of vanishing at infinity, from $t=0$ to $t>0$ is not proved here. That propagation is one of the remaining pieces of the Kato track (Section~\ref{sec:kato}): once a solution is known to remain in every $\Hs$, vanishing at infinity is the expected consequence of the embedding and the decay of the initial datum, but it is not a theorem in the cited commits.
+
+\begin{theorem}[The solution class does not imply attainment]
+\label{thm:shear}
+It is not the case that every \lean{IsFeffermanSolutionOn} solution admits a maximizing trajectory. An explicit counterexample is the stationary shear
+\[
+u(x)\;=\;\bigl(y\arctan y-\tfrac12\log(1+y^2),\,0,\,0\bigr),
+\qquad
+p\equiv 0,
+\qquad
+\nu=0,
+\]
+where $y=x_2$. Its vorticity is $\omega=(0,0,-\arctan y)$, which never attains the value $\pi/2=\sup|\omega|$.
+\end{theorem}
+
+This is \lean{not_isFeffermanSolutionOn_implies_vorticityMaximumAttained} (\lean{VorticityMaxAttained.lean:569}), using \lean{isFeffermanSolutionOn_arctanShear} (:545) and \lean{not_isMaxOn_abs_arctan} (:484). The field is $C^\infty$ and divergence-free, the convective term and the pressure gradient vanish, and the energy inequality holds as an equality of two (possibly infinite) lower integrals. The class \lean{IsFeffermanSolutionOn}, as written, does not require $\nu>0$, spatial decay, or finite energy. The counterexample therefore does not touch the Clay reduction, which assumes $\nu>0$ and Fefferman data. It shows only that attainment cannot be read off from the local solution predicate alone.
+
+%======================================================================
+\section{Lipschitz regularity, Rademacher, and Danskin's formula for $M$}
+\label{sec:danskin}
+
+A maximizer itself need not move smoothly: two peaks can trade places, and a selected maximum point can jump. The Lipschitz rate does not need a smooth maximizer. What is used is regularity of the scalar envelope $M$.
+
+The hypothesis that makes $M$ Lipschitz is a uniform-in-space bound on the time derivative of vorticity. Write \lean{VorticityTimeDerivBddOn}\ $u$ $I$ $C$ for the statement that $C\ge 0$ and, for every $t\in I$ and every $x\in\R^3$, the map $s\mapsto\omega(x,s)$ is differentiable at $t$ with $|\partial_t\omega(x,t)|\le C$ (\lean{VorticityMaxAttained.lean:586}). This bound is \emph{not} implied by \lean{IsFeffermanSolutionOn}: joint $C^\infty$ regularity on $\R^3\times[0,T)$ does not by itself give bounds uniform in $x$.
+
+\begin{lemma}[Lipschitz envelope]
+\label{lem:M-lip}
+If \lean{VorticityTimeDerivBddOn}\ $u$ $[a,b]$ $C$ holds and $|\omega(t)|$ is bounded for each $t\in[a,b]$, then
+\[
+\bigl|M(t)-M(s)\bigr|\;\le\; C\,|t-s|
+\qquad\text{for all }s,t\in[a,b].
+\]
+In particular, $M$ is Lipschitz on $[a,b]$ with constant $C$.
+\end{lemma}
+
+These are \lean{abs_Mω_sub_le_of_timeDerivBdd} (\lean{VorticityMaxAttained.lean:592}) and \lean{lipschitzOnWith_Mω_of_timeDerivBdd} (:631). The pointwise estimate $|\omega(x,t)-\omega(x,s)|\le C|t-s|$ is the mean value inequality at each $x$; taking suprema, using boundedness of each snapshot so that $M$ is a genuine supremum, yields the claim for $M$.
+
+\begin{lemma}[Rademacher]
+\label{lem:rademacher}
+Under the same hypotheses, with $a<b$, the map $M$ is differentiable at almost every $t\in(a,b)$. At those interior points the derivative is two-sided.
+\end{lemma}
+
+This is \lean{ae_differentiableAt_Mω_of_timeDerivBdd} (\lean{VorticityMaxAttained.lean:644}), applying Mathlib's Rademacher theorem on the compact interval.
+
+\begin{theorem}[Danskin equality at differentiability points]
+\label{thm:danskin-eq}
+Suppose $M$ is two-sided differentiable at a time $t$, a spatial maximum of $|\omega(t)|$ is attained at a point $x$, $M(t)>0$, the map $s\mapsto\omega(x,s)$ is differentiable at $t$, and $|\omega(x,s)|\le M(s)$ for $s$ near $t$. Then
+\begin{equation}
+\label{eq:danskin-eq}
+M'(t)
+=
+\frac{\langle\omega(x,t),\,\partial_t\omega(x,t)\rangle}{M(t)}.
+\end{equation}
+In particular, the inequality \lean{DanskinRateAt} holds at $t$.
+\end{theorem}
+
+This is \lean{danskin_eq_of_differentiable} (\lean{VorticityMaxAttained.lean:671}). The proof is: the map $s\mapsto|\omega(x,s)|$ has derivative equal to the right-hand side of~\eqref{eq:danskin-eq} by \lean{hasDerivAt_norm_of_ne_zero}; the difference $M(s)-|\omega(x,s)|$ is nonnegative near $t$ and zero at $t$, hence has a local minimum at $t$, so its derivative vanishes; therefore $M'(t)$ equals the derivative of $|\omega(x,s)|$.
+
+Under \lean{VorticityMaximumAttained}, the near-time comparison $|\omega(x,s)|\le M(s)$ holds automatically at interior times (\lean{eventually_norm_le_Mω_of_attained}, :721). Consequently \lean{DanskinRateAt} holds at every interior differentiability point of $M$ at which $s\mapsto\omega(x_{\max}(t),s)$ is differentiable (\lean{danskinRateAt_of_differentiable}, :734), and therefore almost everywhere on compact subintervals of $(0,T)$ under a uniform bound on $\partial_t\omega$ (\lean{ae_danskinRateAt_of_timeDerivBdd}, :751).
+
+Two narrowings of these statements are recorded here rather than papered over. First, \lean{ae_danskinRateAt_of_timeDerivBdd} takes as a hypothesis the time-differentiability of $s\mapsto\omega(x_{\max}(t),s)$ at each $t$ in the interval. For each fixed $t$ the point $x_{\max}(t)$ is frozen, so on a Fefferman solution in the open interval $(0,T)$ this is differentiability in time of a spatially smooth field at a single point, which interior joint smoothness supplies; that discharge is not part of the Lean theorem as stated. Second, the uniform bound \lean{VorticityTimeDerivBddOn} is not proved for Fefferman-class solutions in the cited commits. The Lipschitz regularity of $M$ along a general local solution remains a part of the open rate hypothesis, not a theorem about every \lean{IsFeffermanSolutionOn} solution.
+
+%======================================================================
+\section{Parabolic scaling of $M$}
+\label{sec:scaling}
+
+The Navier--Stokes scaling $u_\lambda(x,t)=\lambda\, u(\lambda x,\lambda^2 t)$ is \lean{rescaleFlow} (\lean{TetherRateDerivation.lean:493}). Under componentwise spatial differentiability,
+\[
+\omega_\lambda(x,t)
+=
+\lambda^2\,\omega(\lambda x,\lambda^2 t),
+\]
+which is \lean{vorticity_rescaleFlow} (:501). Taking suprema, for $\lambda\neq 0$ and a bounded snapshot,
+\begin{equation}
+\label{eq:Mscale}
+M(u_\lambda,t)
+=
+|\lambda|^2\, M(u,\lambda^2 t).
+\end{equation}
+This is \lean{Mω_rescaleFlow} (\lean{TetherRateDerivation.lean:513}). Differentiating the envelope $s\mapsto\lambda^2 M(\lambda^2 s)$ at a point where $M$ has derivative $d$ at $\lambda^2 t$ gives, for $\lambda>0$,
+\begin{equation}
+\label{eq:Mscale-deriv}
+M_\lambda'(t)
+=
+\lambda^4\, d
+=
+\lambda^4\, M'(\lambda^2 t).
+\end{equation}
+This is \lean{hasDerivAt_Mω_rescale_of_hasDerivAt} (\lean{TetherRateDerivation.lean:548}). Status: kernel-checked proved.
+
+The cubic rate is not scaling-invariant with a fixed pair $(C,\kappa)$. The identity \lean{rate_form_rescale_iff} (\lean{TetherRateDerivation.lean:566}) states that, for $\lambda>0$,
+\[
+\lambda^4 d
+\le
+C\bigl(\lambda^2 M\bigr)^2-\kappa\bigl(\lambda^2 M\bigr)^3
+\qquad\text{if and only if}\qquad
+d
+\le
+C M^2-(\kappa\lambda^2) M^3,
+\]
+where $M$ and $d$ are evaluated at $\lambda^2 t$. The quadratic source term scales the same way as $M_\lambda'$. The cubic sink is one degree supercritical: a pair $(C,\kappa)$ that works for $u_\lambda$ corresponds to a sink coefficient $\kappa\lambda^2$ for $u$. For concentrated data (large $\lambda$), any $\kappa$ that is to work uniformly must shrink at least like $\lambda^{-2}$. This is a constraint on the open coercivity inequality, not a proof of it.
+
+%======================================================================
+\section{The universal strain bound is disproved; static coercivity is not a general fact}
+\label{sec:strain}
+
+\begin{theorem}[No universal pointwise strain bound]
+\label{thm:strain-refute}
+For every constant $C\in\R$, it is not the case that
+\[
+\|\nabla u(x)\|\;\le\; C\,\|\mathrm{curl}\,u\|_\infty
+\]
+holds for every velocity field $u$ and every $x\in\R^3$.
+\end{theorem}
+
+This is \lean{StrainBoundRefutation.not_forall_strain_le_sup_vorticity} (\lean{FrohmanianTether/StrainBoundRefutation.lean:78}, commit \ratecommit). The counterexample is the linear pure-strain (irrotational) field $u(y)=(y_1,y_0,0)$: $\mathrm{curl}\,u=0$, so the right-hand side is zero, while $\nabla u$ is a nonzero constant. The field does not decay and is not recovered from vorticity by the Biot--Savart law, so the refutation does not by itself disprove \lean{StrainControlledByVorticity} on Fefferman snapshots. On decaying divergence-free fields the map $\omega\mapsto\nabla u$ is a Calder\'on--Zygmund operator, which is unbounded on $L^\infty$; the standard substitute is a logarithmic estimate involving a higher norm (Section~\ref{sec:bkm}). Whether a constant $C=C(u_0,\nu)$ nevertheless controls $\|\nabla u\|_\infty/M$ uniformly in time along every local Fefferman solution is unsettled.
+
+\paragraph{Rigid rotation, labelled unformalized background.}
+The same lower bound~\eqref{eq:coercivity}, imposed on arbitrary smooth snapshots rather than on a Navier--Stokes trajectory, is not a general fact about maxima of $|\omega|$. A rigid rotation $u(x)=(-x_2,x_1,0)$ has constant vorticity $\omega=(0,0,2)$, so every point is a maximum, $M=2$, and $|\nabla\omega|_{\mathrm{HS}}=0$. The dissipation term vanishes identically, and~\eqref{eq:coercivity} fails for every $\kappa>0$. This field does not decay and is not a Fefferman datum; the example shows only that~\eqref{eq:coercivity} cannot be a universal static inequality, so if it holds along a solution it must use the dynamics. A wide, nearly rigid Gaussian vortex $u(x)=e^{-\varepsilon|x|^2}(-x_2,x_1,0)$ produces the same vanishing of $|\nabla\omega|$ at the origin and a dissipation of size $O(\varepsilon)$, with $M=2$ fixed as $\varepsilon\to 0$.
+
+These two calculations are recorded here as an analytic test. They are \textbf{not} kernel-checked Lean theorems in the cited commits. The file \lean{Scratch/TetherRateStaticTests.lean}, named in the docstring of \lean{DirectionCoercivityAtMax} as containing a kernel-checked static disproof, is not present in either cited worktree. The status of static coercivity, as a Lean statement, is therefore: not formalized, not proved, and not disproved, in the commits used here. The status of \lean{DirectionCoercivityAtMax} along Navier--Stokes trajectories remains unsettled.
+
+
+%======================================================================
+\section{The Beale--Kato--Majda logarithmic inequality}
+\label{sec:bkm}
+
+\begin{theorem}[BKM logarithmic inequality]
+\label{thm:bkm}
+There exists a constant $C>0$ such that for every smooth divergence-free field $f:\R^3\to\R^3$ with finite $H^3$ energy, the gradient $\nabla f$ is bounded, and
+\begin{equation}
+\label{eq:bkm}
+\|\nabla f\|_\infty
+\;\le\;
+C\Bigl(1+\|f\|_2^2+\|\mathrm{curl}\,f\|_\infty\bigl(1+\log\bigl(1+\|f\|_{H^3}^2\bigr)\bigr)\Bigr).
+\end{equation}
+\end{theorem}
+
+This is \lean{LogBoundLocal.bkmLogInequality} (\lean{Scratch/LogBoundLocal.lean:659}, commit \ratecommit), proving the proposition \lean{R3BKM.BKMLogInequality} as stated at \lean{R3BKMContinuation.lean:63}. The Lean proposition asserts boundedness of $\nabla f$ and the inequality~\eqref{eq:bkm}; boundedness of $\mathrm{curl}\,f$ is not a separate conjunct of the proposition, and is obtained in the proof from the bound on $\nabla f$ (\lean{GradBound.bddAbove_norm_fderiv}, \lean{Scratch/GradBound.lean:112}, together with $|\mathrm{curl}\,f|\le 6\|\nabla f\|$). The integer $s=3$ is the index used in the formal statement (classically, any $s>5/2$). Status: kernel-checked proved.
+
+The argument, as assembled in \lean{Scratch/LogBound.lean} and \lean{Scratch/LogBoundLocal.lean}, is as follows.
+
+\begin{proof}[Proof outline, matching the Lean development]
+\emph{Boundedness of the gradient from $H^3$ energy.} \lean{GradBound.bddAbove_norm_fderiv} produces a bound on $|\nabla f(x)|$ from the finite sum of $L^2$ norms of derivatives that constitutes \lean{sobolevEnergy 3 f}. Thus $\nabla f$ is bounded, and so is $\mathrm{curl}\,f$.
+
+\emph{Localization.} Fix a point $x_0$ and a scale $L>0$. A standard bump $\varphi_L$ equals $1$ on the ball of radius $L$ about $x_0$, is supported in a fixed multiple of that ball, and has derivative bounds scaling as $L^{-k}$ (\lean{LogBoundLocal.φL} and the lemmas following \lean{LogBoundLocal.lean:205}). The derivatives of $f$ at $x_0$ agree with those of the compactly supported field $\varphi_L f$.
+
+\emph{Symbol decomposition.} Each second-order Riesz-type symbol $m_{kl}(\xi)=\xi_k\xi_l/|\xi|^2$ is split, after multiplication by a radial cutoff, into a low-frequency piece, a sum of dyadic annulus blocks, and a high-frequency remainder (\lean{LogBound.lowP}, \lean{midP}, \lean{highP}, \lean{telescope}). The annulus symbols $Q_{kl}=\psi\cdot m_{kl}$ are Schwartz functions. Dilation leaves the $L^1$ norm of the inverse-Fourier kernel unchanged (\lean{integral_norm_fourierInv_dilate}), and a uniform kernel constant $A=\sum_{k,l}\int|\mathcal{F}^{-1}Q_{kl}|$ is formed (\lean{LogBound.Akern}).
+
+\emph{Low frequencies} are estimated in terms of $\|f\|_2$, after the localization.
+
+\emph{Dyadic blocks} obey a scale-invariant bound: each block applied to a Schwartz function is controlled by $A$ times a supremum of the function (or of $\mathrm{curl}\,f$, after the Helmholtz identity on the annulus, \lean{LogBound.block_identity}). The number of dyadic scales that can be present before the $H^3$ energy is exhausted is comparable to $1+\log(1+\|f\|_{H^3}^2)$. This is the source of the logarithm in~\eqref{eq:bkm}.
+
+\emph{High frequencies} are estimated by the $H^3$ tail, which is absorbed into the same logarithmic factor and into an additive constant.
+
+\emph{Assembly.} Summing the nine component derivatives and taking the supremum over $x_0$ produces a constant $C$ (an explicit combination of the kernel constant $A$, bump bounds, and the constants in \lean{GradBound}) for which~\eqref{eq:bkm} holds. The function $X=1+\|f\|_2^2+\|\omega\|_\infty\bigl(1+\log(1+\|f\|_{H^3}^2)\bigr)$ is at least $1$, so constant terms may be absorbed into a multiple of $X$.
+\end{proof}
+
+The inequality~\eqref{eq:bkm} is a pointwise estimate for a single smooth snapshot of finite $H^3$ energy. Combined with a Kato--Ponce bound on $\frac{d}{dt}\|u\|_{H^3}^2$ and a maximal-interval alternative in $H^3$, it yields the Beale--Kato--Majda continuation criterion: a uniform ceiling on $\|\omega\|_\infty$ prevents $H^3$ blow-up. That combination is formalized as \lean{katoBKMMaximal_of_kato_of_log} (\lean{R3BKMContinuation.lean:208}) and \lean{r3BKMContinuation_of_kato_of_log} (:269). The log inequality is no longer a hypothesis. The remaining input is \lean{KatoMaximalSolution}.
+
+%======================================================================
+\section{Kato infrastructure that is proved, and the remaining maximal-solution items}
+\label{sec:kato}
+
+\begin{definition}[Kato maximal solution]
+\label{def:kato}
+The proposition \lean{KatoMaximalSolution}\ $\nu$ $u_0$ (\lean{Scratch/R3BKMContinuation.lean:76--84}) states that there exist a time set $S$, fields $(u,p)$, and a constant $C_k\ge 0$, such that:
+\begin{enumerate}[label=(\roman*)]
+\item for every $T$ with $[0,T)\subseteq S$, the pair $(u,p)$ is an \lean{IsFeffermanSolutionOn} solution from $u_0$ on $[0,T)$;
+\item $\|u(t)\|_{H^3}^2$ is finite for every $t\in S$, and the map $t\mapsto\|u(t)\|_{H^3}^2$ is continuous on $S$ and right-differentiable, with
+\[
+\frac{d}{dt}\|u\|_{H^3}^2
+\;\le\;
+C_k\,\|\nabla u\|_\infty\,\|u\|_{H^3}^2;
+\]
+\item either $S=[0,\infty)$, or $S=[0,T^*)$ for some $T^*\in(0,\infty)$ and $\|u\|_{H^3}^2$ is unbounded on $S$.
+\end{enumerate}
+\end{definition}
+
+The Lean docstring of this definition mentions uniqueness, persistence of $\Hs$ regularity with $T^*$ independent of $s$, parabolic smoothing up to $t=0$, energy equality, and a Kato--Ponce commutator estimate. The formal proposition is exactly the list (i)--(iii) above: one pair $(u,p)$ on a single interval $S$, Fefferman-class membership on every compactly contained subinterval, an $H^3$ energy inequality of Kato--Ponce type, and the $H^3$ blow-up alternative. Persistence for every $s$, uniqueness, and energy equality are not conjuncts of the proposition as stated.
+
+The proposition is unsettled for general Fefferman data. It is proved at the zero datum: \lean{katoMaximalSolution_zero} (\lean{R3BKMContinuation.lean:254}).
+
+\subsection{Infrastructure that is kernel-checked}
+\label{sec:kato-proved}
+
+The following theorems are proved on the Fourier-side spaces $\Hs:=\lean{Hm s}$, at commit \katohash\ on \lean{feat/r3-bkm-continuation}, except where a contributing commit is named. Each depends only on \lean{propext}, \lean{Classical.choice} and \lean{Quot.sound}.
+
+\paragraph{Leray projector and heat semigroup.}
+The Fourier-multiplier Leray projector is a contraction, a projection, and self-adjoint, and it kills gradients and reproduces divergence-free fields (\lean{LerayHeat.norm_leray_le}, \lean{leray_leray}, \lean{inner_leray}, \lean{leray_divFree}, \lean{leray_eq_self}, \lean{leray_grad}, \lean{Scratch/LerayHeat.lean:186--220}). The heat semigroup $e^{t\Delta}$ is a contraction, is the identity for $t\le 0$, satisfies the semigroup law for $t,s\ge 0$, commutes with Leray, and is strongly continuous at $t=0$ (\lean{norm_heat_le}, \lean{heat_of_nonpos}, \lean{heat_heat}, \lean{heat_leray}, \lean{tendsto_heat_zero}, \lean{continuous_heat}, \lean{LerayHeat.lean:284--405}).
+
+\paragraph{Equality of spatial and Fourier $\Hs$ energies.}
+For a smooth field of finite spatial $\Hs$ energy, that energy equals the Fourier energy with weight $\lean{sobW s}$ (\lean{SobolevFourier.sobolevEnergy_eq_fourierEnergy}, \lean{Scratch/SobolevFourier.lean:219}). Fefferman decay implies that the spatial energy of every order is finite (\lean{FeffermanSobolev.sobolevEnergy_lt_top_of_feffermanDecay}, \lean{Scratch/FeffermanSobolev.lean:58}), and likewise the Fourier energy (:79).
+
+\paragraph{Heat smoothing.}
+The heat semigroup contracts Fourier $\Hs$ energy, and smooths $\Hs\to H^{s+1}$ with a factor $1+1/(2\tau)$ for $\tau>0$ (\lean{HeatSobolev.fourierEnergy_heat_le}, \lean{fourierEnergy_heat_succ_le}, \lean{Scratch/HeatSobolev.lean:70,84}).
+
+\paragraph{Duhamel integrals.}
+The Duhamel integral of a continuous $\Hs$-valued path obeys a norm bound and a Lipschitz estimate in the forcing, and is continuous in time (\lean{Duhamel.norm_duh_le}, \lean{duh_sub}, \lean{norm_duh_sub_le}, \lean{DuhamelUp.continuous_duh}). A smoothing Duhamel integral maps $\Hs$ into $H^{s+1}$ with an explicit bound.
+
+\paragraph{Tame product and the nonlinearity.}
+For $s\ge 3$, Fourier-side convolution against a continuous bilinear form $L$ satisfies
+\[
+\|F\star[L]G\|_{\Hs}
+\;\le\;
+C_s\|L\|\bigl(\|F\|_{\Hs}\|G\|_{H^3}+\|F\|_{H^3}\|G\|_{\Hs}\bigr)
+\]
+(\lean{ProductHm.norm_mulF_le}, \lean{Scratch/ProductHm.lean:398}). The projected nonlinearity $\mathrm{NSN}:\Hs\to H^{s-1}$ obeys
+\[
+\|\mathrm{NSN}(u)\|_{H^{s-1}}
+\;\le\;
+18\,C_s\,\|u\|_{\Hs}\,\|u\|_{H^3}
+\]
+and a Lipschitz estimate in $u$ (\lean{NonlinearHm.norm_NSN_le}, \lean{norm_NSN_sub_le}, \lean{Scratch/NonlinearHm.lean:227,242}). Here $\mathrm{NSN}$ is defined at \lean{NonlinearHm.lean:205}.
+
+\paragraph{Local mild existence.}
+For $\nu>0$ and $u_0\in H^3$ there is a time $T=\lean{localTime}\,\nu\,u_0>0$ and a unique mild solution in the closed ball of radius $\lean{rad}\,u_0$ in $C([0,T];H^3)$, obtained as a Banach fixed point (\lean{MildExistence.local_mild_existence}, \lean{unique_mild_in_ball}, \lean{Scratch/MildExistence.lean:470,454}).
+
+\paragraph{Schwartz class and inverse Fourier regularity.}
+A smooth Fefferman datum, complexified, is a Schwartz map (\lean{FeffermanSchwartz.toSchwartz}, \lean{Scratch/FeffermanSchwartz.lean:155}), and Fourier inversion holds pointwise (\lean{fourierInv_fourier_cplx_of_fefferman}, :165). If a Fourier transform has finite $\Hs$ energy of every order, its inverse Fourier transform is $C^\infty$ (\lean{InverseSobolev.contDiff_fourierInv_of_all_energy}, \lean{Scratch/InverseSobolev.lean:377}).
+
+\paragraph{Initial energy.}
+Fefferman decay implies $\int_{\R^3}|u_0|^2<\infty$ (\lean{R3BKM.lintegral_sq_lt_top_of_feffermanDecay}, \lean{R3BKMContinuation.lean:98}).
+
+\paragraph{Local persistence of $\Hs$ regularity.}
+A mild solution in $H^{k+1}$ remains a mild solution in that space on the $H^3$ local existence interval of its $H^3$ inclusion (\lean{PersistenceHm.persist_on_H3_time}, \lean{Scratch/PersistenceHm.lean:1842}; for Fefferman data, \lean{FeffermanMild.persist_fefferman}, \lean{Scratch/FeffermanMild.lean:112}). This is local persistence on the Kato existence time in $H^3$, for every $k\ge 2$. It is not persistence on a maximal interval $T^*$ independent of $s$, which remains part of the open assembly in Section~\ref{sec:kato-open}.
+
+\paragraph{Time regularity of the mild path, and the mild equation.}
+If $m\ge 2$ and $m+2n\le k$, the included mild path is $C^n$ in time as an $\widehat{H}^m$-valued map on $[0,T)$ (\lean{MildPathSmooth.contDiffOn_inclExt}, \lean{Scratch/MildPathSmooth.lean:100}). Its time derivative equals $\nu\Delta u-N(u)$ in $\widehat{H}^m$ (\lean{MildPathSmooth.mildSDeriv_eq_NSNsucc}, :44; equivalently \lean{MildTimeDeriv.mildSDeriv_eq_lap}, \lean{Scratch/MildTimeDeriv.lean:328}, for the definition \lean{mildSDeriv} at :180).
+
+\paragraph{Joint regularity of the realized mild field.}
+The physical field \lean{physicalMild} associated with a smooth Fefferman datum (\lean{Scratch/FeffermanMild.lean:277}) is, on $\R^3\times[0,T)$ with $T$ the $H^3$ local time, jointly continuous (\lean{MildJointSmooth.continuousOn_physicalMild}, \lean{Scratch/MildJointSmooth.lean:54}), jointly $C^1$ (\lean{contDiffOn_physicalMild_one}, :73), and jointly $C^2$ (\lean{contDiffOn_physicalMild_two}, :108, commit \jointhash). The $C^1$ and $C^2$ statements include the one-sided time derivative at $t=0$. Each snapshot is spatially $C^\infty$ (\lean{FeffermanMild.contDiff_physicalMild}, \lean{FeffermanMild.lean:319}). Joint $C^\infty$ regularity is not proved.
+
+\paragraph{Kato--Ponce commutator and the conditional $H^3$ energy bound.}
+The Gagliardo--Nirenberg inequality used by the $H^3$ commutator is proved (\lean{KatoPonceCommutator.h3GagliardoNirenberg}, \lean{Scratch/KatoPonceCommutator.lean:1725}, commit \texttt{a1a0e51f3f522384ff963c7b918439f6326c78ea}). The commutator estimate \lean{H3CommutatorEstimate} itself is proved (\lean{h3CommutatorEstimate}, :3320, commit \texttt{6f0a5ca9efd99a091d7b94f8ad5ae88f6111f0d6}; the statement of the proposition is at \lean{KatoPonce.lean:516} and is unchanged). Consequently the $H^3$ energy bound holds with that estimate discharged: \lean{katoPonce_h3_energy'} (:3426, commit \texttt{875b195b70645452ee2972ced302ddc5ead92db4}) has no \lean{H3CommutatorEstimate} hypothesis. Partial-derivative commutation along a Fefferman-class solution is proved (\lean{KatoPonceHypotheses.h3PartialCommutation}, \lean{Scratch/KatoPonceHypotheses.lean:341}, commit \texttt{4fb2d6398b6418229669c40c461f4dbd99ac00ea}; from joint smoothness, \lean{h3PartialCommutation_of_contDiff}, :333). The remaining hypotheses of \lean{katoPonce_h3_energy'} are $0\le\nu$, membership in \lean{IsFeffermanSolutionOn}, finite $H^3$ energy on $[0,T)$, \lean{H3EnergyRightDerivativeFormula} (\lean{KatoPonce.lean:439}), and \lean{H3IBPVanishingFlux} (:501). The last two are open.
+
+\paragraph{Leray pressure.}
+A Leray pressure is constructed from an $\Hs$ Fourier representative for $s\ge 3$ (\lean{LerayPressure.lerayPressure}, \lean{Scratch/LerayPressure.lean:306}, with the Fourier-side field \lean{lerayPressureHm} at :202), and is $C^n$ when $n+2\le s$ (\lean{contDiff_lerayPressure}, :347, commit \texttt{f584cfa7c0fc5bd6c0433e5766a58efa8df454ab}). This does not by itself identify the pressure in the pointwise momentum equation, nor prove that the mild field is divergence-free.
+
+\paragraph{Whole-space integral of a divergence.}
+If $F$ is $C^1$ on $\R^3$ and both $F$ and $\mathrm{div}\,F$ are integrable, then $\int_{\R^3}\mathrm{div}\,F=0$ (\lean{DivergenceWholeSpace.integral_div_eq_zero}, \lean{Scratch/DivergenceWholeSpace.lean:302}, commit \katohash; the compactly supported case is \lean{integral_div_eq_zero_of_hasCompactSupport}, :182). This is the whole-space flux identity under those integrability hypotheses. It does not discharge \lean{H3IBPVanishingFlux}, whose remaining obstruction is the integrability of the relevant products and derivatives (a Plancherel identification of physical $L^2$ norms of derivatives of the inverse-Fourier representative is not proved).
+
+These theorems are the infrastructure. They do not, separately or together, prove \lean{KatoMaximalSolution} for general data.
+
+\subsection{Remaining items}
+\label{sec:kato-open}
+
+The following pieces of Definition~\ref{def:kato} are unsettled for general Fefferman data, at commit \katohash.
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{Joint $C^\infty$.} That the realized mild field is jointly $C^\infty$ on $\R^3\times[0,T)$. Joint continuity, joint $C^1$ and joint $C^2$, including the one-sided time derivative at $t=0$, are proved. The step from $C^2$ to every finite order is not complete.
+\item \textbf{Incompressible momentum equation.} That the realized mild field is divergence-free and satisfies the pointwise Navier--Stokes momentum equation with a pressure (and a one-sided time derivative at $t=0$). A Leray pressure is defined and proved smooth; the identification of that pressure with the momentum equation, and $\mathrm{div}\,u=0$ along the mild path, are not proved.
+\item \textbf{Energy inequality.} The comparison $\int|u(t)|^2\le\int|u_0|^2$ in the Fefferman class, as a lower Lebesgue integral, for every snapshot of the realized mild field.
+\item \textbf{Energy derivative and vanishing flux.} The remaining hypotheses of \lean{katoPonce_h3_energy'} (and therefore of Definition~\ref{def:kato}(ii) along a Fefferman-class solution): \lean{H3EnergyRightDerivativeFormula} and \lean{H3IBPVanishingFlux}. The latter is not implied by \lean{IsFeffermanSolutionOn}: that class fixes the pressure only up to a function of time and puts no decay on later snapshots, so the required integrability and flux identities are not controlled.
+\item \textbf{Maximal interval.} Assembly of a maximal $S$ with the $H^3$ blow-up alternative of Definition~\ref{def:kato}(iii). Persistence of $\Hs$ regularity on that maximal interval, with $T^*$ independent of $s$, is likewise not proved.
+\end{enumerate}
+
+A classical reference for local existence in $\Hs$ and the blow-up alternative is Kato~\cite{Kato}. That citation is unformalized background; it is not a Lean theorem and is not used as a hidden hypothesis of Theorems~\ref{thm:main-lip} or~\ref{thm:main-smooth}. Those theorems take \lean{KatoMaximalSolution} as an explicit, still-open input.
+
+Snapshot decay propagation (Section~\ref{sec:attain}) is not a conjunct of \lean{KatoMaximalSolution} as stated. Given the local persistence and inverse-Fourier regularity already proved, the remaining analytic step for later snapshots is vanishing of vorticity at infinity. That step is listed as a separate open item in Section~\ref{sec:open}.
+
+
+%======================================================================
+\section{Open hypotheses}
+\label{sec:open}
+
+Every item below is marked proved, disproved, or unsettled. No item is described as probable.
+
+{\footnotesize
+\setlength{\LTpre}{0.6em}
+\setlength{\LTpost}{0.6em}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{2.05cm}>{\raggedright\arraybackslash}p{8.6cm}@{}}
+\toprule
+Item & Status & Lean pointer; rate files at \ratecommit, Kato files at \katocommit \\
+\midrule
+\endfirsthead
+\toprule
+Item & Status & Lean pointer; rate files at \ratecommit, Kato files at \katocommit\ (continued) \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+\lean{Clay_A_Fefferman} & unsettled & official statement, \lean{RepairedTetherRate.lean:46} \\
+\lean{FrohmanianTetherRateLipschitz} for general Fefferman data, $\nu>0$ & unsettled & \lean{TetherRateLipschitz.lean:44} \\
+same, at $u_0=0$ & proved & \lean{frohmanianTetherRateLipschitz_zero}, :263 \\
+\lean{FrohmanianTetherRateSmooth} for general data & unsettled & \lean{RepairedTetherRate.lean:74} \\
+same, at $u_0=0$ & proved & \lean{frohmanianTetherRateSmooth_zero}, :170 \\
+\lean{KatoMaximalSolution} for general data & unsettled & \lean{R3BKMContinuation.lean:76}; remaining items in \S\ref{sec:kato-open} \\
+same, at $u_0=0$ & proved & \lean{katoMaximalSolution_zero}, :254 \\
+\lean{BKMLogInequality} & proved & \lean{bkmLogInequality}, \lean{LogBoundLocal.lean:659} \\
+Lipschitz rate ${}+{}$ Kato ${}\Rightarrow{}$ Clay~(A) & proved (implication) & \lean{clay_A_fefferman_of_rateLipschitz_of_kato}, \lean{TetherRateLipschitz.lean:251} \\
+Smooth rate ${}+{}$ Kato ${}\Rightarrow{}$ Clay~(A) & proved (implication) & \lean{clay_A_fefferman_of_rate_of_kato}, \lean{LogBoundLocal.lean:719} \\
+Smooth ${}\Rightarrow{}$ Lipschitz, with a locally bounded right derivative & proved & \lean{frohmanianTetherRateLipschitz_of_smooth_of_locallyBddRightDeriv}, :361 \\
+Smooth ${}\Rightarrow{}$ Lipschitz, with no extra bound & unsettled & \S\ref{sec:incomparable} \\
+Comparison ceiling, Lipschitz / a.e.\ form & proved & \lean{comparison_ode_stability_lipschitz}, :82 \\
+Bochner, transport cancellation, viscous sign at a maximum & proved & \lean{TetherRateDerivation.lean:78,147,256} \\
+Cubic assembly as an implication & proved & \lean{cubic_rate_of_strain_and_hsSq}, :390 \\
+Parabolic scaling of $M$ and $M'$ & proved & \lean{Mω_rescaleFlow}, :513; \lean{hasDerivAt_Mω_rescale_of_hasDerivAt}, :548 \\
+Universal $\|\nabla u\|\le C\|\omega\|_\infty$ for arbitrary fields & disproved & \lean{not_forall_strain_le_sup_vorticity} \\
+\lean{StrainControlledByVorticity} along Fefferman solutions (inequality~3) & unsettled & \lean{TetherRateDerivation.lean:465} \\
+\lean{DirectionCoercivityAtMax} along solutions (inequality~4) & unsettled & :474 \\
+Static coercivity for arbitrary snapshots & not formalized in the cited commits & \S\ref{sec:strain} \\
+Attainment of $|\omega|$ given vanish-at-infinity, or given snapshot Fefferman decay & proved & \lean{VorticityMaxAttained.lean:321,335} \\
+Attainment at $t=0$ for Fefferman data & proved & :350 \\
+\lean{IsFeffermanSolutionOn} ${}\Rightarrow{}$ attainment, as written & disproved & \lean{not_isFeffermanSolutionOn_implies_vorticityMaximumAttained}, :569 \\
+Snapshot decay propagation for $t>0$ & unsettled & \S\ref{sec:attain} \\
+Lipschitz / Rademacher / Danskin for $M$, under a uniform bound on $\partial_t\omega$ and attainment & proved & \lean{VorticityMaxAttained.lean:631,644,671,751} \\
+That uniform bound on $\partial_t\omega$, for general Fefferman solutions & unsettled & \lean{VorticityTimeDerivBddOn}, :586 \\
+\lean{DifferentiableMaximizer} (a $C^1$ maximizing path) & unsettled, and not used by the Lipschitz rate & \lean{TetherRateDerivation.lean:454} \\
+\lean{FrohmanianTetherRate} as originally written & disproved & \lean{not_forall_frohmanianTetherRate} \\
+\lean{h3GagliardoNirenberg} & proved & \lean{KatoPonceCommutator.lean:1725}, commit \texttt{a1a0e51} \\
+\lean{h3CommutatorEstimate} & proved & \lean{KatoPonceCommutator.lean:3320}, commit \texttt{6f0a5ca}; statement at \lean{KatoPonce.lean:516} \\
+\lean{katoPonce_h3_energy'} (commutator discharged) & proved, with remaining hypotheses & \lean{KatoPonceCommutator.lean:3426}, commit \texttt{875b195} \\
+\lean{h3PartialCommutation} & proved & \lean{KatoPonceHypotheses.lean:341}, commit \texttt{4fb2d63} \\
+\lean{H3EnergyRightDerivativeFormula} & unsettled & \lean{KatoPonce.lean:439} \\
+\lean{H3IBPVanishingFlux} & unsettled; not implied by \lean{IsFeffermanSolutionOn} & \lean{KatoPonce.lean:501} \\
+Local $\Hs$ persistence on the $H^3$ existence interval & proved & \lean{persist_on_H3_time}, \lean{PersistenceHm.lean:1842}; \lean{persist_fefferman}, \lean{FeffermanMild.lean:112} \\
+$C^n$ in time of the mild path in $\widehat{H}^m$ & proved & \lean{contDiffOn_inclExt}, \lean{MildPathSmooth.lean:100} \\
+$\partial_t u=\nu\Delta u-N(u)$ in $\widehat{H}^m$ & proved & \lean{mildSDeriv_eq_NSNsucc}, \lean{MildPathSmooth.lean:44} \\
+Joint $C^0$, $C^1$, $C^2$ of \lean{physicalMild}, including the one-sided derivative at $t=0$ & proved & \lean{MildJointSmooth.lean:54,73,108}, commit \jointcommit \\
+Joint $C^\infty$ of \lean{physicalMild} & unsettled & \S\ref{sec:kato-open} \\
+\lean{lerayPressure} and \lean{contDiff_lerayPressure} & proved & \lean{LerayPressure.lean:306,347}, commit \texttt{f584cfa} \\
+$\int_{\R^3}\mathrm{div}\,F=0$ for $C^1$ integrable $F$ with integrable divergence & proved & \lean{integral_div_eq_zero}, \lean{DivergenceWholeSpace.lean:302}, commit \katocommit \\
+Divergence-free and pointwise momentum equation for the mild field & unsettled & \S\ref{sec:kato-open} \\
+Energy inequality for the realized mild field & unsettled & \S\ref{sec:kato-open} \\
+Maximal interval and $H^3$ blow-up alternative & unsettled & \S\ref{sec:kato-open} \\
+Kato infrastructure of \S\ref{sec:kato-proved} & proved & cited there, at \katocommit \\
+T1--T10 of the gaps ledger & unsettled & \S\ref{sec:t1t10}; none is discharged here \\
+\end{longtable}
+}
+
+%======================================================================
+\section{Gaps T1--T10, restated from the strain-kernel record}
+\label{sec:t1t10}
+
+This section restates the named gaps T1--T10 from the earlier working notes~\cite{GapsLedger}, themselves an update of \href{https://doi.org/10.5281/zenodo.22835069}{\texttt{10.5281/zenodo.22835069}}, and inserts them as a hypotheses-and-gaps ledger. It does not derive any estimate that would close a named gap. Those notes concerned a strain-kernel identification $A(\theta,\omega)=(\theta\times\omega)\otimes\theta+\theta\otimes(\theta\times\omega)$ and a prefactor $\kappa=C_{\mathrm{CZ}}(3)=3/2$ on the torus $\T^3$. The present paper's open inequalities~3 and~4 are posed on $\R^3$ along Fefferman solutions; they are related in subject to T1 and to the missing cubic sink, but they are not the same propositions, and no identification of them with T1--T10 is claimed.
+
+The body of the published PDF of the source record never prints the tokens T1,~\dots, T10. The obstruction section is written as Lemmas~4.1--4.8. The abstract and deposit description say that named gaps T1--T10 (Lemmas~4.1--4.6) record why a bound on $\|S\|_\infty$ is not derived there, and they add two scope statements that are not numbered as lemmas. The following is a ledger reading of that abstract phrase, not a typographic fact of the PDF.
+
+{\small
+\noindent
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.7in}>{\raggedright\arraybackslash}p{1.6in}X@{}}
+\toprule
+Label & Source in 22835069 & What it blocks \\
+\midrule
+T1 & Lemma~4.1, strain endpoint & a solution-independent space $X$ and constant $C_{\ast}$ with $\|S\|_{L^\infty}\le C_{\ast}\|\omega\|_{X}$ \\
+T2 & Lemma~4.2, stretching identification & $\int\langle\omega_{\varepsilon},(\omega_{\varepsilon}\cdot\nabla)u_{\varepsilon}\rangle\phi_{\varepsilon}\le C_{\ast}M_{\varepsilon}I_{4}(\phi_{\varepsilon})+C_{\varepsilon}$ with commutators compatible with a data-only majorant \\
+T3 & Lemma~4.3, transported weight & a weight $\phi_{\varepsilon}$ whose $L^\infty$ ODE coefficients depend only on $\|u_0\|_{\Hs}$ and $\nu$ (if $\phi\equiv 1$, the tether is ornamental and the problem moves onto Lemma~4.2) \\
+T4 & Lemma~4.4, absorption constant & $C_{\mathrm{abs}}$ depending only on $\kappa=3/2$, $C_{\mathrm{Sob}}$, $\lambda(\T^3)$, and $\nu$ \\
+T5 & Lemma~4.5, non-circular majorant & a comparison function $Y$ whose ODE coefficients are independent of $\{M(t):t\ge 0\}$, with $M\le Y$ \\
+T6 & Lemma~4.6, mollifier limit & commutator constants that remain controlled as $T\uparrow T_{\ast}$, depending only on $u_0$ and $\nu$ \\
+T7 & Lemma~4.7, Jacobi / cocycle of $B$ & verification of a tethered bracket that is simultaneously degenerate on $H$, Jacobi, and a source of a new negative term in $\frac{d}{dt}M$ (in tension; vacated if $B$ is dropped) \\
+T8 & Lemma~4.8, degeneracy versus feedback & the dichotomy: a Poisson correction with $B(\cdot,H)=0$ cannot supply a new term in the vorticity equation; a nonzero correction changes the PDE \\
+T9 & abstract / description & an $L^\infty$ bound on $S$ on the whole torus is emptiness of the singular set, not $\mathbb{P}^{1}$-nullity (Caffarelli--Kohn--Nirenberg~\cite{CKN}) \\
+T10 & abstract / description & the two-point strain pairing that would discharge Constantin--Fefferman~\cite{CF} is not free \\
+\bottomrule
+\end{tabularx}
+}
+
+T1--T6 are the six hypotheses of Theorem~2.1 of that record. Section~6 of the source says that those analytic pieces are the same missing a priori bound under different names. Proving them would prove that theorem unconditionally, which is a Clay-type statement on $\T^3$. No rearrangement of the names discharges the estimate. In the present work, T1--T10 are all \textbf{unsettled}.
+
+\paragraph{T1 (Lemma~4.1, strain endpoint).}
+There exist a Banach space $X(\T^3)$ and a constant $C_{\ast}$ such that $\|S\|_{L^\infty}\le C_{\ast}\|\omega\|_{X}$ for every smooth divergence-free $\omega$, with $S$ the deformation tensor of $u=K_{\mathrm{BS}}\ast\omega$. The Calder\'on--Zygmund operator $\omega\mapsto S$ is bounded on $L^{p}(\T^3)$ for $1<p<\infty$ and is not bounded on $L^\infty$. The estimate $\|S\|_{L^\infty}\le\tfrac32\|\omega\|_{L^\infty}$ is therefore false as a general statement. A Kozono--Taniuchi or $\dot B^{0}_{\infty,1}$ substitute changes the bookkeeping. Until the endpoint is fixed, Lemma~4.2 cannot feed a Young absorption. Status: unsettled. Related to, but not identified with, \lean{StrainControlledByVorticity} on $\R^3$.
+
+\paragraph{T2 (Lemma~4.2, stretching identification).}
+On a classical solution, after mollification, the displayed integral bound of the table holds, with $C_{\varepsilon}\to 0$ in the sense used to pass to the limit, and with $C_{\ast}$ the constant of T1. The algebraic identity $\langle\omega,(\omega\cdot\nabla)u\rangle=\langle\omega,S\omega\rangle$ is filled. The missing piece is the same $L^\infty$ bound, plus mollifier commutators whose constants may depend on $\|u\|_{C^{2}}$ and therefore cannot be fed into a majorant whose coefficients may depend only on $u_0$ and $\nu$. Status: unsettled.
+
+\paragraph{T3 (Lemma~4.3, transported weight).}
+There exists a family of nonnegative scalars $\phi_{\varepsilon}$ such that $\|\phi_{\varepsilon}(t)\|_{L^\infty}$ is dominated by a function of $t$ whose ODE coefficients depend only on $\|u_0\|_{\Hs}$ and $\nu$. Linear transport with $\operatorname{div}u=0$ conserves $\|\phi\|_{L^\infty}$ and is filled. If the weight grows in response to stretching, the ODE inherits the unknown $C_{\ast}$. Taking $\phi\equiv 1$ makes the tether ornamental and moves the problem onto T2. Status: unsettled.
+
+\paragraph{T4 (Lemma~4.4, absorption constant).}
+The constant $C_{\mathrm{abs}}$ in the schematic inequality for $\frac{d}{dt}S_{\varepsilon}$ depends only on $\kappa=3/2$, $C_{\mathrm{Sob}}$, $\lambda(\T^3)$, and $\nu$. Until T1 supplies a solution-independent $C_{\ast}$, $C_{\mathrm{abs}}$ is not a function of $u_0$ and $\nu$ alone. Status: unsettled.
+
+\paragraph{T5 (Lemma~4.5, non-circular majorant).}
+There exists a scalar $Y\in C^{1}([0,\infty);[0,\infty))$ whose ODE $Y'=F(Y)$ has coefficients independent of $\{M(t):t\ge 0\}$, such that $M(t)\le Y(t)$ on the existence interval. Scalar ODE comparison, including a clipped cubic $F(y)=C_{\mathrm{abs}}y^{2}-\kappa'' y^{3}$ with a global barrier, is filled as an implication; the Lean comparison lemmas of Section~\ref{sec:comparison} are of this type. The missing piece is the differential inequality $M'\le F(M)$ with an $F$ built only from $u_0$ and $\nu$. Inserting $\sup M$ into $C_{\mathrm{abs}}$ is circular; modifying the PDE is inadmissible. Status: unsettled, and the same core as the open rate.
+
+\paragraph{T6 (Lemma~4.6, mollifier limit).}
+$S_{\varepsilon}(t)\to S(t)$ and the commutators vanish as $\varepsilon\to 0$, with constants compatible with T5. Passage on a compact classical interval $[0,T]\subset[0,T_{\ast})$ is filled. Using those bounds to continue past a putative singularity requires constants that remain controlled as $T\uparrow T_{\ast}$. Status: unsettled.
+
+\paragraph{T7 (Lemma~4.7, Jacobi / cocycle) and T8 (Lemma~4.8, degeneracy versus feedback).}
+If a bilinear correction $B$ is part of the argument, then $d^{2}B=0$ on the reduced coadjoint orbit, and a correction used as dynamics satisfies $B(F,H)=0$. If $B(\cdot,H)=0$, the Hamiltonian evolution is exactly Euler and no extra term appears in the vorticity equation. If $B(\cdot,H)\neq 0$, the evolution is not Navier--Stokes. If $B$ is dropped and $\phi$ is an ordinary weight, T7 is vacated. Status: unsettled as geometry; filled as logic in the source record. The reductions of Section~\ref{sec:main} do not use a Poisson correction $B$.
+
+\paragraph{T9 and T10 (abstract scope statements).}
+An $L^\infty$ bound on $S$ on the whole torus is emptiness of the singular set, not $\mathbb{P}^{1}$-nullity in the sense of Caffarelli--Kohn--Nirenberg. The two-point strain pairing that would discharge Constantin--Fefferman is not free. Neither sentence is a proof of a bound, and neither is weakened here. Status: unsettled as claims that would close a regularity argument; recorded as scope.
+
+%======================================================================
+\section{Earlier tether formulations: refutation and vacuity}
+\label{sec:refute}
+
+The original proposition \lean{FrohmanianTetherRate} quantified over a solution class \lean{IsPhysicalNSSolution} that does not require spatial differentiability. Mathlib's Fr\'echet derivative is $0$ at points of non-differentiability. A steady, finite-energy, continuous field with a nowhere-differentiable Takagi component~\cite{Takagi} therefore formally satisfies the equations for every viscosity, while its vorticity is unbounded. Consequently
+\[
+\neg\,\forall u_0\,\nu,\quad \lean{FrohmanianTetherRate}\ u_0\ \nu,
+\]
+and the companion bound \lean{FrohmanianTetherBound} fails for the same field at every $\nu$. These are \lean{TetherRateCounterexample.not_forall_frohmanianTetherRate} and \lean{not_frohmanianTetherBound_U} (\lean{Scratch/TetherRateCounterexample.lean:605,610}). Status: kernel-checked disproved, as written.
+
+On continuous $\Z^3$-periodic data the original rate holds, and for nonzero data it holds only vacuously (\lean{frohmanianTetherRate_of_periodic}, \lean{Scratch/TetherRateStatus.lean}). The repaired rates of Definitions~\ref{def:lip} and~\ref{def:smooth} quantify only over Fefferman's smooth class, which excludes the Takagi counterexample.
+
+In the repository \lean{NS_Millennium_Proof}, the binder \lean{hDI} of the earlier conditional theorem \lean{frohmanian_tether_theorem} cannot be inhabited; that theorem is vacuously true. This is recorded in the earlier reduction note and is not re-proved here.
+
+The repaired rates are not refuted by the Takagi example, and they are not proved for general Fefferman data.
+
+
+%======================================================================
+\section{Reproducibility}
+\label{sec:repro}
+
+\paragraph{Author and toolchain.}
+Author: Benjamin Stanley Frohman (B.S.\ Frohman), ORCID \texttt{0009-0006-7068-3718}, \texttt{frohmanbenjamin@gmail.com}, Independent Researcher, Texas, United States. Lean \lean{v4.30.0-rc1} (binary report: \lean{Lean (version 4.30.0-rc1, x86_64-unknown-linux-gnu, commit 714601baf118066cbf3f282361339c6d06665b2a, Release)}). Mathlib revision \mathlibrev\ (the lake manifest pin \texttt{v4.30.0-rc1}). Allowed axioms: \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} only.
+
+\paragraph{Commits.}
+Repository \lean{github.com/BenFrohman/frohmanian-tether-sdiff}. The two branches below diverged at \texttt{5dd8458aa85cd118962b8b7ef2f37480cf2cd0f7}.
+\begin{itemize}[leftmargin=1.4em]
+\item Branch \lean{feat/r3-bkm-continuation}, commit \katohash: the Kato infrastructure of Section~\ref{sec:kato-proved} and the pin for this document's Lean code. This is the commit against which line numbers for Kato files were checked.
+\item Branch \lean{feat/tether-rate-derivation}, commit \ratehash: rate hypotheses, comparison lemma, attainment, scaling, BKM inequality, and both Clay~(A) reductions. The Lipschitz rate was introduced at \texttt{c9ffdeb1bfe8b7252bf93e6bd97f5455ed5afff7}; the tip \ratecommit\ updates docstrings only.
+\end{itemize}
+Neither branch is a publication, and this document is not a Zenodo deposit.
+
+\paragraph{One rebuild command.}
+From a checkout of \lean{feat/r3-bkm-continuation} at \katocommit, with the Mathlib package already present at revision \mathlibrev\ (do not rebuild Mathlib),
+\begin{leancode}
+lake env lean scripts/PrintScratchAxioms.lean
+\end{leancode}
+That command is the Scratch axiom audit run by the repository's Lean certificate workflow. It does not rebuild Mathlib.
+
+\paragraph{Axiom audit of the printed theorems.}
+The Scratch axiom audit at the pinned Kato commit, from GitHub Actions run \texttt{43158531834} on commit \katohash, reports \lean{SCRATCH AUDIT SUMMARY: theorems audited: 102; clean: 102; violations: 0} and \lean{SCRATCH AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx}. The listing includes the joint $C^2$ headlines and the whole-space divergence theorems. The verbatim output is Appendix~A.
+
+A companion listing of 69 rate, comparison, attainment and reduction theorems, each depending only on \lean{propext}, \lean{Classical.choice} and \lean{Quot.sound}, was produced at \texttt{c9ffdeb1bfe8b7252bf93e6bd97f5455ed5afff7} on \lean{feat/tether-rate-derivation} (Appendix~B). The tip \ratecommit\ changes docstrings only.
+
+\begin{thebibliography}{9}
+\bibitem{Fefferman} C.~L. Fefferman, \emph{Existence and smoothness of the Navier--Stokes equation}, in: The Millennium Prize Problems, Clay Mathematics Institute, 2006, pp.~57--67.
+\bibitem{BKM} J.~T. Beale, T.~Kato, A.~Majda, Remarks on the breakdown of smooth solutions for the 3-D Euler equations, \emph{Comm. Math. Phys.} 94 (1984), 61--66.
+\bibitem{Kato} T.~Kato, Strong $L^p$-solutions of the Navier--Stokes equation in $\mathbb{R}^m$, with applications to weak solutions, \emph{Math.\ Z.} 187 (1984), 471--480.
+\bibitem{Takagi} T.~Takagi, A simple example of the continuous function without derivative, \emph{Proc.\ Phys.-Math.\ Soc.\ Japan} 1 (1903), 176--177.
+\bibitem{CKN} L.~Caffarelli, R.~Kohn, L.~Nirenberg, Partial regularity of suitable weak solutions of the Navier--Stokes equations, \emph{Comm.\ Pure Appl.\ Math.} 35 (1982), 771--831.
+\bibitem{CF} P.~Constantin, C.~Fefferman, Direction of vorticity and the problem of global regularity for the Navier--Stokes equations, \emph{Indiana Univ.\ Math.\ J.} 42 (1993), 775--789.
+\bibitem{GapsLedger} B.S.\ Frohman, Identified strain kernel $A(\theta,\omega)$ and a conditional regularity criterion for 3D Navier--Stokes ($\kappa=3/2$): named open hypotheses, gaps T1--T10, and the current Lean implications, Zenodo (2026), \href{https://doi.org/10.5281/zenodo.22835069}{doi:10.5281/zenodo.22835069}, working-notes update as drafted 11~November~2026.
+\end{thebibliography}
+
+\newpage
+\section*{Appendix: axiom output}
+\label{sec:axioms}
+
+\subsection*{A. Scratch axiom audit at \katocommit}
+\label{sec:axioms-scratch}
+
+The following is the verbatim output of \lean{lake env lean scripts/PrintScratchAxioms.lean} from GitHub Actions run \texttt{43158531834}, on \lean{feat/r3-bkm-continuation} at commit \katohash, with Mathlib already present at revision \mathlibrev.
+
+\begin{leancode}
+'LogBoundLocal.bkmLogInequality' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LogBoundLocal.clay_A_fefferman_of_rate_of_kato' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildExistence.local_mild_existence' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ProductHm.norm_mulF_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ProductHm.eLpNorm_conv_sq_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ProductHm.weighted_conv_tame' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ProductHm.weighted_conv_le_pow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NonlinearHm.norm_NSN_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NonlinearHm.norm_NSN_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InverseSobolev.contDiff_fourierInv_of_all_energy' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InverseSobolev.integral_norm_coeFn_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanSchwartz.fourierInv_fourier_cplx_of_fefferman' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PersistenceHm.persist_on_minTime' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PersistenceHm.apriori_double' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PersistenceHm.persist_chunk_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PersistenceHm.persist_on_H3_time' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonce.katoPonce_h3_energy' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanMild.physicalOfHm_toHmFeff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanMild.persist_fefferman' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanMild.contDiff_physicalOfHm' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanMild.physicalOfHm_incl' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanMild.inclMap_persistPath_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanMild.physicalMild_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanMild.contDiff_physicalMild' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceCommutator.convectiveCommutator_order_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceCommutator.abs_integral_commutator_order_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceCommutator.integral_gradNormSq_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceCommutator.integral_gradNormSq_sq_le_of_hasCompactSupport' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceCommutator.h3GagliardoNirenberg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceCommutator.integral_gradNormSq_sq_le_of_energy' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceCommutator.abs_integral_commutator_order_two' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceCommutator.abs_integral_commutator_order_three' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceCommutator.h3CommutatorEstimate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceCommutator.katoPonce_h3_energy'' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceHypotheses.wordDeriv_laplacian_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceHypotheses.wordDeriv_pressureGradient_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceHypotheses.div_wordDeriv_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceHypotheses.h3PartialCommutation_of_contDiff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'KatoPonceHypotheses.h3PartialCommutation' depends on axioms: [propext, Classical.choice, Quot.sound]
+'HeatDeriv.lapH' depends on axioms: [propext, Classical.choice, Quot.sound]
+'HeatDeriv.hasDerivWithinAt_gauss' depends on axioms: [propext, Classical.choice, Quot.sound]
+'HeatDeriv.hasDerivWithinAt_heatH' depends on axioms: [propext, Classical.choice, Quot.sound]
+'HeatDeriv.hasDerivWithinAt_heatH_visc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'IBPWholeSpace.integral_partial_mul' depends on axioms: [propext, Classical.choice, Quot.sound]
+'IBPWholeSpace.integral_partial_inner' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DuhamelDeriv.duh_cocycle' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DuhamelDeriv.tendsto_duhνSame_avg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DuhamelDeriv.hasDerivWithinAt_duhνSame_Ici' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DuhamelDeriv.incl_duhν_to_duhνSame' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DuhamelDeriv.incl_heatH_of_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DuhamelDeriv.incl_duhνSame_of_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildTimeDeriv.incl_duhHigh_to_duhνSame' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildTimeDeriv.mildS_eq_duhνSame' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildTimeDeriv.hasDerivWithinAt_mildS_incl' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildTimeDeriv.continuous_mildSDeriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildTimeDeriv.hasDerivAt_mildS_incl' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildTimeDeriv.hasDerivWithinAt_mildS_incl_Ico' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildTimeDeriv.contDiffOn_one_inclExt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildTimeDeriv.lapH_heatH' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildTimeDeriv.mildSDeriv_eq_lap' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NonlinearSmooth.isBoundedBilinear_mulF' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NonlinearSmooth.contDiff_mulF' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NonlinearSmooth.contDiff_mulF_quad' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NonlinearSmooth.contDiff_divTensor' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NonlinearSmooth.contDiff_NSN' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NonlinearSmooth.contDiff_NSNsucc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InclNSN.incl_mulF_of_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InclNSN.incl_dH_of_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InclNSN.incl_NSN_of_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InclNSN.coeFn_NSNsucc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InclNSN.incl_NSNsucc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InclNSN.incl_incl_NSNsucc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildPathSmooth.incl_nsnExt_eq_NSNsucc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildPathSmooth.mildSDeriv_eq_NSNsucc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildPathSmooth.derivWithin_inclExt_eq_NSNsucc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildPathSmooth.contDiff_lapH' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildPathSmooth.contDiffOn_inclExt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildPathSmooth.contDiffOn_inclExt_of_le_two' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvBCF.isBoundedLinearMap_fourierInvBCF' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvBCF.continuous_uncurry_fourierInv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvBCF.continuousOn_uncurry_clm_fourierInvBCF' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvBCF.contDiffOn_fourierInvBCF' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildJointSmooth.continuousOn_physicalMild' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.hasFDerivAt_fourierInvBCF' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.fourierInvBCF_eq_integral_spatFDeriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.hasFDerivAt_uncurryFourierInvBCF' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.memLp_coe_Hm' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.memLp_lerayPressureHm' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.abs_rieszCoeff_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.rieszSym_norm_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.norm_rieszMul_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.norm_lerayPressureHm_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.continuous_lerayPressure' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.abs_lerayPressure_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.bddAbove_lerayPressure' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.contDiff_physicalInv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.contDiff_lerayPressure' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.contDiff_two_lerayPressure' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayPressure.contDiff_five_lerayPressure' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.continuous_jointFDeriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.contDiff_one_uncurryFourierInvBCF' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.contDiffOn_uncurryFourierInvBCF_path' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.contDiffOn_uncurry_clm_fourierInvBCF_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildJointSmooth.contDiffOn_physicalMild_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.hasFDerivAt_evMap' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.continuous_evFDeriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.contDiff_one_evMap' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.contDiff_two_uncurryFourierInvBCF' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FourierInvFDeriv.contDiffOn_uncurryFourierInvBCF_path_two' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildJointSmooth.contDiffOn_physicalMild_two' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DivergenceWholeSpace.integral_div_eq_zero_of_hasCompactSupport' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DivergenceWholeSpace.integral_div_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+SCRATCH AUDIT SUMMARY: theorems audited: 102; clean: 102; violations: 0
+SCRATCH AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx
+\end{leancode}
+
+\subsection*{B. Rate, comparison, attainment and reduction theorems at \texttt{c9ffdeb}}
+\label{sec:axioms-rate}
+
+The following is the verbatim output of a companion \texttt{\#print axioms} listing run on \lean{feat/tether-rate-derivation} at \texttt{c9ffdeb1bfe8b7252bf93e6bd97f5455ed5afff7}, with Mathlib already present at revision \mathlibrev.
+
+\begin{leancode}
+'RepairedTether.comparison_ode_stability_lipschitz' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.ceiling_of_rateLipschitz' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.clay_A_fefferman_of_frohmanianTetherRateLipschitz' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.clay_A_fefferman_of_rateLipschitz_of_kato' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.frohmanianTetherRateLipschitz_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.frohmanianTetherRateLipschitz_of_smooth_of_locallyBddRightDeriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.lipschitzOnWith_of_bdd_right_deriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.majorant_vector_field_antitoneOn' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.clay_A_fefferman_of_frohmanianTetherRateSmooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.ceiling_of_rate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.frohmanianTetherRateSmooth_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.r3BKMContinuationAt_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.feffermanDecay_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.clay_A_fefferman_instance_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RepairedTether.frohmanianTetherRateSmoothGlobal_of_no_global_solution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetheredLyapunov.comparison_ode_stability_Icc_right' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LogBoundLocal.bkmLogInequality' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LogBoundLocal.clay_A_fefferman_of_rate_of_kato' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R3BKM.clay_A_fefferman_of_rate_of_kato_of_log' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R3BKM.katoMaximalSolution_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R3BKM.katoBKMMaximal_of_kato_of_log' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R3BKM.r3BKMContinuation_of_kato_of_log' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R3BKM.lintegral_sq_lt_top_of_feffermanDecay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R3BKM.log_gronwall' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.exists_isMaxOn_of_tendsto_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.vorticity_tendsto_zero_of_feffermanDecay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.exists_vorticityMaximumAttained_of_tendsto_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.exists_vorticityMaximumAttained_of_snapshot_feffermanDecay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.exists_isMaxOn_vorticity_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.not_isFeffermanSolutionOn_implies_vorticityMaximumAttained' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.lipschitzOnWith_Mω_of_timeDerivBdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.ae_differentiableAt_Mω_of_timeDerivBdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.danskin_eq_of_differentiable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.danskinRateAt_of_differentiable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.ae_danskinRateAt_of_timeDerivBdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'VorticityMaxAttained.isFeffermanSolutionOn_arctanShear' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.bochner_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.transport_vanishes_at_local_max' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.viscPair_le_neg_hsSq_at_local_max' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.scalarLaplacian_nonpos_of_isLocalMax' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.envelope_along_differentiable_maximizer' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.danskin_difference_quotient' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.stretching_le_strain_mul_norm_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.cubic_rate_of_stretching_and_visc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.cubic_rate_of_strain_and_hsSq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.fefferman_two_sided_eq_interior' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.vorticity_rescaleFlow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.Mω_rescaleFlow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.hasDerivAt_Mω_rescale_of_hasDerivAt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.rate_form_rescale_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateDerivation.hasDerivAt_norm_of_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'StrainBoundRefutation.not_forall_strain_le_sup_vorticity' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateCounterexample.not_forall_frohmanianTetherRate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateCounterexample.not_frohmanianTetherBound_U' depends on axioms: [propext, Classical.choice, Quot.sound]
+'SobolevFourier.sobolevEnergy_eq_fourierEnergy' depends on axioms: [propext, Classical.choice, Quot.sound]
+'HeatSobolev.fourierEnergy_heat_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'HeatSobolev.fourierEnergy_heat_succ_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanSobolev.sobolevEnergy_lt_top_of_feffermanDecay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanSchwartz.fourierInv_fourier_cplx_of_fefferman' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InverseSobolev.contDiff_fourierInv_of_all_energy' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ProductHm.norm_mulF_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NonlinearHm.norm_NSN_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NonlinearHm.norm_NSN_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildExistence.local_mild_existence' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MildExistence.unique_mild_in_ball' depends on axioms: [propext, Classical.choice, Quot.sound]
+'GradBound.bddAbove_norm_fderiv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayHeat.norm_leray_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayHeat.heat_heat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'LerayHeat.tendsto_heat_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+\end{leancode}
+
+\end{document}
