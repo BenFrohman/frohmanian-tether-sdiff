@@ -8,6 +8,7 @@ import Scratch.PersistenceHm
 import Scratch.KatoPonce
 import Scratch.FeffermanMild
 import Scratch.KatoPonceCommutator
+import Scratch.HeatDeriv
 
 open Lean Elab Command
 
@@ -43,6 +44,10 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms FeffermanMild.contDiff_physicalMild
 #print axioms KatoPonceCommutator.convectiveCommutator_order_one
 #print axioms KatoPonceCommutator.abs_integral_commutator_order_one
+#print axioms HeatDeriv.lapH
+#print axioms HeatDeriv.hasDerivWithinAt_gauss
+#print axioms HeatDeriv.hasDerivWithinAt_heatH
+#print axioms HeatDeriv.hasDerivWithinAt_heatH_visc
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -65,7 +70,10 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``FeffermanMild.physicalMild_zero,
     ``FeffermanMild.contDiff_physicalMild,
     ``KatoPonceCommutator.convectiveCommutator_order_one,
-    ``KatoPonceCommutator.abs_integral_commutator_order_one]
+    ``KatoPonceCommutator.abs_integral_commutator_order_one,
+    ``HeatDeriv.lapH,
+    ``HeatDeriv.hasDerivWithinAt_heatH,
+    ``HeatDeriv.hasDerivWithinAt_heatH_visc]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
