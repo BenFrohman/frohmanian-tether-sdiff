@@ -15,6 +15,8 @@ import Scratch.MildTimeDeriv
 import Scratch.NonlinearSmooth
 import Scratch.InclNSN
 import Scratch.MildPathSmooth
+import Scratch.FourierInvBCF
+import Scratch.MildJointSmooth
 
 open Lean Elab Command
 
@@ -35,6 +37,7 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms NonlinearHm.norm_NSN_le
 #print axioms NonlinearHm.norm_NSN_sub_le
 #print axioms InverseSobolev.contDiff_fourierInv_of_all_energy
+#print axioms InverseSobolev.integral_norm_coeFn_le
 #print axioms FeffermanSchwartz.fourierInv_fourier_cplx_of_fefferman
 #print axioms PersistenceHm.persist_on_minTime
 #print axioms PersistenceHm.apriori_double
@@ -96,6 +99,10 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms MildPathSmooth.contDiff_lapH
 #print axioms MildPathSmooth.contDiffOn_inclExt
 #print axioms MildPathSmooth.contDiffOn_inclExt_of_le_two
+#print axioms FourierInvBCF.isBoundedLinearMap_fourierInvBCF
+#print axioms FourierInvBCF.continuous_uncurry_fourierInv
+#print axioms FourierInvBCF.continuousOn_uncurry_clm_fourierInvBCF
+#print axioms MildJointSmooth.continuousOn_physicalMild
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -163,7 +170,11 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``MildPathSmooth.derivWithin_inclExt_eq_NSNsucc,
     ``MildPathSmooth.contDiff_lapH,
     ``MildPathSmooth.contDiffOn_inclExt,
-    ``MildPathSmooth.contDiffOn_inclExt_of_le_two]
+    ``MildPathSmooth.contDiffOn_inclExt_of_le_two,
+    ``FourierInvBCF.isBoundedLinearMap_fourierInvBCF,
+    ``FourierInvBCF.continuous_uncurry_fourierInv,
+    ``FourierInvBCF.continuousOn_uncurry_clm_fourierInvBCF,
+    ``MildJointSmooth.continuousOn_physicalMild]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do

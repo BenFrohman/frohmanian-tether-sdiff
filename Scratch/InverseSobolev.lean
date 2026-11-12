@@ -249,6 +249,101 @@ theorem integrable_of_Hm {m : ℕ} (hm : 2 ≤ m) (G : Hm m) :
   refine ⟨aesm_coe_Hm G, ?_⟩
   simpa [HasFiniteIntegral, enorm_norm'] using h.2
 
+/-- Cauchy–Schwarz bound on the unweighted `L¹` norm of an `Ĥ^m` representative. -/
+lemma lintegral_norm_coeFn_le {m : ℕ} (_hm : 2 ≤ m) (G : Hm m) :
+    ∫⁻ ξ, ‖(G : E3 → V) ξ‖ₑ ≤
+      (∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * 0) / FourierEmb.w ξ ^ m)) ^ (1 / 2 : ℝ) *
+        (ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2) ^ (1 / 2 : ℝ) := by
+  set A : E3 → ℝ≥0∞ :=
+    fun ξ => ENNReal.ofReal (‖ξ‖ ^ 0) * (ω ξ ^ m) ^ (-(1 / 2 : ℝ))
+  set B : E3 → ℝ≥0∞ :=
+    fun ξ => (ω ξ ^ m) ^ (1 / 2 : ℝ) * ‖(G : E3 → V) ξ‖ₑ
+  have hCS := ENNReal.lintegral_mul_le_Lp_mul_Lq (μ := volume)
+    Real.HolderConjugate.two_two (aemeasurable_moment_A m 0) (aemeasurable_moment_B G)
+  have hlin : ∫⁻ ξ, ‖‖ξ‖ ^ 0 * ‖(G : E3 → V) ξ‖‖ₑ = ∫⁻ ξ, A ξ * B ξ := by
+    refine (lintegral_congr fun ξ => ?_).trans
+      (lintegral_congr fun ξ => (moment_A_mul_B (n := 0) G ξ).symm)
+    have hn : 0 ≤ ‖ξ‖ ^ 0 := pow_nonneg (norm_nonneg _) 0
+    rw [enorm_mul, Real.enorm_eq_ofReal hn, enorm_norm ((G : E3 → V) ξ)]
+  have hlin0 : ∫⁻ ξ, ‖(G : E3 → V) ξ‖ₑ = ∫⁻ ξ, A ξ * B ξ := by
+    refine (lintegral_congr fun ξ => ?_).trans hlin
+    simp [pow_zero, one_mul, enorm_norm]
+  have hAint : ∫⁻ ξ, A ξ ^ 2 =
+      ∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * 0) / FourierEmb.w ξ ^ m) :=
+    lintegral_congr fun ξ => moment_A_sq ξ
+  have hBint : ∫⁻ ξ, B ξ ^ 2 ≤
+      ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2 := by
+    have hmono : ∫⁻ ξ, B ξ ^ 2 ≤
+        ∫⁻ ξ, ENNReal.ofReal ((2 : ℝ) ^ m) * (sobW m ξ * ‖(G : E3 → V) ξ‖ₑ ^ 2) := by
+      refine lintegral_mono fun ξ => ?_
+      calc B ξ ^ 2
+          = ω ξ ^ m * ‖(G : E3 → V) ξ‖ₑ ^ 2 := moment_B_sq G ξ
+        _ ≤ (ENNReal.ofReal ((2 : ℝ) ^ m) * sobW m ξ) * ‖(G : E3 → V) ξ‖ₑ ^ 2 :=
+            mul_le_mul_left (ω_pow_le_mul_sobW m ξ) _
+        _ = ENNReal.ofReal ((2 : ℝ) ^ m) * (sobW m ξ * ‖(G : E3 → V) ξ‖ₑ ^ 2) := by
+            rw [mul_assoc]
+    refine hmono.trans (le_of_eq ?_)
+    rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, eLpNorm_sq, lintegral_μw]
+  have hAeq : ∫⁻ ξ, A ξ ^ (2 : ℝ) = ∫⁻ ξ, A ξ ^ 2 := lintegral_congr fun ξ => rpow_two' _
+  have hBeq : ∫⁻ ξ, B ξ ^ (2 : ℝ) = ∫⁻ ξ, B ξ ^ 2 := lintegral_congr fun ξ => rpow_two' _
+  calc
+    ∫⁻ ξ, ‖(G : E3 → V) ξ‖ₑ = ∫⁻ ξ, A ξ * B ξ := hlin0
+    _ ≤ (∫⁻ ξ, A ξ ^ (2 : ℝ)) ^ (1 / 2 : ℝ) *
+          (∫⁻ ξ, B ξ ^ (2 : ℝ)) ^ (1 / 2 : ℝ) := hCS
+    _ = (∫⁻ ξ, A ξ ^ 2) ^ (1 / 2 : ℝ) * (∫⁻ ξ, B ξ ^ 2) ^ (1 / 2 : ℝ) := by
+        rw [hAeq, hBeq]
+    _ = (∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * 0) / FourierEmb.w ξ ^ m)) ^ (1 / 2 : ℝ) *
+          (∫⁻ ξ, B ξ ^ 2) ^ (1 / 2 : ℝ) := by
+        rw [hAint]
+    _ ≤ (∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * 0) / FourierEmb.w ξ ^ m)) ^ (1 / 2 : ℝ) *
+          (ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2) ^ (1 / 2 : ℝ) :=
+        mul_le_mul' le_rfl (ENNReal.rpow_le_rpow hBint (by norm_num))
+
+/-- The unweighted `L¹` norm of an `Ĥ^m` representative is controlled by the `Ĥ^m` norm. -/
+lemma integral_norm_coeFn_le {m : ℕ} (hm : 2 ≤ m) (G : Hm m) :
+    ∫ ξ, ‖(G : E3 → V) ξ‖ ≤
+      Real.sqrt (∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * 0) / FourierEmb.w ξ ^ m)).toReal *
+        Real.sqrt ((2 : ℝ) ^ m) * ‖G‖ := by
+  have hEq : ∫ ξ, ‖(G : E3 → V) ξ‖ = (∫⁻ ξ, ‖(G : E3 → V) ξ‖ₑ).toReal :=
+    integral_norm_eq_lintegral_enorm (aesm_coe_Hm G)
+  have hbound := lintegral_norm_coeFn_le hm G
+  have hA_lt : ∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * 0) / FourierEmb.w ξ ^ m) < ⊤ :=
+    lintegral_xi_pow_div_w (n := 0) (by omega)
+  have hB_lt : ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2 < ⊤ :=
+    ENNReal.mul_lt_top ENNReal.ofReal_lt_top (ENNReal.pow_lt_top (Lp.eLpNorm_lt_top G))
+  have hprod_ne : (∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * 0) / FourierEmb.w ξ ^ m)) ^ (1 / 2 : ℝ) *
+        (ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2) ^ (1 / 2 : ℝ) ≠ ⊤ := by
+    refine ENNReal.mul_ne_top ?_ ?_
+    · exact (ENNReal.rpow_lt_top_of_nonneg (by norm_num) hA_lt.ne).ne
+    · exact (ENNReal.rpow_lt_top_of_nonneg (by norm_num) hB_lt.ne).ne
+  rw [hEq]
+  have h1 : (∫⁻ ξ, ‖(G : E3 → V) ξ‖ₑ).toReal ≤
+      ((∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * 0) / FourierEmb.w ξ ^ m)) ^ (1 / 2 : ℝ)).toReal *
+        ((ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2) ^ (1 / 2 : ℝ)).toReal := by
+    rw [← ENNReal.toReal_mul]
+    exact ENNReal.toReal_mono hprod_ne hbound
+  refine h1.trans ?_
+  have hsqrtA :
+      ((∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * 0) / FourierEmb.w ξ ^ m)) ^ (1 / 2 : ℝ)).toReal =
+        Real.sqrt (∫⁻ ξ, ENNReal.ofReal (‖ξ‖ ^ (2 * 0) / FourierEmb.w ξ ^ m)).toReal := by
+    rw [← ENNReal.toReal_rpow, ← Real.sqrt_eq_rpow]
+  have hsqrtB :
+      ((ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2) ^ (1 / 2 : ℝ)).toReal =
+        Real.sqrt ((2 : ℝ) ^ m) * ‖G‖ := by
+    have hnn : 0 ≤ (2 : ℝ) ^ m := pow_nonneg (by norm_num) m
+    have hpow : (ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2).toReal =
+        (2 : ℝ) ^ m * ‖G‖ ^ 2 := by
+      rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal hnn, ENNReal.toReal_pow, Lp.norm_def]
+    calc
+      ((ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2) ^ (1 / 2 : ℝ)).toReal
+          = ((ENNReal.ofReal ((2 : ℝ) ^ m) * eLpNorm G 2 (μw m) ^ 2).toReal) ^ (1 / 2 : ℝ) :=
+            (ENNReal.toReal_rpow _ _).symm
+      _ = ((2 : ℝ) ^ m * ‖G‖ ^ 2) ^ (1 / 2 : ℝ) := by rw [hpow]
+      _ = Real.sqrt ((2 : ℝ) ^ m * ‖G‖ ^ 2) := (Real.sqrt_eq_rpow _).symm
+      _ = Real.sqrt ((2 : ℝ) ^ m) * Real.sqrt (‖G‖ ^ 2) := Real.sqrt_mul hnn (‖G‖ ^ 2)
+      _ = Real.sqrt ((2 : ℝ) ^ m) * ‖G‖ := by rw [Real.sqrt_sq (norm_nonneg _)]
+  rw [hsqrtA, hsqrtB, mul_assoc]
+
 lemma integrable_moment_comp_neg {m n : ℕ} (hm : n + 2 ≤ m) (G : Hm m) :
     Integrable (fun ξ : E3 => ‖ξ‖ ^ n * ‖(G : E3 → V) (-ξ)‖) volume := by
   have h := integrable_moment_of_Hm hm G
@@ -300,6 +395,8 @@ theorem contDiff_fourierInv_of_all_energy {F : L2V}
 #print axioms InverseSobolev.lintegral_xi_pow_div_w
 #print axioms InverseSobolev.integrable_moment_of_Hm
 #print axioms InverseSobolev.integrable_of_Hm
+#print axioms InverseSobolev.lintegral_norm_coeFn_le
+#print axioms InverseSobolev.integral_norm_coeFn_le
 #print axioms InverseSobolev.contDiff_fourierInv_of_Hm
 #print axioms InverseSobolev.contDiff_fourierInv_of_all_energy
 
