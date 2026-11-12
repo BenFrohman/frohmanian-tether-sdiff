@@ -116,6 +116,8 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms FourierInvFDeriv.hasFDerivAt_fourierInvBCF
 #print axioms FourierInvFDeriv.fourierInvBCF_eq_integral_spatFDeriv
 #print axioms FourierInvFDeriv.hasFDerivAt_uncurryFourierInvBCF
+#print axioms LerayPressure.memLp_coe_Hm
+#print axioms LerayPressure.memLp_lerayPressureHm
 #print axioms LerayPressure.abs_rieszCoeff_le
 #print axioms LerayPressure.rieszSym_norm_le
 #print axioms LerayPressure.norm_rieszMul_le
@@ -214,6 +216,8 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``FourierInvFDeriv.hasFDerivAt_fourierInvBCF,
     ``FourierInvFDeriv.fourierInvBCF_eq_integral_spatFDeriv,
     ``FourierInvFDeriv.hasFDerivAt_uncurryFourierInvBCF,
+    ``LerayPressure.memLp_coe_Hm,
+    ``LerayPressure.memLp_lerayPressureHm,
     ``LerayPressure.abs_rieszCoeff_le,
     ``LerayPressure.rieszSym_norm_le,
     ``LerayPressure.norm_rieszMul_le,

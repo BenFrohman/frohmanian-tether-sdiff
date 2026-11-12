@@ -32,6 +32,18 @@ consistent with that construction, but the physical-side identification
 `(u·∇)u + ∇p = inverse Fourier of divTensor` is not formalized here.
 That link is reported as a remaining gap; it is not assumed.
 
+**Physical L² of `∂^α p`.** The Fourier representative `lerayPressureHm u` belongs
+to `Ĥ^s` (hence to unweighted `L²` by `memLp_coe_Hm`). Realizing the *physical*
+field `lerayPressure` in `L²`, or any spatial derivative of it, requires
+identifying the pointwise inverse Fourier transform packaged by
+`fourierInvBCF` with the `L²` isometry `Lp.fourierTransformₗᵢ` on
+`L¹ ∩ L²`. Mathlib has this identification for Schwartz maps
+(`SchwartzMap.toLp_fourierInv_eq`) and Plancherel on `L²` and on Schwartz,
+but not for a general `Ĥ^m` representative. That identification is not
+formalized in this repository, so the physical-side `L²` bounds on
+`∂^α p` (and therefore the integrability and vanishing-flux fields of
+`WordIBP`) are not claimed here.
+
 Nothing in this file is a `sorry`, a custom axiom, or an `opaque` trick.
 -/
 
@@ -235,6 +247,38 @@ lemma norm_lerayPressureHm_le {s : ℕ} (hs : 3 ≤ s) (u : Hm s) :
     hsum₁.trans (hsum₂.trans_eq hcard)
   simpa [norm_neg] using this
 
+/-! ## Unweighted `L²` of an `Ĥ^m` representative (Fourier side) -/
+
+/-- Because `sobW m ≥ 1`, membership in `Ĥ^m` implies unweighted `L²`. -/
+lemma eLpNorm_coe_Hm_le_weighted {m : ℕ} (G : Hm m) :
+    eLpNorm (G : E3 → V) 2 volume ≤ eLpNorm (G : E3 → V) 2 (μw m) := by
+  have hsq : eLpNorm (G : E3 → V) 2 volume ^ 2 ≤
+      eLpNorm (G : E3 → V) 2 (μw m) ^ 2 := by
+    rw [eLpNorm_sq, eLpNorm_sq, lintegral_μw]
+    refine lintegral_mono fun ξ => ?_
+    have h1 := mul_le_mul_left (one_le_sobW m ξ) (‖(G : E3 → V) ξ‖ₑ ^ 2)
+    exact (one_mul _).symm.trans_le h1
+  have hvol : eLpNorm (G : E3 → V) 2 volume ^ (2 : ℝ) =
+      eLpNorm (G : E3 → V) 2 volume ^ 2 := ENNReal.rpow_natCast _ 2
+  have hμ : eLpNorm (G : E3 → V) 2 (μw m) ^ (2 : ℝ) =
+      eLpNorm (G : E3 → V) 2 (μw m) ^ 2 := ENNReal.rpow_natCast _ 2
+  exact (ENNReal.rpow_le_rpow_iff (by norm_num : (0 : ℝ) < 2)).1
+    (hvol.trans_le (hsq.trans_eq hμ.symm))
+
+lemma memLp_coe_Hm {m : ℕ} (G : Hm m) : MemLp (G : E3 → V) 2 volume :=
+  ⟨(Lp.aestronglyMeasurable G).mono_ac (ac_vol m),
+    (eLpNorm_coe_Hm_le_weighted G).trans_lt (Lp.eLpNorm_lt_top G)⟩
+
+lemma eLpNorm_coe_Hm_le {m : ℕ} (G : Hm m) :
+    eLpNorm (G : E3 → V) 2 volume ≤ ENNReal.ofReal ‖G‖ := by
+  refine (eLpNorm_coe_Hm_le_weighted G).trans ?_
+  rw [Lp.norm_def, ENNReal.ofReal_toReal (Lp.eLpNorm_ne_top G)]
+
+/-- The Fourier-side Leray pressure is in unweighted `L²`. -/
+lemma memLp_lerayPressureHm {s : ℕ} (hs : 3 ≤ s) (u : Hm s) :
+    MemLp (lerayPressureHm hs u : E3 → V) 2 volume :=
+  memLp_coe_Hm _
+
 /-! ## Physical Leray pressure, packaged through `fourierInvBCF` -/
 
 /-- Inverse Fourier of an `Ĥ^m` representative, as an unbundled map.
@@ -324,6 +368,8 @@ theorem contDiff_five_lerayPressure {s : ℕ} (hs : 7 ≤ s) (u : Hm s) :
   contDiff_lerayPressure (le_trans (by norm_num : 3 ≤ 7) hs)
     (by exact hs) u
 
+#print axioms LerayPressure.memLp_coe_Hm
+#print axioms LerayPressure.memLp_lerayPressureHm
 #print axioms LerayPressure.abs_rieszCoeff_le
 #print axioms LerayPressure.contDiff_physicalInv
 #print axioms LerayPressure.norm_rieszMul_le
