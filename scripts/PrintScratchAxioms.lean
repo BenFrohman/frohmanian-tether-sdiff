@@ -6,6 +6,7 @@ import Scratch.InverseSobolev
 import Scratch.FeffermanSchwartz
 import Scratch.PersistenceHm
 import Scratch.KatoPonce
+import Scratch.FeffermanMild
 
 open Lean Elab Command
 
@@ -32,6 +33,13 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms PersistenceHm.persist_chunk_bound
 #print axioms PersistenceHm.persist_on_H3_time
 #print axioms KatoPonce.katoPonce_h3_energy
+#print axioms FeffermanMild.physicalOfHm_toHmFeff
+#print axioms FeffermanMild.persist_fefferman
+#print axioms FeffermanMild.contDiff_physicalOfHm
+#print axioms FeffermanMild.physicalOfHm_incl
+#print axioms FeffermanMild.inclMap_persistPath_unique
+#print axioms FeffermanMild.physicalMild_zero
+#print axioms FeffermanMild.contDiff_physicalMild
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -48,7 +56,11 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``PersistenceHm.persist_on_minTime,
     ``PersistenceHm.persist_chunk_bound,
     ``PersistenceHm.persist_on_H3_time,
-    ``KatoPonce.katoPonce_h3_energy]
+    ``KatoPonce.katoPonce_h3_energy,
+    ``FeffermanMild.physicalOfHm_toHmFeff,
+    ``FeffermanMild.persist_fefferman,
+    ``FeffermanMild.physicalMild_zero,
+    ``FeffermanMild.contDiff_physicalMild]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
