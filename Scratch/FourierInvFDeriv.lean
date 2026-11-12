@@ -1305,6 +1305,66 @@ lemma differentiable_evMap {m : ℕ} (hm : 4 ≤ m) :
     Differentiable ℝ (evMap (two_le_of_three (four_le hm))) :=
   fun x => (hasFDerivAt_evMap hm x).differentiableAt
 
+/-- Operator-norm Lipschitz estimate for `evFDeriv` in the spatial variable. -/
+lemma norm_evFDeriv_sub_le {m : ℕ} (hm : 4 ≤ m) (x y : E3) :
+    ‖evFDeriv (four_le hm) y - evFDeriv (four_le hm) x‖ ≤
+      spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm) * ‖y - x‖ := by
+  let A := spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm)
+  have hA0 : 0 ≤ A :=
+    mul_nonneg (spatFDerivBound_nonneg _) (dHBound_nonneg (four_le hm))
+  refine ContinuousLinearMap.opNorm_le_bound _ (mul_nonneg hA0 (norm_nonneg (y - x))) ?_
+  intro ξ
+  refine ContinuousLinearMap.opNorm_le_bound _
+    (mul_nonneg (mul_nonneg hA0 (norm_nonneg (y - x))) (norm_nonneg ξ)) ?_
+  intro H
+  have hop :=
+    ContinuousLinearMap.le_opNorm
+      (spatFDeriv (four_le hm) H y - spatFDeriv (four_le hm) H x) ξ
+  have hsub := norm_spatFDeriv_sub_op hm H y x
+  have h1 : ‖spatFDeriv (four_le hm) H y ξ - spatFDeriv (four_le hm) H x ξ‖ ≤
+      A * ‖H‖ * ‖y - x‖ * ‖ξ‖ := by
+    have h0 := hop.trans (mul_le_mul_of_nonneg_right hsub (norm_nonneg ξ))
+    have : spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm) *
+        ‖H‖ * ‖y - x‖ * ‖ξ‖ = A * ‖H‖ * ‖y - x‖ * ‖ξ‖ := by
+      simp [A, mul_assoc]
+    exact h0.trans (le_of_eq this)
+  have hgoal :
+      ‖(evFDeriv (four_le hm) y - evFDeriv (four_le hm) x) ξ H‖ ≤
+        A * ‖y - x‖ * ‖ξ‖ * ‖H‖ := by
+    simpa [evFDeriv_apply, ContinuousLinearMap.sub_apply] using
+      (h1.trans (le_of_eq (by ring)))
+  exact hgoal
+
+lemma continuous_evFDeriv {m : ℕ} (hm : 4 ≤ m) :
+    Continuous (evFDeriv (four_le hm) :
+      E3 → (E3 →L[ℝ] (Hm m →L[ℝ] V))) := by
+  refine continuous_iff_continuousAt.2 fun x => ?_
+  refine (tendsto_iff_norm_sub_tendsto_zero
+      (E := E3 →L[ℝ] (Hm m →L[ℝ] V))
+      (f := (evFDeriv (four_le hm) : E3 → (E3 →L[ℝ] (Hm m →L[ℝ] V))))
+      (b := evFDeriv (four_le hm) x)).2 ?_
+  let A := spatFDerivBound (three_le_pred_of_four hm) * dHBound (four_le hm)
+  have hle : ∀ y : E3,
+      ‖evFDeriv (four_le hm) y - evFDeriv (four_le hm) x‖ ≤ A * ‖y - x‖ :=
+    fun y => norm_evFDeriv_sub_le hm x y
+  have h0 : Tendsto (fun y : E3 => A * ‖y - x‖) (𝓝 x) (𝓝 0) := by
+    have hnorm : Tendsto (fun y : E3 => ‖y - x‖) (𝓝 x) (𝓝 0) :=
+      tendsto_norm_sub_self x
+    have hmul := (tendsto_const_nhds (x := A)).mul hnorm
+    simpa using hmul
+  exact squeeze_zero
+    (fun y => norm_nonneg (evFDeriv (four_le hm) y - evFDeriv (four_le hm) x))
+    hle h0
+
+/-- Evaluation in the representative is `C¹` in the spatial variable, for `m ≥ 4`. -/
+theorem contDiff_one_evMap {m : ℕ} (hm : 4 ≤ m) :
+    ContDiff ℝ 1 (evMap (two_le_of_three (four_le hm))) := by
+  refine contDiff_one_iff_fderiv.2 ⟨differentiable_evMap hm, ?_⟩
+  have hfun : fderiv ℝ (evMap (two_le_of_three (four_le hm))) =
+      evFDeriv (four_le hm) :=
+    funext fun x => fderiv_evMap hm x
+  exact hfun ▸ continuous_evFDeriv hm
+
 #print axioms FourierInvFDeriv.spatFDeriv_apply
 #print axioms FourierInvFDeriv.coeFn_sum_dH
 #print axioms FourierInvFDeriv.fourierInv_sum_smul
@@ -1336,5 +1396,8 @@ lemma differentiable_evMap {m : ℕ} (hm : 4 ≤ m) :
 #print axioms FourierInvFDeriv.hasFDerivAt_evMap
 #print axioms FourierInvFDeriv.fderiv_evMap
 #print axioms FourierInvFDeriv.differentiable_evMap
+#print axioms FourierInvFDeriv.norm_evFDeriv_sub_le
+#print axioms FourierInvFDeriv.continuous_evFDeriv
+#print axioms FourierInvFDeriv.contDiff_one_evMap
 
 end FourierInvFDeriv
