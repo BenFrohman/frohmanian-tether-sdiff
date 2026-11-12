@@ -15,7 +15,8 @@ open MeasureTheory Real Filter Topology Set
 open scoped ENNReal
 
 set_option autoImplicit false
-set_option maxHeartbeats 800000
+set_option maxHeartbeats 2000000
+set_option synthInstance.maxHeartbeats 200000
 
 noncomputable section
 namespace MildPathSmooth
@@ -24,36 +25,48 @@ open LerayHeat SobolevHilbert PersistenceHm Duhamel HeatDeriv
   MildExistence DuhamelDeriv MildTimeDeriv NonlinearHm
   NonlinearSmooth InclNSN
 
-/-- Transport of an `Ĥ^a` representative along an index equality does not
-change the underlying function. Isolated so `subst` can eliminate a
-free index. -/
-lemma coeFn_eq_rec_Hm {a b : ℕ} (e : a = b) (v : Hm a) :
-    ((e ▸ v : Hm b) : E3 → V) =ᵐ[μw b] (v : E3 → V) := by
-  cases e
-  exact Filter.Eventually.of_forall fun _ => rfl
+lemma inclExt_irrel {k m : ℕ} (h1 h2 : m ≤ k + 1) {T : ℝ} (hT : 0 ≤ T)
+    (u : XTs k T) : inclExt h1 hT u = inclExt h2 hT u :=
+  funext fun _ => incl_irrel h1 h2 _
 
-/-- The underlying function of `NSNsucc` agrees with `NSN`. -/
-lemma coeFn_NSNsucc {k : ℕ} (hk : 2 ≤ k) (v : Hm (k + 1)) :
-    (NSNsucc hk v : E3 → V) =ᵐ[μw k] (NSN (three_le_succ hk) v : E3 → V) := by
-  unfold NSNsucc
-  exact coeFn_eq_rec_Hm (Nat.add_sub_cancel k 1) (NSN (three_le_succ hk) v)
+/-- The `N`-term of the included mild path is `NSNsucc` of the path in
+`Ĥ^{m+1}`, packaged as a value in `Ĥ^m`. -/
+lemma incl_nsnExt_eq_NSNsucc
+    {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm : 2 ≤ m) (hm2 : m + 2 ≤ k)
+    {T : ℝ} (hT : 0 ≤ T) (u : XTs k T) (t : ℝ) :
+    incl (incl_le_add_two m) (incl hm2 (nsnExt hk hT u t)) =
+      NSNsucc hm (inclExt (le_succ_succ (InclNSN.le_of_add_two_le hm2)) hT u t) := by
+  unfold nsnExt inclExt
+  rw [← incl_incl_NSNsucc hk hm hm2]
 
-/-- Inclusion of `NSNsucc` is inclusion of `NSN` at the predecessor index. -/
-lemma incl_NSNsucc {k m : ℕ} (hk : 2 ≤ k) (hm : m ≤ k) (v : Hm (k + 1)) :
-    incl hm (NSNsucc hk v) =
-      incl (by simpa [Nat.add_sub_cancel] using hm) (NSN (three_le_succ hk) v) := by
-  refine Lp.ext ?_
-  filter_upwards [ProductHm.coeFn_incl hm (NSNsucc hk v),
-    ProductHm.coeFn_incl (by simpa [Nat.add_sub_cancel] using hm) (NSN (three_le_succ hk) v),
-    (ac_ww k m).ae_le (coeFn_NSNsucc hk v)] with ξ h1 h2 h3
-  rw [h1, h2, h3]
+/-- The time derivative of the included mild path is `ν Δu - N(u)` in
+`Ĥ^m`, with the nonlinearity written as `NSNsucc`. -/
+theorem mildSDeriv_eq_NSNsucc
+    {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm : 2 ≤ m) (hm2 : m + 2 ≤ k)
+    {T ν : ℝ} (hν : 0 < ν) (hT : 0 ≤ T)
+    {u₀ : Hm (k + 1)} {u : XTs k T} (hu : IsMildS hk hT ν u₀ u)
+    {t : ℝ} (ht : t ∈ Icc (0 : ℝ) T) :
+    mildSDeriv hk hm2 hν hT u₀ u t =
+      ν • lapH m (inclExt (add_two_le_succ hm2) hT u t) -
+        NSNsucc hm (inclExt (le_succ_succ (InclNSN.le_of_add_two_le hm2)) hT u t) := by
+  rw [mildSDeriv_eq_lap hk hm2 hν hT hu ht,
+    incl_nsnExt_eq_NSNsucc hk hm hm2 hT u t]
 
-lemma le_succ_succ {m k : ℕ} (hm : m ≤ k) : m + 1 ≤ k + 1 :=
-  Nat.succ_le_succ hm
+theorem derivWithin_inclExt_eq_NSNsucc
+    {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm : 2 ≤ m) (hm2 : m + 2 ≤ k)
+    {T ν : ℝ} (hν : 0 < ν) (hT : 0 ≤ T)
+    {u₀ : Hm (k + 1)} {u : XTs k T} (hu : IsMildS hk hT ν u₀ u)
+    {t : ℝ} (ht : t ∈ Ico (0 : ℝ) T) :
+    derivWithin (inclExt (le_succ_of_add_two_le hm2) hT u) (Ico 0 T) t =
+      ν • lapH m (inclExt (add_two_le_succ hm2) hT u t) -
+        NSNsucc hm (inclExt (le_succ_succ (InclNSN.le_of_add_two_le hm2)) hT u t) := by
+  have htIcc : t ∈ Icc (0 : ℝ) T := ⟨ht.1, le_of_lt ht.2⟩
+  rw [← mildSDeriv_eq_NSNsucc hk hm hm2 hν hT hu htIcc]
+  exact (hasDerivWithinAt_mildS_incl_Ico hk hm2 hν hT hu ht).derivWithin
+    (uniqueDiffOn_Ico (0 : ℝ) T t ht)
 
-
-#print axioms MildPathSmooth.coeFn_eq_rec_Hm
-#print axioms MildPathSmooth.coeFn_NSNsucc
-#print axioms MildPathSmooth.incl_NSNsucc
+#print axioms MildPathSmooth.incl_nsnExt_eq_NSNsucc
+#print axioms MildPathSmooth.mildSDeriv_eq_NSNsucc
+#print axioms MildPathSmooth.derivWithin_inclExt_eq_NSNsucc
 
 end MildPathSmooth

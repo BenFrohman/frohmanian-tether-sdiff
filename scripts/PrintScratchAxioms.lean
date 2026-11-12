@@ -84,8 +84,12 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms InclNSN.incl_mulF_of_le
 #print axioms InclNSN.incl_dH_of_le
 #print axioms InclNSN.incl_NSN_of_le
-#print axioms MildPathSmooth.coeFn_NSNsucc
-#print axioms MildPathSmooth.incl_NSNsucc
+#print axioms InclNSN.coeFn_NSNsucc
+#print axioms InclNSN.incl_NSNsucc
+#print axioms InclNSN.incl_incl_NSNsucc
+#print axioms MildPathSmooth.incl_nsnExt_eq_NSNsucc
+#print axioms MildPathSmooth.mildSDeriv_eq_NSNsucc
+#print axioms MildPathSmooth.derivWithin_inclExt_eq_NSNsucc
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -142,8 +146,12 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``InclNSN.incl_mulF_of_le,
     ``InclNSN.incl_dH_of_le,
     ``InclNSN.incl_NSN_of_le,
-    ``MildPathSmooth.coeFn_NSNsucc,
-    ``MildPathSmooth.incl_NSNsucc]
+    ``InclNSN.coeFn_NSNsucc,
+    ``InclNSN.incl_NSNsucc,
+    ``InclNSN.incl_incl_NSNsucc,
+    ``MildPathSmooth.incl_nsnExt_eq_NSNsucc,
+    ``MildPathSmooth.mildSDeriv_eq_NSNsucc,
+    ``MildPathSmooth.derivWithin_inclExt_eq_NSNsucc]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do

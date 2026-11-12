@@ -97,4 +97,89 @@ lemma incl_NSN_of_le {s s' : ℕ} (hs' : 3 ≤ s') (h : s' ≤ s) (u : Hm s) :
 #print axioms InclNSN.incl_divTensor_of_le
 #print axioms InclNSN.incl_NSN_of_le
 
+/-- Transport of an `Ĥ^a` representative along an index equality does not
+change the underlying function. Isolated so `cases` can eliminate a
+free index. -/
+lemma coeFn_eq_rec_Hm {a b : ℕ} (e : a = b) (v : Hm a) :
+    ((e ▸ v : Hm b) : E3 → V) =ᵐ[μw b] (v : E3 → V) := by
+  cases e
+  exact Filter.Eventually.of_forall fun _ => rfl
+
+/-- The underlying function of `NSNsucc` agrees with `NSN`. -/
+lemma coeFn_NSNsucc {k : ℕ} (hk : 2 ≤ k) (v : Hm (k + 1)) :
+    (NSNsucc hk v : E3 → V) =ᵐ[μw k] (NSN (three_le_succ hk) v : E3 → V) := by
+  unfold NSNsucc
+  exact coeFn_eq_rec_Hm (Nat.add_sub_cancel k 1) (NSN (three_le_succ hk) v)
+
+/-- Inclusion is independent of the inequality proof. -/
+lemma incl_irrel {m m' : ℕ} (h1 h2 : m' ≤ m) (F : Hm m) :
+    incl h1 F = incl h2 F := by
+  refine Lp.ext ?_
+  filter_upwards [ProductHm.coeFn_incl h1 F, ProductHm.coeFn_incl h2 F] with ξ a b
+  exact a.trans b.symm
+
+/-- Inclusion of `NSNsucc` is inclusion of `NSN` at the predecessor index. -/
+lemma incl_NSNsucc {k m : ℕ} (hk : 2 ≤ k) (hm : m ≤ k) (v : Hm (k + 1)) :
+    incl hm (NSNsucc hk v) =
+      incl (by simpa [Nat.add_sub_cancel] using hm) (NSN (three_le_succ hk) v) := by
+  refine Lp.ext ?_
+  filter_upwards [ProductHm.coeFn_incl hm (NSNsucc hk v),
+    ProductHm.coeFn_incl (by simpa [Nat.add_sub_cancel] using hm)
+      (NSN (three_le_succ hk) v),
+    (ac_ww k m).ae_le (coeFn_NSNsucc hk v)] with ξ h1 h2 h3
+  rw [h1, h2, h3]
+
+lemma le_succ_succ {m k : ℕ} (hm : m ≤ k) : m + 1 ≤ k + 1 :=
+  Nat.succ_le_succ hm
+
+lemma le_of_add_two_le {m k : ℕ} (hm2 : m + 2 ≤ k) : m ≤ k :=
+  (Nat.le_add_right m 2).trans hm2
+
+/-- The inequality proof is irrelevant for `NSN`. -/
+lemma NSN_irrel {s : ℕ} (h1 h2 : 3 ≤ s) (u : Hm s) : NSN h1 u = NSN h2 u := by
+  rw [Subsingleton.elim h1 h2]
+
+/-- Pointwise, `N(u)` and `N(incl u)` agree after inclusion. -/
+lemma coeFn_NSN_incl_of_le {s s' : ℕ} (hs' : 3 ≤ s') (h : s' ≤ s) (u : Hm s) :
+    (NSN (three_le_of_le hs' h) u : E3 → V)
+      =ᵐ[μw (s' - 1)] (NSN hs' (incl h u) : E3 → V) := by
+  have hNSN := incl_NSN_of_le hs' h u
+  have hincl := ProductHm.coeFn_incl (sub_one_le_sub_one h)
+    (NSN (three_le_of_le hs' h) u)
+  have hfun : (incl (sub_one_le_sub_one h) (NSN (three_le_of_le hs' h) u) : E3 → V)
+      =ᵐ[μw (s' - 1)] (NSN hs' (incl h u) : E3 → V) :=
+    Filter.Eventually.of_forall fun ξ =>
+      congrArg (fun z : Hm (s' - 1) => (z : E3 → V) ξ) hNSN
+  exact hincl.symm.trans hfun
+
+/-- The `(m+1)-1` transport packaged as in `NSNsucc`: including `NSNsucc`
+from the high space equals `NSNsucc` of the included field, both as
+values in `Ĥ^m`. -/
+lemma incl_incl_NSNsucc
+    {k m : ℕ} (hk : 2 ≤ k) (hm : 2 ≤ m) (hm2 : m + 2 ≤ k) (v : Hm (k + 1)) :
+    incl (Nat.le_add_right m 2) (incl hm2 (NSNsucc hk v)) =
+      NSNsucc hm (incl (le_succ_succ (le_of_add_two_le hm2)) v) := by
+  refine Lp.ext ?_
+  have hsucc : m + 1 ≤ k + 1 := le_succ_succ (le_of_add_two_le hm2)
+  have hLinc1 := ProductHm.coeFn_incl (Nat.le_add_right m 2)
+    (incl hm2 (NSNsucc hk v))
+  have hLinc2 := (ac_ww (m + 2) m).ae_le
+    (ProductHm.coeFn_incl hm2 (NSNsucc hk v))
+  have hL := (ac_ww k m).ae_le (coeFn_NSNsucc hk v)
+  have hR := coeFn_NSNsucc hm (incl hsucc v)
+  have hRel := (ac_ww (m + 1 - 1) m).ae_le
+    (coeFn_NSN_incl_of_le (three_le_succ hm) hsucc v)
+  have hIr :
+      NSN (three_le_succ hk) v =
+        NSN (three_le_of_le (three_le_succ hm) hsucc) v :=
+    NSN_irrel _ _ v
+  filter_upwards [hLinc1, hLinc2, hL, hR, hRel] with ξ a b c d e
+  exact a.trans (b.trans (c.trans
+    ((congrArg (fun z : Hm (k + 1 - 1) => (z : E3 → V) ξ) hIr).trans
+      (e.trans d.symm))))
+
+#print axioms InclNSN.coeFn_NSNsucc
+#print axioms InclNSN.incl_NSNsucc
+#print axioms InclNSN.incl_incl_NSNsucc
+
 end InclNSN
