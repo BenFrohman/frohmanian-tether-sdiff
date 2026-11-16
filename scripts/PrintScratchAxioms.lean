@@ -24,6 +24,7 @@ import Scratch.DivergenceWholeSpace
 import Scratch.FourierInvFDerivCn
 import Scratch.MildJointSmoothInf
 import Scratch.MildDivFree
+import Scratch.MildReal
 
 open Lean Elab Command
 
@@ -158,6 +159,16 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms MildDivFree.lerayH_toHmFeff
 #print axioms MildDivFree.div_physicalOfHm_of_lerayH
 #print axioms MildDivFree.div_physicalMild
+#print axioms MildReal.refl_wmul
+#print axioms MildReal.refl_mulF
+#print axioms MildReal.refl_NSN3
+#print axioms MildReal.refl_NSN
+#print axioms MildReal.refl_toHmFeff
+#print axioms MildReal.vconj_fourierInv
+#print axioms MildReal.isMild_reflPath
+#print axioms MildReal.refl_persistPath
+#print axioms MildReal.refl_persistPath_high
+#print axioms MildReal.cplx_physicalMild
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -277,7 +288,17 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``MildDivFree.inner_fourier_eq_zero,
     ``MildDivFree.lerayH_toHmFeff,
     ``MildDivFree.div_physicalOfHm_of_lerayH,
-    ``MildDivFree.div_physicalMild]
+    ``MildDivFree.div_physicalMild,
+    ``MildReal.refl_wmul,
+    ``MildReal.refl_mulF,
+    ``MildReal.refl_NSN3,
+    ``MildReal.refl_NSN,
+    ``MildReal.refl_toHmFeff,
+    ``MildReal.vconj_fourierInv,
+    ``MildReal.isMild_reflPath,
+    ``MildReal.refl_persistPath,
+    ``MildReal.refl_persistPath_high,
+    ``MildReal.cplx_physicalMild]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
