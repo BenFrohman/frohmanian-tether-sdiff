@@ -27,6 +27,7 @@ import Scratch.MildDivFree
 import Scratch.MildReal
 import Scratch.MildMomentum
 import Scratch.PlancherelBridge
+import Scratch.MildEnergy
 
 open Lean Elab Command
 
@@ -187,6 +188,15 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms PlancherelBridge.memLp_fourierInvBCF
 #print axioms PlancherelBridge.lintegral_fourierInvBCF_sq
 #print axioms PlancherelBridge.fourier_toLp_fourierInvBCF
+#print axioms MildEnergy.integral_inner_fourierInvBCF
+#print axioms MildEnergy.dw_fourierInvBCF
+#print axioms MildEnergy.integral_inner_wordDeriv
+#print axioms MildEnergy.physical_pairing_eq
+#print axioms MildEnergy.sobolevEnergy_physicalOfHm
+#print axioms MildEnergy.hsSq_physicalOfHm
+#print axioms MildEnergy.timeSliceDeriv_physicalMild
+#print axioms MildEnergy.hsSq_physicalMild
+#print axioms MildEnergy.h3EnergyRightDerivativeFormula_physicalMild
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -332,7 +342,16 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``PlancherelBridge.coeFn_fourierInv_toL2V,
     ``PlancherelBridge.memLp_fourierInvBCF,
     ``PlancherelBridge.lintegral_fourierInvBCF_sq,
-    ``PlancherelBridge.fourier_toLp_fourierInvBCF]
+    ``PlancherelBridge.fourier_toLp_fourierInvBCF,
+    ``MildEnergy.integral_inner_fourierInvBCF,
+    ``MildEnergy.dw_fourierInvBCF,
+    ``MildEnergy.integral_inner_wordDeriv,
+    ``MildEnergy.physical_pairing_eq,
+    ``MildEnergy.sobolevEnergy_physicalOfHm,
+    ``MildEnergy.hsSq_physicalOfHm,
+    ``MildEnergy.timeSliceDeriv_physicalMild,
+    ``MildEnergy.hsSq_physicalMild,
+    ``MildEnergy.h3EnergyRightDerivativeFormula_physicalMild]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
