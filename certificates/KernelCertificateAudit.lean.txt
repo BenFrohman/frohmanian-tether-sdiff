@@ -1,0 +1,65 @@
+import Lean
+import «FrohmanianTether»
+import «FrohmanianTether».«AnalyticPipeline»
+import «FrohmanianTether».«ArnoldGeometric»
+import «FrohmanianTether».«AssemblyGap»
+import «FrohmanianTether».«Assumptions»
+import «FrohmanianTether».«ClayStatements»
+import «FrohmanianTether».«ClosureBlueprint»
+import «FrohmanianTether».«Combined»
+import «FrohmanianTether».«ConcreteSDiff»
+import «FrohmanianTether».«ConditionalRegularity»
+import «FrohmanianTether».«CubicSourceCertificate»
+import «FrohmanianTether».«ExplicitFlows»
+import «FrohmanianTether».«FeffermanClayA»
+import «FrohmanianTether».«ForMathlib».«Projection»
+import «FrohmanianTether».«HighSetDepletionAndBKM»
+import «FrohmanianTether».«IndependentMajorant»
+import «FrohmanianTether».«KineticEnergyDerivative»
+import «FrohmanianTether».«MathlibAgreement»
+import «FrohmanianTether».«NS_Equations»
+import «FrohmanianTether».«PhysicalSolutionSanity»
+import «FrohmanianTether».«Pillars»
+import «FrohmanianTether».«Pillars».«BKMContinuation»
+import «FrohmanianTether».«Pillars».«Uniqueness»
+import «FrohmanianTether».«PlanSteps»
+import «FrohmanianTether».«ScalingIdentities»
+import «FrohmanianTether».«StrainBoundRefutation»
+import «FrohmanianTether».«SymplecticConstraint»
+import «FrohmanianTether».«SymplecticTether»
+import «FrohmanianTether».«Takagi»
+import «FrohmanianTether».«TestFieldFamily»
+import «FrohmanianTether».«TetherC1»
+import «FrohmanianTether».«TetherDefinitionAudit»
+import «FrohmanianTether».«TetherEquivariantC1»
+import «FrohmanianTether».«TetherImpliesBKM»
+import «FrohmanianTether».«TetherNondegeneracy»
+import «FrohmanianTether».«TetherRateCounterexample»
+import «FrohmanianTether».«TetherRatePeriodicVacuity»
+import «FrohmanianTether».«TetherWeight»
+import «FrohmanianTether».«TetherWeightProof»
+import «FrohmanianTether».«TetheredLyapunov»
+import «FrohmanianTether».«TorusStrainExclusion»
+import «FrohmanianTether».«Uniqueness»
+
+open Lean Elab Command
+
+/-- Prints `#print axioms`-style lines for every theorem declared in the listed modules. -/
+elab "#kernel_certificate_audit" : command => do
+  let env ← getEnv
+  let mods : Array Name := #[`«FrohmanianTether», `«FrohmanianTether».«AnalyticPipeline», `«FrohmanianTether».«ArnoldGeometric», `«FrohmanianTether».«AssemblyGap», `«FrohmanianTether».«Assumptions», `«FrohmanianTether».«ClayStatements», `«FrohmanianTether».«ClosureBlueprint», `«FrohmanianTether».«Combined», `«FrohmanianTether».«ConcreteSDiff», `«FrohmanianTether».«ConditionalRegularity», `«FrohmanianTether».«CubicSourceCertificate», `«FrohmanianTether».«ExplicitFlows», `«FrohmanianTether».«FeffermanClayA», `«FrohmanianTether».«ForMathlib».«Projection», `«FrohmanianTether».«HighSetDepletionAndBKM», `«FrohmanianTether».«IndependentMajorant», `«FrohmanianTether».«KineticEnergyDerivative», `«FrohmanianTether».«MathlibAgreement», `«FrohmanianTether».«NS_Equations», `«FrohmanianTether».«PhysicalSolutionSanity», `«FrohmanianTether».«Pillars», `«FrohmanianTether».«Pillars».«BKMContinuation», `«FrohmanianTether».«Pillars».«Uniqueness», `«FrohmanianTether».«PlanSteps», `«FrohmanianTether».«ScalingIdentities», `«FrohmanianTether».«StrainBoundRefutation», `«FrohmanianTether».«SymplecticConstraint», `«FrohmanianTether».«SymplecticTether», `«FrohmanianTether».«Takagi», `«FrohmanianTether».«TestFieldFamily», `«FrohmanianTether».«TetherC1», `«FrohmanianTether».«TetherDefinitionAudit», `«FrohmanianTether».«TetherEquivariantC1», `«FrohmanianTether».«TetherImpliesBKM», `«FrohmanianTether».«TetherNondegeneracy», `«FrohmanianTether».«TetherRateCounterexample», `«FrohmanianTether».«TetherRatePeriodicVacuity», `«FrohmanianTether».«TetherWeight», `«FrohmanianTether».«TetherWeightProof», `«FrohmanianTether».«TetheredLyapunov», `«FrohmanianTether».«TorusStrainExclusion», `«FrohmanianTether».«Uniqueness»]
+  for m in mods do
+    match env.getModuleIdx? m with
+    | none => IO.println s!"MODULE NOT LOADED {m}"
+    | some i =>
+      for n in (env.header.moduleData[i.toNat]!).constNames do
+        match env.find? n with
+        | some (.thmInfo _) =>
+          if !n.isInternal then
+            let ax ← collectAxioms n
+            let axs := ", ".intercalate (ax.toList.map toString)
+            if ax.isEmpty then IO.println s!"'{n}' does not depend on any axioms [module {m}]"
+            else IO.println s!"'{n}' depends on axioms: [{axs}] [module {m}]"
+        | _ => pure ()
+
+#kernel_certificate_audit

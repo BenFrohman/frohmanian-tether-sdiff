@@ -1,0 +1,718 @@
+⚠ [2868/2909] Replayed FrohmanianTether.NS_Equations
+info: FrohmanianTether/NS_Equations.lean:2585:2: Try this:
+  [apply] abel_nf
+warning: FrohmanianTether/NS_Equations.lean:3516:9: unused variable `T`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: FrohmanianTether/NS_Equations.lean:3518:0: 'NavierStokes3D.curl_gradient' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3519:0: 'NavierStokes3D.local_existence' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3520:0: 'NavierStokes3D.smoothness_of_Tstar_top' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3521:0: 'NavierStokes3D.beale_kato_majda' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3522:0: 'NavierStokes3D.beale_kato_majda_scaffold_integrability_unused' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3523:0: 'NavierStokes3D.bkm_criterion_without_integrability_not_top' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3524:0: 'NavierStokes3D.Tstar_eq_top_of_bkm' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3525:0: 'NavierStokes3D.energy_zero_of_gronwall' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3526:0: 'NavierStokes3D.Tstar_eq_top_of_unbounded_existenceTimes' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3527:0: 'NavierStokes3D.Tstar_eq_top_of_uniform_restart' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3528:0: 'NavierStokes3D.Tstar_eq_top_of_katoRestartTime' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3529:0: 'NavierStokes3D.katoRestartTime_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3530:0: 'NavierStokes3D.katoSobolevIndex_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3531:0: 'NavierStokes3D.one_add_log_le_self' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3532:0: 'NavierStokes3D.kato_ponce_implies_quadratic' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3533:0: 'NavierStokes3D.kato_ponce_of_uniform_vorticity' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3534:0: 'NavierStokes3D.kato_Hs_bound_on_restart_interval' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3535:0: 'NavierStokes3D.exists_mem_existenceTimes_gt_of_lt_Tstar' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3536:0: 'NavierStokes3D.navier_stokes_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3537:0: 'NavierStokes3D.kato_witness_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3538:0: 'NavierStokes3D.local_existence_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3539:0: 'NavierStokes3D.Tstar_pos_of_kato_witness' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3540:0: 'NavierStokes3D.eq_of_l2_energy_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3541:0: 'NavierStokes3D.ns_cauchy_of_energy_gronwall' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3542:0: 'NavierStokes3D.ns_cauchy_eq_of_energy_gronwall' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3543:0: 'NavierStokes3D.energy_zero_of_gronwall_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3544:0: 'NavierStokes3D.ns_cauchy_on_Icc_of_energy_gronwall' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3545:0: 'NavierStokes3D.uniqueness_of_existence_times_of_energy_gronwall' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3546:0: 'NavierStokes3D.time_deriv_shift' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3547:0: 'NavierStokes3D.ns_pde_shift' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3548:0: 'NavierStokes3D.smoothness_on_restart_interval' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3549:0: 'NavierStokes3D.smoothness_below_Tstar_of_uniqueness' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3550:0: 'NavierStokes3D.curl_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3551:0: 'NavierStokes3D.mem_existenceTimes_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3552:0: 'NavierStokes3D.Tstar_zero_eq_top' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3553:0: 'NavierStokes3D.div_curl' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3554:0: 'NavierStokes3D.div_of_eq_curl' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3555:0: 'NavierStokes3D.div_smul_field' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3556:0: 'NavierStokes3D.curl_add' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3557:0: 'NavierStokes3D.convective_norm_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3558:0: 'NavierStokes3D.inner_convective_product_rule' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3559:0: 'NavierStokes3D.cyclicLiePairing_expand' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3560:0: 'NavierStokes3D.transport_inner_vanishes_of_grad_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3561:0: 'NavierStokes3D.vorticity_transport_inner' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3562:0: 'NavierStokes3D.pressureGradient_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3563:0: 'NavierStokes3D.ns_momentum_difference' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3564:0: 'NavierStokes3D.inner_convective_eq_inner_grad_half_norm_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3565:0: 'NavierStokes3D.transported_energy_pairing_vanishes' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3566:0: 'NavierStokes3D.convective_difference' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3567:0: 'NavierStokes3D.inner_convective_le_strain' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3568:0: 'NavierStokes3D.time_deriv_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3569:0: 'NavierStokes3D.transported_scalar_along_characteristic' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3570:0: 'NavierStokes3D.transported_scalar_maximum_principle' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3571:0: 'NavierStokes3D.reciprocal_of_quadratic_growth' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3572:0: 'NavierStokes3D.le_vorticity_sup_norm' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3573:0: 'NavierStokes3D.convective_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3574:0: 'NavierStokes3D.convective_eq_sum_directional' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3575:0: 'NavierStokes3D.directionalCoord_convective' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3576:0: 'NavierStokes3D.curl_convective' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3577:0: 'NavierStokes3D.curl_convective_div_free' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3578:0: 'NavierStokes3D.curl_add3' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3579:0: 'NavierStokes3D.fderiv_prod_snd_slice' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3580:0: 'NavierStokes3D.deriv_prod_fst_slice' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3581:0: 'NavierStokes3D.time_space_mixed_partials' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3582:0: 'NavierStokes3D.deriv_euclidean_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3583:0: 'NavierStokes3D.curl_time_deriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3584:0: 'NavierStokes3D.fderiv_field_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3585:0: 'NavierStokes3D.laplacian_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3586:0: 'NavierStokes3D.fderiv_apply_fderiv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3587:0: 'NavierStokes3D.contDiffAt_directionalCoord' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3588:0: 'NavierStokes3D.directionalCoord_laplacian' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3589:0: 'NavierStokes3D.curl_laplacian' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3590:0: 'NavierStokes3D.differentiableAt_time_deriv_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3591:0: 'NavierStokes3D.differentiableAt_convective_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3592:0: 'NavierStokes3D.differentiableAt_pressureGradient_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3593:0: 'NavierStokes3D.vorticity_transport_at' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3594:0: 'NavierStokes3D.vorticity_transport' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3595:0: 'NavierStokes3D.vorticity_transport_equation' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3596:0: 'NavierStokes3D.time_space_mixed_partials' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3597:0: 'NavierStokes3D.differentiableAt_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3598:0: 'NavierStokes3D.fderiv_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3599:0: 'NavierStokes3D.integration_by_parts_of_vanishing_flux' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3600:0: 'NavierStokes3D.inner_self_convective_eq_inner_grad_half_norm_sq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3601:0: 'NavierStokes3D.differentiableAt_coord_of_differentiableAt_field' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3602:0: 'NavierStokes3D.differentiableAt_half_norm_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3603:0: 'NavierStokes3D.convective_energy_pairing_vanishes' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/NS_Equations.lean:3604:0: 'NavierStokes3D.pressure_energy_pairing_vanishes' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [2871/2909] Replayed FrohmanianTether.ArnoldGeometric
+warning: FrohmanianTether/ArnoldGeometric.lean:531:6: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [ContinuousLinearMap.sub_apply, fderiv_const_mul (hd 2), fderiv_const_mul (hd 1),
+  ̲  ̲ ̲ ̲ ̲ ̲fderiv_coord, E̵u̵c̵l̵i̵d̵e̵a̵n̵S̵p̵a̵c̵e̵.̵s̵i̵n̵g̵l̵e̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]̵E̲u̲c̲l̲i̲d̲e̲a̲n̲S̲p̲a̲c̲e̲.̲s̲i̲n̲g̲l̲e̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: FrohmanianTether/ArnoldGeometric.lean:537:6: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [ContinuousLinearMap.sub_apply, fderiv_const_mul (hd 0), fderiv_const_mul (hd 2),
+  ̲  ̲ ̲ ̲ ̲ ̲fderiv_coord, E̵u̵c̵l̵i̵d̵e̵a̵n̵S̵p̵a̵c̵e̵.̵s̵i̵n̵g̵l̵e̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]̵E̲u̲c̲l̲i̲d̲e̲a̲n̲S̲p̲a̲c̲e̲.̲s̲i̲n̲g̲l̲e̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: FrohmanianTether/ArnoldGeometric.lean:543:6: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [ContinuousLinearMap.sub_apply, fderiv_const_mul (hd 1), fderiv_const_mul (hd 0),
+  ̲  ̲ ̲ ̲ ̲ ̲fderiv_coord, E̵u̵c̵l̵i̵d̵e̵a̵n̵S̵p̵a̵c̵e̵.̵s̵i̵n̵g̵l̵e̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]̵E̲u̲c̲l̲i̲d̲e̲a̲n̲S̲p̲a̲c̲e̲.̲s̲i̲n̲g̲l̲e̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: FrohmanianTether/ArnoldGeometric.lean:1180:0: 'ArnoldGeometric.velocity_from_vorticity_eq_BiotSavart' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1181:0: 'ArnoldGeometric.classical_bracket_reproduces_Euler' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1182:0: 'ArnoldGeometric.BiotSavart_zero' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1183:0: 'ArnoldGeometric.BiotSavart_smul' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1184:0: 'ArnoldGeometric.BiotSavart_add' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1185:0: 'ArnoldGeometric.BiotSavart_affine' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1186:0: 'ArnoldGeometric.hasDerivAt_half_norm_sq' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1187:0: 'ArnoldGeometric.hasDerivAt_half_norm_sq_at' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1188:0: 'ArnoldGeometric.pairing_cross_self_right' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1189:0: 'ArnoldGeometric.cross_smul_left' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1190:0: 'ArnoldGeometric.FunctionalDerivative_eq_zero_of_not' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1191:0: 'ArnoldGeometric.functionalDerivative_indep_of_not_differentiable' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1192:0: 'ArnoldGeometric.kineticEnergy_hasDerivAt_velocity_pairing' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1193:0: 'ArnoldGeometric.biotSavartKernel_of_ne' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1194:0: 'ArnoldGeometric.cross_coord' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1195:0: 'ArnoldGeometric.div_cross_right' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1196:0: 'ArnoldGeometric.div_cross_offset' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1197:0: 'ArnoldGeometric.differentiableAt_cross_offset_coord' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1198:0: 'ArnoldGeometric.hasFDerivAt_norm_sq_offset' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1199:0: 'ArnoldGeometric.hasFDerivAt_biotSavartKernel_of_ne' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1200:0: 'ArnoldGeometric.differentiableAt_biotSavartKernel_off_diag' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1201:0: 'ArnoldGeometric.div_biotSavart_integrand' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1202:0: 'ArnoldGeometric.div_biotSavart_integrand_ae' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1203:0: 'ArnoldGeometric.div_BiotSavart_of_interchange' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1204:0: 'ArnoldGeometric.gateaux_representative_unique' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1205:0: 'ArnoldGeometric.isGateauxRepresentative_iff' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1206:0: 'ArnoldGeometric.BiotSavart_apply' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1207:0: 'ArnoldGeometric.kineticEnergyHamiltonian_hasDerivAt_velocity_pairing' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1208:0: 'ArnoldGeometric.isVelocityGateauxRepresentative_kineticEnergy_at' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1234:0: 'ArnoldGeometric.classicalBracket_antisymm' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1235:0: 'ArnoldGeometric.classicalBracket_self' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/ArnoldGeometric.lean:1236:0: 'ArnoldGeometric.classicalBracket_H_H' depends on axioms: [propext, choice, Quot.sound]
+ℹ [2873/2909] Replayed FrohmanianTether.SymplecticTether
+info: FrohmanianTether/SymplecticTether.lean:752:0: 'FrohmanianTether.tetherKernel_comm' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/SymplecticTether.lean:753:0: 'FrohmanianTether.antisymmetric_correction_diagonal_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/SymplecticTether.lean:754:0: 'FrohmanianTether.tetherKernel_C2_of_no_gateaux' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/SymplecticTether.lean:755:0: 'FrohmanianTether.div_biot_savart_of_eq_curl' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/SymplecticTether.lean:756:0: 'FrohmanianTether.div_biot_savart_velocity_of_interchange' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [2877/2909] Replayed FrohmanianTether.AnalyticPipeline
+warning: FrohmanianTether/AnalyticPipeline.lean:253:11: unused variable `x`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: FrohmanianTether/AnalyticPipeline.lean:466:0: 'AnalyticPipeline.holderConjugate_three_halves_three' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/AnalyticPipeline.lean:467:0: 'AnalyticPipeline.holder_I4' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/AnalyticPipeline.lean:468:0: 'AnalyticPipeline.holder_I4_le_sobolev' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/AnalyticPipeline.lean:469:0: 'AnalyticPipeline.stretching_bound_of_holder' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/AnalyticPipeline.lean:470:0: 'AnalyticPipeline.vorticity_sup_norm_riccati_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [2878/2909] Replayed FrohmanianTether.TetheredLyapunov
+info: FrohmanianTether/TetheredLyapunov.lean:1725:0: 'TetheredLyapunov.hasDerivAt_norm_sq_of_hasDerivAt' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1726:0: 'TetheredLyapunov.hasDerivAt_norm_pow_four' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1727:0: 'TetheredLyapunov.hasDerivAt_quartic_tether_weight' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1728:0: 'TetheredLyapunov.hasDerivAt_lyapunov_density' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1729:0: 'TetheredLyapunov.lyapunovSε_eq' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1730:0: 'TetheredLyapunov.lyapunovSminus_eq' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1731:0: 'TetheredLyapunov.quartic_weight_source_eq' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1732:0: 'TetheredLyapunov.lyapunovSminus_source_density' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1733:0: 'TetheredLyapunov.hasDerivAt_lyapunov_plus_of_enstrophy_source' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1734:0: 'TetheredLyapunov.hasDerivAt_lyapunov_minus_of_enstrophy_source' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1735:0: 'TetheredLyapunov.lyapunovSminus_density_le_half_norm_sq' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1736:0: 'TetheredLyapunov.lyapunovSminus_density_ge_of_abs_phi' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1737:0: 'TetheredLyapunov.lyapunovSminus_density_neg_of_large_weight' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1738:0: 'TetheredLyapunov.hasDerivAt_lyapunov_density_unweighted' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1739:0: 'TetheredLyapunov.majorantField_factor' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1740:0: 'TetheredLyapunov.conditional_regularity_zero' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1741:0: 'TetheredLyapunov.finiteTimeVorticityBound_of_uniform' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1742:0: 'TetheredLyapunov.physicalFiniteTimeVorticityBound_of_uniform' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1743:0: 'TetheredLyapunov.bkmIntegrability_of_finiteTime' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1744:0: 'TetheredLyapunov.physicalBKMIntegrability_of_finiteTime' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1745:0: 'TetheredLyapunov.Tstar_top_of_restart_without_vorticity_bound' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1746:0: 'TetheredLyapunov.conditional_regularity' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1747:0: 'TetheredLyapunov.conditional_regularity_of_local_bound' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1748:0: 'TetheredLyapunov.comparison_ode_stability_Icc' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1749:0: 'TetheredLyapunov.comparison_ode_stability_Icc_right' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1750:0: 'TetheredLyapunov.localTetherBound_of_localTetherRate' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1751:0: 'TetheredLyapunov.global_solutions_eq_of_uniqueness' depends on axioms: [propext, choice, Quot.sound]
+info: FrohmanianTether/TetheredLyapunov.lean:1752:0: 'TetheredLyapunov.riccati_ceiling_of_vorticity_di' depends on axioms: [propext, choice, Quot.sound]
+⚠ [2881/2909] Replayed FrohmanianTether.TetherNondegeneracy
+warning: FrohmanianTether/TetherNondegeneracy.lean:164:28: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [eb,̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: FrohmanianTether/TetherNondegeneracy.lean:213:59: This simp argument is unused:
+  inner_sub_left
+
+Hint: Omit it from the simp argument list.
+  simp [Fin.sum_univ_three, rotL_coord, PiLp.single_apply, i̵n̵n̵e̵r̵_̵s̵u̵b̵_̵l̵e̵f̵t̵,̵ ̵inner_eb]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: FrohmanianTether/TetherNondegeneracy.lean:321:30: unused variable `hφ`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+ℹ [2882/2909] Replayed FrohmanianTether.Uniqueness
+info: FrohmanianTether/Uniqueness.lean:702:0: 'FrohmanianTether.uniqueness_of_kernel_density' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/Uniqueness.lean:703:0: 'FrohmanianTether.uniqueness_of_kernel_density_fun' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/Uniqueness.lean:704:0: 'FrohmanianTether.tetherKernel_has_canonical_density' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/Uniqueness.lean:705:0: 'FrohmanianTether.uniqueness_of_minimal_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/Uniqueness.lean:706:0: 'FrohmanianTether.step2_degree_of_canonical_density' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/Uniqueness.lean:707:0: 'FrohmanianTether.step2_degree' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/Uniqueness.lean:708:0: 'FrohmanianTether.step5_higher_order' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [2884/2909] Replayed FrohmanianTether.ConditionalRegularity
+info: FrohmanianTether/ConditionalRegularity.lean:176:0: 'ConditionalRegularity.frohmanian_tether_theorem' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/ConditionalRegularity.lean:177:0: 'ConditionalRegularity.conditional_regularity_of_open_hyps' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [2885/2909] Replayed FrohmanianTether.ClayStatements
+info: FrohmanianTether/ClayStatements.lean:604:0: 'FrohmanianTether.ClayStatements.conditional_regularity_nonvacuous_at_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: FrohmanianTether/ClayStatements.lean:605:0: 'FrohmanianTether.ClayStatements.frohmanianTetherRate_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/ClayStatements.lean:606:0: 'FrohmanianTether.ClayStatements.frohmanianTetherBound_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/ClayStatements.lean:607:0: 'FrohmanianTether.ClayStatements.repaired_huniq_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/ClayStatements.lean:608:0: 'FrohmanianTether.ClayStatements.smoothPhysicalUniqueness_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: FrohmanianTether/ClayStatements.lean:609:0: 'FrohmanianTether.ClayStatements.localTetherBound_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/ClayStatements.lean:610:0: 'FrohmanianTether.ClayStatements.localTetherRate_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/ClayStatements.lean:611:0: 'FrohmanianTether.ClayStatements.bkmGlobalContinuation_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/ClayStatements.lean:612:0: 'FrohmanianTether.ClayStatements.stepField_not_physical' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/ClayStatements.lean:613:0: 'FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+ℹ [2889/2909] Built Scratch.RepairedTetherRate (4.7s)
+info: Scratch/RepairedTetherRate.lean:209:0: 'RepairedTether.clay_A_fefferman_of_frohmanianTetherRateSmooth' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: Scratch/RepairedTetherRate.lean:210:0: 'RepairedTether.frohmanianTetherRateSmooth_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/RepairedTetherRate.lean:211:0: 'RepairedTether.r3BKMContinuationAt_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/RepairedTetherRate.lean:212:0: 'RepairedTether.feffermanDecay_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/RepairedTetherRate.lean:213:0: 'RepairedTether.clay_A_fefferman_instance_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/RepairedTetherRate.lean:214:0: 'RepairedTether.frohmanianTetherRateSmoothGlobal_of_no_global_solution' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+ℹ [2891/2914] Built Scratch.SobolevEmbedding (5.5s)
+info: Scratch/SobolevEmbedding.lean:232:0: 'SobolevR3.abs_le_avg_1d' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevEmbedding.lean:233:0: 'SobolevR3.abs_le_sum_L2' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [3036/3182] Built Scratch.FourierEmbedding (5.7s)
+info: Scratch/FourierEmbedding.lean:109:0: 'FourierEmb.enorm_le_weight_L2' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/FourierEmbedding.lean:110:0: 'FourierEmb.lintegral_w_inv_sq_lt_top' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8277/8305] Built Scratch.R3BKMContinuation (5.7s)
+info: Scratch/R3BKMContinuation.lean:292:0: 'R3BKM.lintegral_sq_lt_top_of_feffermanDecay' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/R3BKMContinuation.lean:293:0: 'R3BKM.feffermanGlobalSolution_of_forall' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/R3BKMContinuation.lean:294:0: 'R3BKM.r3BKMContinuationAt_of_katoBKMMaximal' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/R3BKMContinuation.lean:295:0: 'R3BKM.log_gronwall' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/R3BKMContinuation.lean:296:0: 'R3BKM.katoMaximalSolution_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/R3BKMContinuation.lean:297:0: 'R3BKM.katoBKMMaximal_of_kato_of_log' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/R3BKMContinuation.lean:298:0: 'R3BKM.r3BKMContinuation_of_kato_of_log' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/R3BKMContinuation.lean:299:0: 'R3BKM.clay_A_fefferman_of_rate_of_kato_of_log' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8280/8305] Replayed FrohmanianTether.ScalingIdentities
+warning: FrohmanianTether/ScalingIdentities.lean:46:24: `EuclideanSpace.single_apply` has been deprecated: Use `PiLp.single_apply` instead
+
+Note: The updated constant has a different type:
+  ∀ (p : ENNReal) (𝕜 : Type u_1) {ι : Type u_2} [inst : DecidableEq ι] [inst_1 : Zero 𝕜] (i : ι) (a : 𝕜) (j : ι),
+    (PiLp.single p i a).ofLp j = if j = i then a else 0
+instead of
+  ∀ {ι : Type u_1} {𝕜 : Type u_3} [inst : RCLike 𝕜] [inst_1 : DecidableEq ι] (i : ι) (a : 𝕜) (j : ι),
+    (EuclideanSpace.single i a).ofLp j = if j = i then a else 0
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.single_apply` to `PiLp.single_apply x`).
+warning: FrohmanianTether/ScalingIdentities.lean:46:24: `EuclideanSpace.single_apply` has been deprecated: Use `PiLp.single_apply` instead
+
+Note: The updated constant has a different type:
+  ∀ (p : ENNReal) (𝕜 : Type u_1) {ι : Type u_2} [inst : DecidableEq ι] [inst_1 : Zero 𝕜] (i : ι) (a : 𝕜) (j : ι),
+    (PiLp.single p i a).ofLp j = if j = i then a else 0
+instead of
+  ∀ {ι : Type u_1} {𝕜 : Type u_3} [inst : RCLike 𝕜] [inst_1 : DecidableEq ι] (i : ι) (a : 𝕜) (j : ι),
+    (EuclideanSpace.single i a).ofLp j = if j = i then a else 0
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.single_apply` to `PiLp.single_apply x`).
+warning: FrohmanianTether/ScalingIdentities.lean:46:24: `EuclideanSpace.single_apply` has been deprecated: Use `PiLp.single_apply` instead
+
+Note: The updated constant has a different type:
+  ∀ (p : ENNReal) (𝕜 : Type u_1) {ι : Type u_2} [inst : DecidableEq ι] [inst_1 : Zero 𝕜] (i : ι) (a : 𝕜) (j : ι),
+    (PiLp.single p i a).ofLp j = if j = i then a else 0
+instead of
+  ∀ {ι : Type u_1} {𝕜 : Type u_3} [inst : RCLike 𝕜] [inst_1 : DecidableEq ι] (i : ι) (a : 𝕜) (j : ι),
+    (EuclideanSpace.single i a).ofLp j = if j = i then a else 0
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.single_apply` to `PiLp.single_apply x`).
+warning: FrohmanianTether/ScalingIdentities.lean:46:24: This simp argument is unused:
+  EuclideanSpace.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵E̵u̵c̵l̵i̵d̵e̵a̵n̵S̵p̵a̵c̵e̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: FrohmanianTether/ScalingIdentities.lean:48:0: 'ScalingIdentities.directionalCoord_rescale' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: FrohmanianTether/ScalingIdentities.lean:49:0: 'ScalingIdentities.vorticity_rescale' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8281/8305] Replayed FrohmanianTether.StrainBoundRefutation
+info: FrohmanianTether/StrainBoundRefutation.lean:90:0: 'StrainBoundRefutation.not_forall_strain_le_sup_vorticity' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8282/8305] Built Scratch.SobolevBridge (4.9s)
+info: Scratch/SobolevBridge.lean:107:0: 'SobolevBridge.abs_component_le_sobolevEnergy' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8283/8305] Built Scratch.LerayHeat (20s)
+info: Scratch/LerayHeat.lean:419:0: 'LerayHeat.norm_leray_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:420:0: 'LerayHeat.leray_leray' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:421:0: 'LerayHeat.inner_leray' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:422:0: 'LerayHeat.leray_divFree' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:423:0: 'LerayHeat.leray_eq_self' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:424:0: 'LerayHeat.leray_grad' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:425:0: 'LerayHeat.coeFn_fourier_heat' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:426:0: 'LerayHeat.norm_heat_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:427:0: 'LerayHeat.heat_of_nonpos' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:428:0: 'LerayHeat.heat_heat' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:429:0: 'LerayHeat.heat_leray' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:430:0: 'LerayHeat.tendsto_heat_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LerayHeat.lean:431:0: 'LerayHeat.continuous_heat' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8284/8305] Built Scratch.FourierCutoff (17s)
+warning: Scratch/FourierCutoff.lean:165:8: This simp argument is unused:
+  show (2 : ℕ) - 0 = 2 from rfl
+
+Hint: Omit it from the simp argument list.
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add,
+          show (2 : ℕ) - 0̵ ̵=̵ ̵2̵ ̵f̵r̵o̵m̵ ̵r̵f̵l̵,̵ ̵s̵h̵o̵w̵ ̵(̵2̵ ̵:̵ ̵ℕ̵)̵ ̵-̵ ̵1 = 1 from rfl, show (2 : ℕ) - 2 = 0 from rfl,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲show Nat.choose 2 0 = 1 from rfl, show Nat.choose 2 1 = 2 from rfl,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲show Nat.choose 2 2 = 1 from rfl, Nat.cast_one, Nat.cast_ofNat, one_mul] at this
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/FourierCutoff.lean:165:39: This simp argument is unused:
+  show (2 : ℕ) - 1 = 1 from rfl
+
+Hint: Omit it from the simp argument list.
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add,
+          show (2 : ℕ) - 0 = 2 from rfl, show (2 : ℕ) - 1̵ ̵=̵ ̵1̵ ̵f̵r̵o̵m̵ ̵r̵f̵l̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵ ̵ ̵s̵h̵o̵w̵ ̵(̵2̵ ̵:̵ ̵ℕ̵)̵ ̵-̵ ̵2 = 0 from rfl,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲show Nat.choose 2 0 = 1 from rfl, show Nat.choose 2 1 = 2 from rfl,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲show Nat.choose 2 2 = 1 from rfl, Nat.cast_one, Nat.cast_ofNat, one_mul] at this
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/FourierCutoff.lean:166:8: This simp argument is unused:
+  show (2 : ℕ) - 2 = 0 from rfl
+
+Hint: Omit it from the simp argument list.
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add,
+          show (2 : ℕ) - 0 = 2 from rfl, show (2 : ℕ) - 1 = 1 from rfl,
+          show (̵2̵ ̵:̵ ̵ℕ̵)̵ ̵-̵ ̵2̵ ̵=̵ ̵0̵ ̵f̵r̵o̵m̵ ̵r̵f̵l̵,̵ ̵s̵h̵o̵w̵ ̵Nat.choose 2 0 = 1 from rfl, show Nat.choose 2 1 = 2 from rfl,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲show Nat.choose 2 2 = 1 from rfl, Nat.cast_one, Nat.cast_ofNat, one_mul] at this
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: Scratch/FourierCutoff.lean:247:0: 'FourierCutoff.abs_le_energyR' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8285/8305] Built Scratch.TetherRateDerivation (13s)
+info: Scratch/TetherRateDerivation.lean:619:0: 'TetherRateDerivation.bochner_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:620:0: 'TetherRateDerivation.transport_vanishes_at_local_max' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:621:0: 'TetherRateDerivation.viscPair_le_neg_hsSq_at_local_max' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:622:0: 'TetherRateDerivation.scalarLaplacian_nonpos_of_isLocalMax' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:623:0: 'TetherRateDerivation.envelope_along_differentiable_maximizer' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: Scratch/TetherRateDerivation.lean:624:0: 'TetherRateDerivation.danskin_difference_quotient' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:625:0: 'TetherRateDerivation.stretching_le_strain_mul_norm_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:626:0: 'TetherRateDerivation.cubic_rate_of_stretching_and_visc' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:627:0: 'TetherRateDerivation.cubic_rate_of_strain_and_hsSq' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:628:0: 'TetherRateDerivation.fefferman_two_sided_eq_interior' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:629:0: 'TetherRateDerivation.vorticity_rescaleFlow' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:630:0: 'TetherRateDerivation.Mω_rescaleFlow' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:631:0: 'TetherRateDerivation.hasDerivAt_Mω_rescale_of_hasDerivAt' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:632:0: 'TetherRateDerivation.rate_form_rescale_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateDerivation.lean:633:0: 'TetherRateDerivation.hasDerivAt_norm_of_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8286/8305] Built Scratch.GradBound (6.6s)
+warning: Scratch/GradBound.lean:98:7: `mul_le_mul_left'` has been deprecated: Use `mul_le_mul_right` instead
+info: Scratch/GradBound.lean:124:0: 'GradBound.norm_fderiv_le_sobolevEnergy' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/GradBound.lean:125:0: 'GradBound.bddAbove_norm_fderiv' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8287/8305] Built Scratch.TetherRateCounterexample (26s)
+info: Scratch/TetherRateCounterexample.lean:617:0: 'TetherRateCounterexample.not_frohmanianTetherRate_U' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateCounterexample.lean:618:0: 'TetherRateCounterexample.not_forall_frohmanianTetherRate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateCounterexample.lean:619:0: 'TetherRateCounterexample.not_frohmanianTetherBound_U' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateCounterexample.lean:620:0: 'TakagiScratch.not_differentiableAt_takagi' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8288/8305] Built Scratch.LogBound (19s)
+info: Scratch/LogBound.lean:558:0: 'LogBound.schwartz_log_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LogBound.lean:559:0: 'LogBound.schwartz_log_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8289/8305] Built Scratch.VorticityMaxAttained (9.9s)
+warning: Scratch/VorticityMaxAttained.lean:65:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: Scratch/VorticityMaxAttained.lean:158:26: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [PiLp.add_apply,̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:160:26: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [PiLp.add_apply,̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:161:26: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [PiLp.add_apply,̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:259:54: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [vorticity, PiLp.smul_apply, P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵,̵ ̵smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:331:8: This simp argument is unused:
+  VorticityMaximumAttained
+
+Hint: Omit it from the simp argument list.
+  simp [V̵o̵r̵t̵i̵c̵i̵t̵y̵M̵a̵x̵i̵m̵u̵m̵A̵t̵t̵a̵i̵n̵e̵d̵,̵ ̵ht, hx t ht]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:390:8: This simp argument is unused:
+  this
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵t̵h̵i̵s̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:442:8: This simp argument is unused:
+  ContinuousLinearMap.smulRight_apply
+
+Hint: Omit it from the simp argument list.
+  s̵i̵m̵p̵ ̵[̵C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵s̵m̵u̵l̵R̵i̵g̵h̵t̵_̵a̵p̵p̵l̵y̵,̵ ̵s̵m̵u̵l̵_̵e̵q̵_̵m̵u̵l̵]̵s̲i̲m̲p̲ ̲[̲s̲m̲u̲l̲_̲e̲q̲_̲m̲u̲l̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:453:30: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [arctanShearField,̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:458:30: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [arctanShearField, P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵,̵ ̵hc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:466:57: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [h, directionalCoord_arctanShear,̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:491:46: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [z,̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:532:42: This simp argument is unused:
+  PiLp.single_apply
+
+Hint: Omit it from the simp argument list.
+  simp [directionalCoord,̵ ̵P̵i̵L̵p̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵] at h ⊢
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:543:2: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Scratch/VorticityMaxAttained.lean:545:51: unused variable `hT`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Scratch/VorticityMaxAttained.lean:556:20: This simp argument is unused:
+  derivWithin_const
+
+Hint: Omit it from the simp argument list.
+  simp [hfun,̵ ̵d̵e̵r̵i̵v̵W̵i̵t̵h̵i̵n̵_̵c̵o̵n̵s̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/VorticityMaxAttained.lean:648:5: unused variable `hab`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Scratch/VorticityMaxAttained.lean:771:0: 'VorticityMaxAttained.exists_isMaxOn_of_tendsto_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/VorticityMaxAttained.lean:772:0: 'VorticityMaxAttained.vorticity_tendsto_zero_of_feffermanDecay' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: Scratch/VorticityMaxAttained.lean:773:0: 'VorticityMaxAttained.exists_vorticityMaximumAttained_of_tendsto_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: Scratch/VorticityMaxAttained.lean:774:0: 'VorticityMaxAttained.exists_vorticityMaximumAttained_of_snapshot_feffermanDecay' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: Scratch/VorticityMaxAttained.lean:775:0: 'VorticityMaxAttained.exists_isMaxOn_vorticity_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/VorticityMaxAttained.lean:776:0: 'VorticityMaxAttained.not_isFeffermanSolutionOn_implies_vorticityMaximumAttained' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: Scratch/VorticityMaxAttained.lean:777:0: 'VorticityMaxAttained.lipschitzOnWith_Mω_of_timeDerivBdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/VorticityMaxAttained.lean:778:0: 'VorticityMaxAttained.ae_differentiableAt_Mω_of_timeDerivBdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/VorticityMaxAttained.lean:779:0: 'VorticityMaxAttained.danskin_eq_of_differentiable' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/VorticityMaxAttained.lean:780:0: 'VorticityMaxAttained.danskinRateAt_of_differentiable' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/VorticityMaxAttained.lean:781:0: 'VorticityMaxAttained.ae_danskinRateAt_of_timeDerivBdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8290/8305] Built Scratch.SobolevFourier (33s)
+warning: Scratch/SobolevFourier.lean:173:30: This simp argument is unused:
+  WithLp.ofLp_toLp
+
+Hint: Omit it from the simp argument list.
+  simp only [PiLp.smul_apply, W̵i̵t̵h̵L̵p̵.̵o̵f̵L̵p̵_̵t̵o̵L̵p̵,̵ ̵smul_eq_mul, Complex.ofReal_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: Scratch/SobolevFourier.lean:294:0: 'SobolevFourier.toTD_deriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevFourier.lean:295:0: 'SobolevFourier.fourier_deriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevFourier.lean:296:0: 'SobolevFourier.fourier_dw' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevFourier.lean:297:0: 'SobolevFourier.lintegral_sq_fourier' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevFourier.lean:298:0: 'SobolevFourier.sobolevEnergy_eq_fourierEnergy' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevFourier.lean:299:0: 'SobolevFourier.sobW_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevFourier.lean:300:0: 'SobolevFourier.hsSq_eq_fourierEnergy' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8291/8305] Built Scratch.LogBoundLocal (13s)
+warning: Scratch/LogBoundLocal.lean:65:8: This simp argument is unused:
+  show (2 : ℕ) - 0 = 2 from rfl
+
+Hint: Omit it from the simp argument list.
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add,
+          show (2 : ℕ) - 0̵ ̵=̵ ̵2̵ ̵f̵r̵o̵m̵ ̵r̵f̵l̵,̵ ̵s̵h̵o̵w̵ ̵(̵2̵ ̵:̵ ̵ℕ̵)̵ ̵-̵ ̵1 = 1 from rfl, show (2 : ℕ) - 2 = 0 from rfl,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲show Nat.choose 2 0 = 1 from rfl, show Nat.choose 2 1 = 2 from rfl,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲show Nat.choose 2 2 = 1 from rfl, Nat.cast_one, Nat.cast_ofNat, one_mul] at this
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/LogBoundLocal.lean:65:39: This simp argument is unused:
+  show (2 : ℕ) - 1 = 1 from rfl
+
+Hint: Omit it from the simp argument list.
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add,
+          show (2 : ℕ) - 0 = 2 from rfl, show (2 : ℕ) - 1̵ ̵=̵ ̵1̵ ̵f̵r̵o̵m̵ ̵r̵f̵l̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵ ̵ ̵s̵h̵o̵w̵ ̵(̵2̵ ̵:̵ ̵ℕ̵)̵ ̵-̵ ̵2 = 0 from rfl,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲show Nat.choose 2 0 = 1 from rfl, show Nat.choose 2 1 = 2 from rfl,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲show Nat.choose 2 2 = 1 from rfl, Nat.cast_one, Nat.cast_ofNat, one_mul] at this
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/LogBoundLocal.lean:66:8: This simp argument is unused:
+  show (2 : ℕ) - 2 = 0 from rfl
+
+Hint: Omit it from the simp argument list.
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add,
+          show (2 : ℕ) - 0 = 2 from rfl, show (2 : ℕ) - 1 = 1 from rfl,
+          show (̵2̵ ̵:̵ ̵ℕ̵)̵ ̵-̵ ̵2̵ ̵=̵ ̵0̵ ̵f̵r̵o̵m̵ ̵r̵f̵l̵,̵ ̵s̵h̵o̵w̵ ̵Nat.choose 2 0 = 1 from rfl, show Nat.choose 2 1 = 2 from rfl,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲show Nat.choose 2 2 = 1 from rfl, Nat.cast_one, Nat.cast_ofNat, one_mul] at this
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: Scratch/LogBoundLocal.lean:729:0: 'LogBoundLocal.clay_A_fefferman_of_rate_of_kato' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LogBoundLocal.lean:730:0: 'LogBoundLocal.leibniz_L2' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LogBoundLocal.lean:731:0: 'LogBoundLocal.high_Gs_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LogBoundLocal.lean:732:0: 'LogBoundLocal.pt_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LogBoundLocal.lean:733:0: 'LogBoundLocal.pt_final' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/LogBoundLocal.lean:734:0: 'LogBoundLocal.bkmLogInequality' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8292/8305] Built Scratch.HeatSobolev (2.5s)
+warning: Scratch/HeatSobolev.lean:33:32: unused variable `ha`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Scratch/HeatSobolev.lean:98:0: 'HeatSobolev.fourierEnergy_heat_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/HeatSobolev.lean:99:0: 'HeatSobolev.fourierEnergy_heat_succ_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8293/8305] Built Scratch.FeffermanSchwartz (3.7s)
+info: Scratch/FeffermanSchwartz.lean:175:0: 'FeffermanSchwartz.norm_cmul_le_sum_basis' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/FeffermanSchwartz.lean:176:0: 'FeffermanSchwartz.norm_iteratedFDeriv_le_sum_basis' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/FeffermanSchwartz.lean:177:0: 'FeffermanSchwartz.decay_of_feffermanDecay' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/FeffermanSchwartz.lean:178:0: 'FeffermanSchwartz.toSchwartz' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/FeffermanSchwartz.lean:179:0: 'FeffermanSchwartz.fourierInv_fourier_cplx_of_fefferman' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8294/8305] Built Scratch.TetherRateLipschitz (3.5s)
+info: Scratch/TetherRateLipschitz.lean:449:0: 'RepairedTether.comparison_ode_stability_lipschitz' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateLipschitz.lean:450:0: 'RepairedTether.ceiling_of_rateLipschitz' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateLipschitz.lean:451:0: 'RepairedTether.clay_A_fefferman_of_frohmanianTetherRateLipschitz' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: Scratch/TetherRateLipschitz.lean:452:0: 'RepairedTether.clay_A_fefferman_of_rateLipschitz_of_kato' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateLipschitz.lean:453:0: 'RepairedTether.frohmanianTetherRateLipschitz_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateLipschitz.lean:454:0: 'RepairedTether.lipschitzOnWith_of_bdd_right_deriv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/TetherRateLipschitz.lean:455:0: 'RepairedTether.frohmanianTetherRateLipschitz_of_smooth_of_locallyBddRightDeriv' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: Scratch/TetherRateLipschitz.lean:456:0: 'RepairedTether.majorant_vector_field_antitoneOn' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8295/8305] Built Scratch.SobolevHilbert (6.2s)
+warning: Scratch/SobolevHilbert.lean:146:54: unused variable `hr`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Scratch/SobolevHilbert.lean:243:0: 'SobolevHilbert.fourierEnergy_eq_eLpNorm' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevHilbert.lean:244:0: 'SobolevHilbert.norm_heatH_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevHilbert.lean:245:0: 'SobolevHilbert.norm_heatUp_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevHilbert.lean:246:0: 'SobolevHilbert.norm_lerayH_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevHilbert.lean:247:0: 'SobolevHilbert.incl' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevHilbert.lean:248:0: 'SobolevHilbert.norm_toHm_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/SobolevHilbert.lean:249:0: 'SobolevHilbert.heatH_toHm' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8296/8305] Built Scratch.Duhamel (2.9s)
+info: Scratch/Duhamel.lean:86:53: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Scratch/Duhamel.lean:90:53: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Scratch/Duhamel.lean:168:0: 'Duhamel.heatH_heatH' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Duhamel.lean:169:0: 'Duhamel.tendsto_heatH_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Duhamel.lean:170:0: 'Duhamel.continuous_heatH' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Duhamel.lean:171:0: 'Duhamel.continuous_heatH_comp' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Duhamel.lean:172:0: 'Duhamel.norm_duh_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Duhamel.lean:173:0: 'Duhamel.duh_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Duhamel.lean:174:0: 'Duhamel.norm_duh_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8297/8305] Built Scratch.DuhamelUp (3.3s)
+warning: Scratch/DuhamelUp.lean:88:30: unused variable `ht`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Scratch/DuhamelUp.lean:260:0: 'DuhamelUp.intervalIntegrable_upI' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/DuhamelUp.lean:261:0: 'DuhamelUp.norm_duhUp_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/DuhamelUp.lean:262:0: 'DuhamelUp.duhUp_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/DuhamelUp.lean:263:0: 'DuhamelUp.continuous_duh' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/DuhamelUp.lean:264:0: 'DuhamelUp.continuousOn_duhUp' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8298/8305] Built Scratch.ProductEstimate (2.0s)
+info: Scratch/ProductEstimate.lean:247:0: 'ProductEstimate.young_L1_L2' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductEstimate.lean:248:0: 'ProductEstimate.weighted_conv_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductEstimate.lean:249:0: 'ProductEstimate.lintegral_sq_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductEstimate.lean:250:0: 'ProductEstimate.weighted_conv_le_H3' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductEstimate.lean:251:0: 'ProductEstimate.sobW3_le_ω3' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8299/8305] Built Scratch.FeffermanSobolev (3.5s)
+info: Scratch/FeffermanSobolev.lean:102:0: 'FeffermanSobolev.sobolevEnergy_lt_top_of_feffermanDecay' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/FeffermanSobolev.lean:103:0: 'FeffermanSobolev.fourierEnergy_lt_top_of_feffermanDecay' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/FeffermanSobolev.lean:104:0: 'FeffermanSobolev.hsSq_eq_norm_toHmFeff' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8300/8305] Built Scratch.InverseSobolev (4.4s)
+info: Scratch/InverseSobolev.lean:297:0: 'InverseSobolev.sobW_le_mul_ω_pow' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/InverseSobolev.lean:298:0: 'InverseSobolev.ω_pow_le_mul_sobW' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/InverseSobolev.lean:299:0: 'InverseSobolev.xi_pow_div_w' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/InverseSobolev.lean:300:0: 'InverseSobolev.lintegral_xi_pow_div_w' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/InverseSobolev.lean:301:0: 'InverseSobolev.integrable_moment_of_Hm' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/InverseSobolev.lean:302:0: 'InverseSobolev.integrable_of_Hm' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/InverseSobolev.lean:303:0: 'InverseSobolev.contDiff_fourierInv_of_Hm' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/InverseSobolev.lean:304:0: 'InverseSobolev.contDiff_fourierInv_of_all_energy' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8301/8305] Built Scratch.ProductH3 (6.9s)
+info: Scratch/ProductH3.lean:196:0: 'ProductH3.integrable_of_H3' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductH3.lean:197:0: 'ProductH3.integrable_conv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductH3.lean:198:0: 'ProductH3.enorm_conv_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductH3.lean:199:0: 'ProductH3.eLpNorm_conv_sq_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductH3.lean:200:0: 'ProductH3.memLp_conv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductH3.lean:201:0: 'ProductH3.norm_mulF_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8302/8305] Built Scratch.Nonlinear (8.2s)
+warning: Scratch/Nonlinear.lean:199:34: This simp argument is unused:
+  add_zero
+
+Hint: Omit it from the simp argument list.
+  simp only [pow_zero, pow_one,̵ ̵a̵d̵d̵_̵z̵e̵r̵o̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Scratch/Nonlinear.lean:205:34: This simp argument is unused:
+  add_zero
+
+Hint: Omit it from the simp argument list.
+  simp only [pow_zero, pow_one,̵ ̵a̵d̵d̵_̵z̵e̵r̵o̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: Scratch/Nonlinear.lean:298:0: 'Nonlinear.mulF_add_left' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Nonlinear.lean:299:0: 'Nonlinear.mulF_quad_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Nonlinear.lean:300:0: 'Nonlinear.norm_mulF_quad_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Nonlinear.lean:301:0: 'Nonlinear.opNorm_Lij_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Nonlinear.lean:302:0: 'Nonlinear.dH' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Nonlinear.lean:303:0: 'Nonlinear.norm_dH_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Nonlinear.lean:304:0: 'Nonlinear.norm_NSN_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/Nonlinear.lean:305:0: 'Nonlinear.norm_NSN_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8303/8305] Built Scratch.ProductHm (11s)
+info: Scratch/ProductHm.lean:460:0: 'ProductHm.ω_le_four_max' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductHm.lean:461:0: 'ProductHm.vs_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductHm.lean:462:0: 'ProductHm.weighted_conv_le_pow' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductHm.lean:463:0: 'ProductHm.weighted_conv_tame' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductHm.lean:464:0: 'ProductHm.lintegral_ωs_enorm_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductHm.lean:465:0: 'ProductHm.lintegral_ω3_enorm_sq_incl' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductHm.lean:466:0: 'ProductHm.integrable_conv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductHm.lean:467:0: 'ProductHm.eLpNorm_conv_sq_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductHm.lean:468:0: 'ProductHm.memLp_conv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/ProductHm.lean:469:0: 'ProductHm.norm_mulF_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8304/8305] Built Scratch.MildExistence (5.1s)
+info: Scratch/MildExistence.lean:493:0: 'MildExistence.norm_duhν_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/MildExistence.lean:494:0: 'MildExistence.continuousOn_duhν' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/MildExistence.lean:495:0: 'MildExistence.local_mild_existence' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/MildExistence.lean:496:0: 'MildExistence.unique_mild_in_ball' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [8305/8305] Built Scratch.NonlinearHm (6.7s)
+info: Scratch/NonlinearHm.lean:292:0: 'NonlinearHm.sobW_mul_a' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/NonlinearHm.lean:293:0: 'NonlinearHm.dH' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/NonlinearHm.lean:294:0: 'NonlinearHm.norm_dH_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/NonlinearHm.lean:295:0: 'NonlinearHm.mulF_quad_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/NonlinearHm.lean:296:0: 'NonlinearHm.norm_mulF_quad_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/NonlinearHm.lean:297:0: 'NonlinearHm.norm_NSN_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/NonlinearHm.lean:298:0: 'NonlinearHm.norm_NSN_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Scratch/NonlinearHm.lean:299:0: 'NonlinearHm.norm_NSN_sub_le'' depends on axioms: [propext, Classical.choice, Quot.sound]
+Build completed successfully (8305 jobs).

@@ -8,6 +8,10 @@
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0006--7068--3718-brightgreen.svg)](https://orcid.org/0009-0006-7068-3718)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24148268.svg)](https://doi.org/10.5281/zenodo.24148268)
 
+## Kernel certificate
+
+[certificates/CERTIFICATE.md](certificates/CERTIFICATE.md): commit `ec37cc2`, `leanprover/lean4:v4.30.0-rc1`. `lake build` passes; the sorry/axiom scan finds 0 hits; **920 theorems depend only on `propext`, `Classical.choice`, `Quot.sound`**; 42 of 42 modules replayed through the kernel, 0 failures ([CI run](https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/43937873684)).
+
 Lean 4 formalization and manuscript for *The Frohmanian Tether Bound Implies Global Smoothness on 𝕋³ under Beale–Kato–Majda Continuation, and Implies BKM Integrability: Kernel-Checked Conditional Theorems in Lean 4* (Benjamin Stanley Frohman), version 0.1.6.
 
 ## Scope (read this first)
