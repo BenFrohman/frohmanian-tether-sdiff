@@ -22,6 +22,7 @@ import Scratch.FourierInvFDeriv
 import Scratch.LerayPressure
 import Scratch.DivergenceWholeSpace
 import Scratch.FourierInvFDerivCn
+import Scratch.MildJointSmoothInf
 
 open Lean Elab Command
 
@@ -149,6 +150,8 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms FourierInvFDeriv.contDiff_evMap
 #print axioms FourierInvFDeriv.contDiffOn_uncurry_path
 #print axioms FourierInvFDeriv.contDiffOn_uncurry_clm_path
+#print axioms MildJointSmooth.contDiffOn_physicalMild_nat
+#print axioms MildJointSmooth.contDiffOn_physicalMild
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -261,7 +264,9 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``FourierInvFDeriv.contDiff_uncurryFourierInvBCF,
     ``FourierInvFDeriv.contDiff_evMap,
     ``FourierInvFDeriv.contDiffOn_uncurry_path,
-    ``FourierInvFDeriv.contDiffOn_uncurry_clm_path]
+    ``FourierInvFDeriv.contDiffOn_uncurry_clm_path,
+    ``MildJointSmooth.contDiffOn_physicalMild_nat,
+    ``MildJointSmooth.contDiffOn_physicalMild]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
