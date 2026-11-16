@@ -28,6 +28,7 @@ import Scratch.MildReal
 import Scratch.MildMomentum
 import Scratch.PlancherelBridge
 import Scratch.MildEnergy
+import Scratch.MildEnergyIneq
 
 open Lean Elab Command
 
@@ -197,6 +198,11 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms MildEnergy.timeSliceDeriv_physicalMild
 #print axioms MildEnergy.hsSq_physicalMild
 #print axioms MildEnergy.h3EnergyRightDerivativeFormula_physicalMild
+#print axioms MildEnergyIneq.integral_inner_convective_eq_zero
+#print axioms MildEnergyIneq.re_integral_inner_NSN_eq_zero
+#print axioms MildEnergyIneq.lintegral_physicalOfHm_sq
+#print axioms MildEnergyIneq.re_inner_mildSDeriv_nonpos
+#print axioms MildEnergyIneq.energyInequality_physicalMild
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -351,7 +357,12 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``MildEnergy.hsSq_physicalOfHm,
     ``MildEnergy.timeSliceDeriv_physicalMild,
     ``MildEnergy.hsSq_physicalMild,
-    ``MildEnergy.h3EnergyRightDerivativeFormula_physicalMild]
+    ``MildEnergy.h3EnergyRightDerivativeFormula_physicalMild,
+    ``MildEnergyIneq.integral_inner_convective_eq_zero,
+    ``MildEnergyIneq.re_integral_inner_NSN_eq_zero,
+    ``MildEnergyIneq.lintegral_physicalOfHm_sq,
+    ``MildEnergyIneq.re_inner_mildSDeriv_nonpos,
+    ``MildEnergyIneq.energyInequality_physicalMild]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
