@@ -33,7 +33,7 @@ namespace KatoMaximal
 
 open NavierStokes3D KatoPonce KatoPonceHypotheses KatoPonceCommutator
 open FeffermanMild FeffermanSobolev MildEnergy MildPressureSmooth MildFlux MildTimeDeriv
-open MildMomentum SobolevHilbert NonlinearHm PersistenceHm MildExistence
+open MildMomentum SobolevHilbert NonlinearHm PersistenceHm MildExistence ProductH3
 open RepairedTether R3BKM Metric
 
 section Energy
@@ -290,6 +290,199 @@ theorem inclMap_restart_unique {k k' : ℕ} (hk : 2 ≤ k) (hk' : 2 ≤ k')
 
 end Extend
 
+/-! ## Iterated restarts and the mild-level blow-up alternative
+
+Iterating `restart_from_slice` from `persistPath` produces a sequence of
+mild paths on times `T_n` with `T_0 = Tfeff` and `T_{n+1} = T_n` plus the
+`Ĥ³` local time of the current terminal slice. Either the times
+`T_n` are unbounded, or they are bounded and the included `Ĥ³` norms of
+the terminal slices are unbounded. This is the blow-up alternative at the
+level of the mild `Ĥ^{k+1}` path; the Fefferman-class field, pressure, and
+Kato–Ponce inequality on the resulting maximal interval are not obtained
+here, so `KatoMaximalSolution` remains open. -/
+
+section Blowup
+
+/-- The local `Ĥ^{k+1}` mild path of a slice, on the `Ĥ³` local time of
+that slice. -/
+noncomputable def restartPath {k : ℕ} (hk : 2 ≤ k) {ν : ℝ} (hν : 0 < ν)
+    (w0 : Hm (k + 1)) : XTs k (localTime ν (incl (three_le_succ hk) w0)) :=
+  (persist_on_H3_time hk hν w0).choose
+
+lemma restartPath_mildS {k : ℕ} (hk : 2 ≤ k) {ν : ℝ} (hν : 0 < ν)
+    (w0 : Hm (k + 1)) :
+    IsMildS hk (localTime_nonneg hν (incl (three_le_succ hk) w0)) ν w0
+      (restartPath hk hν w0) :=
+  (persist_on_H3_time hk hν w0).choose_spec.1
+
+lemma restartPath_zero {k : ℕ} (hk : 2 ≤ k) {ν : ℝ} (hν : 0 < ν)
+    (w0 : Hm (k + 1)) :
+    restartPath hk hν w0
+        ⟨0, ⟨le_rfl, localTime_nonneg hν (incl (three_le_succ hk) w0)⟩⟩ =
+      w0 :=
+  isMildS_zero' hk (localTime_nonneg hν (incl (three_le_succ hk) w0)) w0
+    (restartPath_mildS hk hν w0)
+
+/-- A mild `Ĥ^{k+1}` path on a finite interval, with no cap at the initial
+`Ĥ³` local time. -/
+structure MildPath {k : ℕ} (hk : 2 ≤ k) (ν : ℝ) (u₀ : Hm (k + 1)) where
+  t : ℝ
+  ht : 0 ≤ t
+  path : XTs k t
+  mild : IsMildS hk ht ν u₀ path
+
+noncomputable def MildPath.endpoint {k : ℕ} {hk : 2 ≤ k} {ν : ℝ}
+    {u₀ : Hm (k + 1)} (W : MildPath hk ν u₀) : Hm (k + 1) :=
+  W.path ⟨W.t, ⟨W.ht, le_rfl⟩⟩
+
+/-- Restart from the terminal slice and glue, extending the existence time
+by the `Ĥ³` local time of that slice. -/
+noncomputable def MildPath.next {k : ℕ} {hk : 2 ≤ k} {ν : ℝ} (hν : 0 < ν)
+    {u₀ : Hm (k + 1)} (W : MildPath hk ν u₀) : MildPath hk ν u₀ where
+  t := W.t + localTime ν (incl (three_le_succ hk) W.endpoint)
+  ht := add_nonneg W.ht (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+  path := glueXTs hk W.ht
+    (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+    W.path (restartPath hk hν W.endpoint) (restartPath_zero hk hν W.endpoint)
+  mild := isMildS_glue hk hν W.ht
+    (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint)) u₀
+    (restartPath_zero hk hν W.endpoint) W.mild (restartPath_mildS hk hν W.endpoint)
+
+lemma MildPath.next_t {k : ℕ} {hk : 2 ≤ k} {ν : ℝ} (hν : 0 < ν)
+    {u₀ : Hm (k + 1)} (W : MildPath hk ν u₀) :
+    (W.next hν).t =
+      W.t + localTime ν (incl (three_le_succ hk) W.endpoint) :=
+  rfl
+
+lemma MildPath.next_t_ge {k : ℕ} {hk : 2 ≤ k} {ν : ℝ} (hν : 0 < ν)
+    {u₀ : Hm (k + 1)} (W : MildPath hk ν u₀) :
+    W.t ≤ (W.next hν).t :=
+  le_add_of_nonneg_right (localTime_nonneg hν _)
+
+/-- A uniform lower bound on the `Ĥ³` local time of any slice whose
+included `Ĥ³` norm is at most `R`. -/
+def restartSlot (ν R : ℝ) : ℝ :=
+  timeSlot ν (1 / (2 * (18 * Cstar * (2 * R + 1) + 1)))
+
+lemma restartSlot_pos {ν R : ℝ} (hν : 0 < ν) (hR : 0 ≤ R) :
+    0 < restartSlot ν R :=
+  timeSlot_pos hν (one_div_pos.2 (mul_pos (by norm_num)
+    (add_pos_of_nonneg_of_pos
+      (mul_nonneg (mul_nonneg (by norm_num) Cstar_nonneg)
+        (by linarith)) one_pos)))
+
+lemma restartSlot_le_localTime {ν : ℝ} (hν : 0 < ν) {w : Hm 3} {R : ℝ}
+    (hR : 0 ≤ R) (hw : ‖w‖ ≤ R) :
+    restartSlot ν R ≤ localTime ν w :=
+  localTime_ge_of_norm_le hν hR hw
+
+lemma MildPath.next_t_gap_ge {k : ℕ} {hk : 2 ≤ k} {ν : ℝ} (hν : 0 < ν)
+    {u₀ : Hm (k + 1)} (W : MildPath hk ν u₀) {R : ℝ} (hR : 0 ≤ R)
+    (hW : ‖incl (three_le_succ hk) W.endpoint‖ ≤ R) :
+    restartSlot ν R ≤ (W.next hν).t - W.t := by
+  rw [MildPath.next_t, add_sub_cancel_left]
+  exact restartSlot_le_localTime hν hR hW
+
+section BlowupFeff
+
+variable {u₀ : VelocityField} (hf : ContDiff ℝ ∞ u₀) (hdec : FeffermanDecay u₀)
+  {ν : ℝ} (hν : 0 < ν)
+
+/-- The realized first-interval path, as a `MildPath`. -/
+noncomputable def persistMildPath {k : ℕ} (hk : 2 ≤ k) :
+    MildPath hk ν (toHmFeff u₀ hf hdec (k + 1)) where
+  t := Tfeff hf hdec hν
+  ht := Tfeff_nonneg hf hdec hν
+  path := persistPath hf hdec hν hk
+  mild := persistPath_mildS hf hdec hν hk
+
+lemma persistMildPath_t {k : ℕ} (hk : 2 ≤ k) :
+    (persistMildPath hf hdec hν hk).t = Tfeff hf hdec hν :=
+  rfl
+
+/-- Iterated restarts of the realized mild path. `iteratePath 0` is the
+path on `[0, Tfeff]`, and each successor glues a fresh local existence
+interval from the current terminal slice. -/
+noncomputable def iteratePath {k : ℕ} (hk : 2 ≤ k) : ℕ →
+    MildPath hk ν (toHmFeff u₀ hf hdec (k + 1))
+  | 0 => persistMildPath hf hdec hν hk
+  | n + 1 => (iteratePath hk n).next hν
+
+lemma iteratePath_zero {k : ℕ} (hk : 2 ≤ k) :
+    iteratePath hf hdec hν hk 0 = persistMildPath hf hdec hν hk :=
+  rfl
+
+lemma iteratePath_succ {k : ℕ} (hk : 2 ≤ k) (n : ℕ) :
+    iteratePath hf hdec hν hk (n + 1) = (iteratePath hf hdec hν hk n).next hν :=
+  rfl
+
+lemma iteratePath_t_mono {k : ℕ} (hk : 2 ≤ k) (n : ℕ) :
+    (iteratePath hf hdec hν hk n).t ≤ (iteratePath hf hdec hν hk (n + 1)).t :=
+  MildPath.next_t_ge hν _
+
+lemma iteratePath_t_ge_Tfeff {k : ℕ} (hk : 2 ≤ k) (n : ℕ) :
+    Tfeff hf hdec hν ≤ (iteratePath hf hdec hν hk n).t := by
+  induction n with
+  | zero => simp [iteratePath, persistMildPath]
+  | succ n ih => exact ih.trans (iteratePath_t_mono hf hdec hν hk n)
+
+lemma iteratePath_t_linear {k : ℕ} (hk : 2 ≤ k) {R : ℝ} (hR : 0 ≤ R)
+    (hbd : ∀ n, ‖incl (three_le_succ hk) (iteratePath hf hdec hν hk n).endpoint‖ ≤ R)
+    (n : ℕ) :
+    Tfeff hf hdec hν + n * restartSlot ν R ≤ (iteratePath hf hdec hν hk n).t := by
+  induction n with
+  | zero => simp [iteratePath, persistMildPath]
+  | succ n ih =>
+    have hgap :=
+      MildPath.next_t_gap_ge hν (iteratePath hf hdec hν hk n) hR (hbd n)
+    calc Tfeff hf hdec hν + (n + 1 : ℕ) * restartSlot ν R
+        = Tfeff hf hdec hν + n * restartSlot ν R + restartSlot ν R := by
+          push_cast; ring
+      _ ≤ (iteratePath hf hdec hν hk n).t + restartSlot ν R :=
+        add_le_add ih le_rfl
+      _ ≤ (iteratePath hf hdec hν hk n).t +
+            ((iteratePath hf hdec hν hk (n + 1)).t -
+              (iteratePath hf hdec hν hk n).t) :=
+        add_le_add le_rfl hgap
+      _ = (iteratePath hf hdec hν hk (n + 1)).t := by ring
+
+/-- **Mild-level blow-up alternative.** Either the iterated existence times
+are unbounded, or they are bounded and the included `Ĥ³` norms of the
+terminal slices are unbounded. -/
+theorem mild_blowup_alternative {k : ℕ} (hk : 2 ≤ k) :
+    (∀ M : ℝ, ∃ n : ℕ, M < (iteratePath hf hdec hν hk n).t) ∨
+      (BddAbove (Set.range fun n => (iteratePath hf hdec hν hk n).t) ∧
+        ∀ B : ℝ, ∃ n : ℕ,
+          B < ‖incl (three_le_succ hk)
+            (iteratePath hf hdec hν hk n).endpoint‖) := by
+  by_cases htimes : BddAbove (Set.range fun n => (iteratePath hf hdec hν hk n).t)
+  · refine Or.inr ⟨htimes, fun B => ?_⟩
+    by_contra hB
+    push Not at hB
+    have hR : 0 ≤ B := (norm_nonneg _).trans (hB 0)
+    have hlin := iteratePath_t_linear hf hdec hν hk hR hB
+    have hδpos : 0 < restartSlot ν B := restartSlot_pos hν hR
+    obtain ⟨n, hn⟩ := exists_nat_gt ((sSup (Set.range fun n =>
+        (iteratePath hf hdec hν hk n).t) - Tfeff hf hdec hν) / restartSlot ν B)
+    set Tstar := sSup (Set.range fun n => (iteratePath hf hdec hν hk n).t)
+    have hTstar : (iteratePath hf hdec hν hk n).t ≤ Tstar :=
+      le_csSup htimes ⟨n, rfl⟩
+    have hTfeff_le : Tfeff hf hdec hν ≤ Tstar :=
+      le_csSup htimes ⟨0, rfl⟩
+    have hdiv : Tstar - Tfeff hf hdec hν < n * restartSlot ν B :=
+      (div_lt_iff₀ hδpos).1 hn
+    have hcalc : Tstar < (iteratePath hf hdec hν hk n).t := by
+      linarith [hlin n, hdiv, hTfeff_le]
+    exact hcalc.not_ge hTstar
+  · refine Or.inl fun M => ?_
+    have := not_bddAbove_iff.1 htimes M
+    rcases this with ⟨t, ⟨n, rfl⟩, ht⟩
+    exact ⟨n, ht⟩
+
+end BlowupFeff
+
+end Blowup
+
 end KatoMaximal
 
 #print axioms KatoMaximal.isFeffermanSolutionOn_mono
@@ -304,3 +497,7 @@ end KatoMaximal
 #print axioms KatoMaximal.restartTime_eq
 #print axioms KatoMaximal.extend_persistPath
 #print axioms KatoMaximal.inclMap_restart_unique
+#print axioms KatoMaximal.restartPath_mildS
+#print axioms KatoMaximal.MildPath.next_t_gap_ge
+#print axioms KatoMaximal.iteratePath_t_linear
+#print axioms KatoMaximal.mild_blowup_alternative
