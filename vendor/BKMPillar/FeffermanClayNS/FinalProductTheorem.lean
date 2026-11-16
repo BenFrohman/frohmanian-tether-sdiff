@@ -11,6 +11,12 @@ public import BKMPillar.FeffermanClayNS.FeffermanStatements
 public import BKMPillar.FeffermanClayNS.TorusStrainExclusion
 public import BKMPillar.FeffermanClayNS.HighSetDepletionAndBKM
 
+/-!
+# vendor.BKMPillar.FeffermanClayNS.FinalProductTheorem
+
+Machine-checked Lean 4 module.
+-/
+
 open scoped BigOperators Gradient Topology
 open ENNReal InnerProductSpace MeasureTheory Finset Filter Set
 open FeffermanNavierStokes3D

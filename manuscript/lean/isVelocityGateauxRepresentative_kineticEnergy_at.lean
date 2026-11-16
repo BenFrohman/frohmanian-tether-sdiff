@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 -- FrohmanianTether/ArnoldGeometric.lean, line 1102
+
+/-!
+# manuscript.lean.isVelocityGateauxRepresentative_kineticEnergy_at
+
+Machine-checked Lean 4 module.
+-/
+
 public theorem isVelocityGateauxRepresentative_kineticEnergy_at
     (ω ε : CoadjointOrbit)
     (hω : ∀ i x, DifferentiableAt ℝ (fun y => ω.val y i) x)

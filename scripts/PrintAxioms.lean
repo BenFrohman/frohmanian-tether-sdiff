@@ -1,8 +1,18 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import FrohmanianTether
 import FrohmanianTether.Pillars
 
-/-! `#print axioms` for the headline statements (run by `scripts/verify.sh`). The strict
-repository-wide audit of every declaration is `scripts/AxiomAudit.lean`. -/
+/-!
+# scripts.PrintAxioms
+
+ `#print axioms` for the headline statements (run by `scripts/verify.sh`). The strict
+repository-wide audit of every declaration is `scripts/AxiomAudit.lean`.
+-/
 
 -- conditional regularity (analytic layer and periodic Clay statement)
 #print axioms ConditionalRegularity.frohmanian_tether_theorem

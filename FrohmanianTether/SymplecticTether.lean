@@ -16,6 +16,12 @@ public import FrohmanianTether.NS_Equations
 public import FrohmanianTether.ArnoldGeometric
 public import FrohmanianTether.ForMathlib.Projection
 
+/-!
+# FrohmanianTether.SymplecticTether
+
+Machine-checked Lean 4 module.
+-/
+
 universe u
 
 /-!

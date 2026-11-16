@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 -- FrohmanianTether/NS_Equations.lean, line 2302
+
+/-!
+# manuscript.lean.IsPhysicalNSSolutionOn
+
+Machine-checked Lean 4 module.
+-/
+
 @[expose] public def IsPhysicalNSSolutionOn (u : TimeDependentVelocity) (T : ℝ) : Prop :=
   (∀ t ∈ Set.Icc (0 : ℝ) T, ∀ x : T3, DifferentiableAt ℝ (fun s => u s x) t) ∧
   (∀ t ∈ Set.Icc (0 : ℝ) T, Continuous (u t)) ∧

@@ -8,6 +8,12 @@ module
 
 public import BKMPillar.FeffermanClayNS.FeffermanStatements
 
+/-!
+# vendor.BKMPillar.FeffermanClayNS.TorusStrainExclusion
+
+Machine-checked Lean 4 module.
+-/
+
 open scoped BigOperators Gradient Topology
 open ENNReal InnerProductSpace MeasureTheory Finset Filter
 open FeffermanNavierStokes3D

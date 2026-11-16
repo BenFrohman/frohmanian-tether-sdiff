@@ -11,3 +11,9 @@ import BKMPillar.FeffermanClayNS.HighSetDepletionAndBKM
 import BKMPillar.FeffermanClayNS.FinalProductTheorem
 import BKMPillar.FeffermanClayNS.Stage6Calculus
 import BKMPillar.FeffermanClayNS.MainTheorem
+
+/-!
+# vendor.BKMPillar.FeffermanClayNS
+
+Machine-checked Lean 4 module.
+-/

@@ -44,6 +44,12 @@ public import Mathlib.Analysis.Calculus.MeanValue
 public import Mathlib.Analysis.ODE.Gronwall
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
+/-!
+# vendor.BKMPillar.FeffermanClayNS.Defs
+
+Machine-checked Lean 4 module.
+-/
+
 open scoped BigOperators Gradient Topology
 open ENNReal InnerProductSpace MeasureTheory Finset Filter
 

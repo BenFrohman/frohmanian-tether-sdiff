@@ -9,6 +9,12 @@ module
 public import BKMPillar.FeffermanClayNS.Defs
 public import Mathlib.Analysis.Calculus.ContDiff.Bounds
 
+/-!
+# vendor.BKMPillar.FeffermanClayNS.FeffermanStatements
+
+Machine-checked Lean 4 module.
+-/
+
 open scoped BigOperators Gradient Topology ContDiff
 open ENNReal InnerProductSpace MeasureTheory Finset Filter
 open FeffermanNavierStokes3D

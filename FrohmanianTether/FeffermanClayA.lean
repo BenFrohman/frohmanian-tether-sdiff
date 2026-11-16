@@ -3,9 +3,11 @@ Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Benjamin Stanley Frohman
 -/
+
 import FrohmanianTether.ClayStatements
 
-/-! # Fefferman's Problem (A), a repaired tether rate, and a conditional reduction
+/-!
+ # Fefferman's Problem (A), a repaired tether rate, and a conditional reduction
 
 1. `Clay_A_Fefferman`: Fefferman's official Problem (A), stated literally.
 2. `FrohmanianTetherRateSmooth`: a repaired tether rate. It quantifies over local solutions in
@@ -18,7 +20,8 @@ import FrohmanianTether.ClayStatements
 
 Scope: this is a **conditional** reduction. Neither hypothesis of
 `clay_A_fefferman_of_frohmanianTetherRateSmooth` (the smooth rate for all Fefferman data, and
-`R3BKMContinuation`) is proved here for general data; `Clay_A_Fefferman` is not proved. -/
+`R3BKMContinuation`) is proved here for general data; `Clay_A_Fefferman` is not proved.
+-/
 
 open MeasureTheory NavierStokes3D FrohmanianTether
 open scoped ContDiff

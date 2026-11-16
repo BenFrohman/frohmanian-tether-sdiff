@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 -- FrohmanianTether/ClosureBlueprint.lean, line 201
+
+/-!
+# manuscript.lean.conditional_regularity_of_open_hyps_blueprint
+
+Machine-checked Lean 4 module.
+-/
+
 public theorem conditional_regularity_of_open_hyps
     (u₀ : VelocityField) (ν : ℝ)
     (w : KatoLocalWitness u₀ ν)
