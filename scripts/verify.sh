@@ -45,4 +45,20 @@ if grep -qE "sorryAx|ofReduceBool|error" print_axioms.txt; then
   echo "HEADLINE AXIOMS FAILED"; exit 1
 fi
 
+echo "== #print axioms (gaps-ledger citations, certificates/gaps-ledger-axioms.txt)"
+lake env lean scripts/PrintGapsLedgerAxioms.lean 2>&1 | tee print_axioms_gaps_ledger.txt
+if grep -qE "sorryAx|ofReduceBool|error" print_axioms_gaps_ledger.txt; then
+  echo "GAPS-LEDGER AXIOMS FAILED"; exit 1
+fi
+python3 - <<'PY'
+import re, sys
+t = " ".join(open("print_axioms_gaps_ledger.txt").read().split())
+std = {"propext", "Classical.choice", "Quot.sound"}
+sets = re.findall(r"depends on axioms: \[([^\]]*)\]", t)
+bad = [a for a in sets if not {x.strip() for x in a.split(",")} <= std]
+n = len(sets) + t.count("does not depend on any axioms")
+print(f"GAPS-LEDGER: {n} declarations printed, {len(bad)} with nonstandard axioms")
+sys.exit(1 if bad or n == 0 else 0)
+PY
+
 echo "VERIFY OK"
