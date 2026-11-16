@@ -1,0 +1,17 @@
+{
+  "semantics_file": "FrohmanianTether/Semantics.lean",
+  "semantics_module": "FrohmanianTether.Semantics",
+  "paper_path": "manuscript/main.tex",
+  "paper_sha256": "b1e6a8e942383a99f501062261ae75f57f69986059e0a2f1087ea9503f880de9",
+  "main_theorems": [
+    "FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound"
+  ],
+  "lock_region_sha256": "8c67d03605bd189f60453239d0a6597546fcf8ea04dbe49cb16eb9bde169fb25",
+  "draft_dirs": [
+    "FrohmanianTether/Draft"
+  ],
+  "lean_roots": [
+    "FrohmanianTether",
+    "FrohmanianTether.lean"
+  ]
+}
