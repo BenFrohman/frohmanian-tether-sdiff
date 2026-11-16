@@ -233,6 +233,10 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms KatoMaximal.MildPath.next_t_gap_ge
 #print axioms KatoMaximal.iteratePath_t_linear
 #print axioms KatoMaximal.mild_blowup_alternative
+#print axioms KatoMaximal.iteratePath_t_le
+#print axioms KatoMaximal.IccExtend_iteratePath_mono
+#print axioms KatoMaximal.physicalMaximal_eq_iterate
+#print axioms KatoMaximal.presMaximal_eq_iterate
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -419,7 +423,11 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``KatoMaximal.restartPath_mildS,
     ``KatoMaximal.MildPath.next_t_gap_ge,
     ``KatoMaximal.iteratePath_t_linear,
-    ``KatoMaximal.mild_blowup_alternative]
+    ``KatoMaximal.mild_blowup_alternative,
+    ``KatoMaximal.iteratePath_t_le,
+    ``KatoMaximal.IccExtend_iteratePath_mono,
+    ``KatoMaximal.physicalMaximal_eq_iterate,
+    ``KatoMaximal.presMaximal_eq_iterate]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do

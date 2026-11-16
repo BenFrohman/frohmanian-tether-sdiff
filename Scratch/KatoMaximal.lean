@@ -483,6 +483,163 @@ end BlowupFeff
 
 end Blowup
 
+/-! ## A single field on the maximal interval
+
+The iterated paths for different Sobolev indices have the same existence
+times, and their included `Ĥ³` shadows agree. Restricting a later path to
+an earlier interval recovers the earlier path, so a single physical field
+and Leray pressure can be defined on the union of the intervals. -/
+
+section Lift
+
+variable {u₀ : VelocityField} (hf : ContDiff ℝ ∞ u₀) (hdec : FeffermanDecay u₀)
+  {ν : ℝ} (hν : 0 < ν)
+
+lemma iteratePath_t_le {k : ℕ} (hk : 2 ≤ k) {n m : ℕ} (h : n ≤ m) :
+    (iteratePath hf hdec hν hk n).t ≤ (iteratePath hf hdec hν hk m).t := by
+  induction m generalizing n with
+  | zero =>
+    have hn : n = 0 := Nat.eq_zero_of_le_zero h
+    subst hn
+    exact le_rfl
+  | succ m ih =>
+    rcases (Nat.le_succ_iff).1 h with hnm | rfl
+    · exact (ih hnm).trans (iteratePath_t_mono hf hdec hν hk m)
+    · exact le_rfl
+
+lemma iteratePath_succ_eval_le {k : ℕ} (hk : 2 ≤ k) (n : ℕ) {s : ℝ}
+    (hs : s ∈ Icc 0 (iteratePath hf hdec hν hk n).t) :
+    (iteratePath hf hdec hν hk (n + 1)).path
+        ⟨s, ⟨hs.1, hs.2.trans (iteratePath_t_mono hf hdec hν hk n)⟩⟩ =
+      (iteratePath hf hdec hν hk n).path ⟨s, hs⟩ :=
+  glue_eval_le hk (iteratePath hf hdec hν hk n).ht
+    (localTime_nonneg hν
+      (incl (three_le_succ hk) (iteratePath hf hdec hν hk n).endpoint))
+    (iteratePath hf hdec hν hk n).path
+    (restartPath hk hν (iteratePath hf hdec hν hk n).endpoint)
+    (restartPath_zero hk hν (iteratePath hf hdec hν hk n).endpoint)
+    ⟨s, ⟨hs.1, hs.2.trans (iteratePath_t_mono hf hdec hν hk n)⟩⟩ hs.2
+
+lemma IccExtend_iteratePath_succ {k : ℕ} (hk : 2 ≤ k) (n : ℕ) {s : ℝ}
+    (hs : s ∈ Icc 0 (iteratePath hf hdec hν hk n).t) :
+    ContinuousMap.IccExtend (iteratePath hf hdec hν hk (n + 1)).ht
+        (iteratePath hf hdec hν hk (n + 1)).path s =
+      ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+        (iteratePath hf hdec hν hk n).path s := by
+  have hs' : s ∈ Icc 0 (iteratePath hf hdec hν hk (n + 1)).t :=
+    ⟨hs.1, hs.2.trans (iteratePath_t_mono hf hdec hν hk n)⟩
+  rw [ContinuousMap.coe_IccExtend, ContinuousMap.coe_IccExtend,
+    Set.IccExtend_of_mem (hx := hs'), Set.IccExtend_of_mem (hx := hs)]
+  exact iteratePath_succ_eval_le hf hdec hν hk n hs
+
+lemma IccExtend_iteratePath_mono {k : ℕ} (hk : 2 ≤ k) {n m : ℕ} (hnm : n ≤ m)
+    {s : ℝ} (hs : s ∈ Icc 0 (iteratePath hf hdec hν hk n).t) :
+    ContinuousMap.IccExtend (iteratePath hf hdec hν hk m).ht
+        (iteratePath hf hdec hν hk m).path s =
+      ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+        (iteratePath hf hdec hν hk n).path s := by
+  obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hnm
+  clear hnm
+  induction d with
+  | zero => simp
+  | succ d ih =>
+    have hs' : s ∈ Icc 0 (iteratePath hf hdec hν hk (n + d)).t :=
+      ⟨hs.1, hs.2.trans (iteratePath_t_le hf hdec hν hk (Nat.le_add_right n d))⟩
+    rw [show n + (d + 1) = n + d + 1 from add_assoc n d 1,
+      IccExtend_iteratePath_succ hf hdec hν hk (n + d) hs']
+    exact ih
+
+open Classical LerayPressure
+
+/-- Times at which some iterated mild path is defined. -/
+def inMaximal {k : ℕ} (hk : 2 ≤ k) (t : ℝ) : Prop :=
+  0 ≤ t ∧ ∃ n : ℕ, t ≤ (iteratePath hf hdec hν hk n).t
+
+/-- The maximal time set. -/
+def Smax {k : ℕ} (hk : 2 ≤ k) : Set ℝ := {t | inMaximal hf hdec hν hk t}
+
+/-- Physical velocity on the maximal interval, realized from the `k = 2`
+iterated path. Outside the interval it is zero; Fefferman-class statements
+only constrain subintervals of `Smax`. -/
+noncomputable def physicalMaximal : TimeDependentVelocity :=
+  fun t =>
+    if h : inMaximal hf hdec hν (by norm_num : 2 ≤ 2) t then
+      physicalOfHm
+        (ContinuousMap.IccExtend
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 2)
+            (Classical.choose h.2)).ht
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 2)
+            (Classical.choose h.2)).path t)
+    else 0
+
+/-- Leray pressure of the same `Ĥ³` slice. -/
+noncomputable def presMaximal : TimeDependentPressure :=
+  fun t =>
+    if h : inMaximal hf hdec hν (by norm_num : 2 ≤ 2) t then
+      lerayPressure (le_refl 3)
+        (ContinuousMap.IccExtend
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 2)
+            (Classical.choose h.2)).ht
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 2)
+            (Classical.choose h.2)).path t)
+    else 0
+
+/-- The realized field at a time in the `n`-th interval is the physical field
+of that iterated path, independently of the choice of later index. -/
+lemma physicalMaximal_eq_iterate {t : ℝ} (ht : 0 ≤ t) (n : ℕ)
+    (hn : t ≤ (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).t) :
+    physicalMaximal hf hdec hν t =
+      physicalOfHm
+        (ContinuousMap.IccExtend
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).ht
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).path t) := by
+  have ht2 : inMaximal hf hdec hν (by norm_num : 2 ≤ 2) t := ⟨ht, n, hn⟩
+  unfold physicalMaximal
+  rw [dif_pos ht2]
+  set n2 := Classical.choose ht2.2
+  have hn2 : t ≤ (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n2).t :=
+    Classical.choose_spec ht2.2
+  set N := max n n2
+  have hs : t ∈ Icc 0 (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).t :=
+    ⟨ht, hn⟩
+  have hs2 : t ∈ Icc 0 (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n2).t :=
+    ⟨ht, hn2⟩
+  have hleft :=
+    IccExtend_iteratePath_mono hf hdec hν (by norm_num : 2 ≤ 2)
+      (le_max_right n n2) hs2
+  have hright :=
+    IccExtend_iteratePath_mono hf hdec hν (by norm_num : 2 ≤ 2)
+      (le_max_left n n2) hs
+  exact (congrArg physicalOfHm hleft.symm).trans (congrArg physicalOfHm hright)
+
+lemma presMaximal_eq_iterate {t : ℝ} (ht : 0 ≤ t) (n : ℕ)
+    (hn : t ≤ (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).t) :
+    presMaximal hf hdec hν t =
+      lerayPressure (le_refl 3)
+        (ContinuousMap.IccExtend
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).ht
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).path t) := by
+  have ht2 : inMaximal hf hdec hν (by norm_num : 2 ≤ 2) t := ⟨ht, n, hn⟩
+  unfold presMaximal
+  rw [dif_pos ht2]
+  set n2 := Classical.choose ht2.2
+  have hn2 : t ≤ (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n2).t :=
+    Classical.choose_spec ht2.2
+  have hs : t ∈ Icc 0 (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).t :=
+    ⟨ht, hn⟩
+  have hs2 : t ∈ Icc 0 (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n2).t :=
+    ⟨ht, hn2⟩
+  have hleft :=
+    IccExtend_iteratePath_mono hf hdec hν (by norm_num : 2 ≤ 2)
+      (le_max_right n n2) hs2
+  have hright :=
+    IccExtend_iteratePath_mono hf hdec hν (by norm_num : 2 ≤ 2)
+      (le_max_left n n2) hs
+  exact (congrArg (lerayPressure (le_refl 3)) hleft.symm).trans
+    (congrArg (lerayPressure (le_refl 3)) hright)
+
+end Lift
+
 end KatoMaximal
 
 #print axioms KatoMaximal.isFeffermanSolutionOn_mono
@@ -501,3 +658,7 @@ end KatoMaximal
 #print axioms KatoMaximal.MildPath.next_t_gap_ge
 #print axioms KatoMaximal.iteratePath_t_linear
 #print axioms KatoMaximal.mild_blowup_alternative
+#print axioms KatoMaximal.iteratePath_t_le
+#print axioms KatoMaximal.IccExtend_iteratePath_mono
+#print axioms KatoMaximal.physicalMaximal_eq_iterate
+#print axioms KatoMaximal.presMaximal_eq_iterate
