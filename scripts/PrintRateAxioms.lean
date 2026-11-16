@@ -1,0 +1,92 @@
+import FrohmanianTether
+import Scratch.FeffermanSchwartz
+import Scratch.FeffermanSobolev
+import Scratch.GradBound
+import Scratch.HeatSobolev
+import Scratch.InverseSobolev
+import Scratch.LerayHeat
+import Scratch.LogBoundLocal
+import Scratch.MildExistence
+import Scratch.NonlinearHm
+import Scratch.ProductHm
+import Scratch.R3BKMContinuation
+import Scratch.SobolevFourier
+import Scratch.TetherRateCounterexample
+import Scratch.TetherRateDerivation
+import Scratch.TetherRateLipschitz
+import Scratch.RepairedTetherRate
+import Scratch.VorticityMaxAttained
+
+/-! `#print axioms` for every theorem listed in Appendix B of the paper
+"A conditional reduction of Fefferman's Problem (A)" (10.5281/zenodo.24152113).
+Run: `lake env lean scripts/PrintRateAxioms.lean` after building the Scratch modules (see CI). -/
+
+#print axioms RepairedTether.comparison_ode_stability_lipschitz
+#print axioms RepairedTether.ceiling_of_rateLipschitz
+#print axioms RepairedTether.clay_A_fefferman_of_frohmanianTetherRateLipschitz
+#print axioms RepairedTether.clay_A_fefferman_of_rateLipschitz_of_kato
+#print axioms RepairedTether.frohmanianTetherRateLipschitz_zero
+#print axioms RepairedTether.frohmanianTetherRateLipschitz_of_smooth_of_locallyBddRightDeriv
+#print axioms RepairedTether.lipschitzOnWith_of_bdd_right_deriv
+#print axioms RepairedTether.majorant_vector_field_antitoneOn
+#print axioms RepairedTether.clay_A_fefferman_of_frohmanianTetherRateSmooth
+#print axioms RepairedTether.ceiling_of_rate
+#print axioms RepairedTether.frohmanianTetherRateSmooth_zero
+#print axioms RepairedTether.r3BKMContinuationAt_zero
+#print axioms RepairedTether.feffermanDecay_zero
+#print axioms RepairedTether.clay_A_fefferman_instance_zero
+#print axioms RepairedTether.frohmanianTetherRateSmoothGlobal_of_no_global_solution
+#print axioms TetheredLyapunov.comparison_ode_stability_Icc_right
+#print axioms LogBoundLocal.bkmLogInequality
+#print axioms LogBoundLocal.clay_A_fefferman_of_rate_of_kato
+#print axioms R3BKM.clay_A_fefferman_of_rate_of_kato_of_log
+#print axioms R3BKM.katoMaximalSolution_zero
+#print axioms R3BKM.katoBKMMaximal_of_kato_of_log
+#print axioms R3BKM.r3BKMContinuation_of_kato_of_log
+#print axioms R3BKM.lintegral_sq_lt_top_of_feffermanDecay
+#print axioms R3BKM.log_gronwall
+#print axioms VorticityMaxAttained.exists_isMaxOn_of_tendsto_zero
+#print axioms VorticityMaxAttained.vorticity_tendsto_zero_of_feffermanDecay
+#print axioms VorticityMaxAttained.exists_vorticityMaximumAttained_of_tendsto_zero
+#print axioms VorticityMaxAttained.exists_vorticityMaximumAttained_of_snapshot_feffermanDecay
+#print axioms VorticityMaxAttained.exists_isMaxOn_vorticity_at_zero
+#print axioms VorticityMaxAttained.not_isFeffermanSolutionOn_implies_vorticityMaximumAttained
+#print axioms VorticityMaxAttained.lipschitzOnWith_Mω_of_timeDerivBdd
+#print axioms VorticityMaxAttained.ae_differentiableAt_Mω_of_timeDerivBdd
+#print axioms VorticityMaxAttained.danskin_eq_of_differentiable
+#print axioms VorticityMaxAttained.danskinRateAt_of_differentiable
+#print axioms VorticityMaxAttained.ae_danskinRateAt_of_timeDerivBdd
+#print axioms VorticityMaxAttained.isFeffermanSolutionOn_arctanShear
+#print axioms TetherRateDerivation.bochner_identity
+#print axioms TetherRateDerivation.transport_vanishes_at_local_max
+#print axioms TetherRateDerivation.viscPair_le_neg_hsSq_at_local_max
+#print axioms TetherRateDerivation.scalarLaplacian_nonpos_of_isLocalMax
+#print axioms TetherRateDerivation.envelope_along_differentiable_maximizer
+#print axioms TetherRateDerivation.danskin_difference_quotient
+#print axioms TetherRateDerivation.stretching_le_strain_mul_norm_sq
+#print axioms TetherRateDerivation.cubic_rate_of_stretching_and_visc
+#print axioms TetherRateDerivation.cubic_rate_of_strain_and_hsSq
+#print axioms TetherRateDerivation.fefferman_two_sided_eq_interior
+#print axioms TetherRateDerivation.vorticity_rescaleFlow
+#print axioms TetherRateDerivation.Mω_rescaleFlow
+#print axioms TetherRateDerivation.hasDerivAt_Mω_rescale_of_hasDerivAt
+#print axioms TetherRateDerivation.rate_form_rescale_iff
+#print axioms TetherRateDerivation.hasDerivAt_norm_of_ne_zero
+#print axioms StrainBoundRefutation.not_forall_strain_le_sup_vorticity
+#print axioms TetherRateCounterexample.not_forall_frohmanianTetherRate
+#print axioms TetherRateCounterexample.not_frohmanianTetherBound_U
+#print axioms SobolevFourier.sobolevEnergy_eq_fourierEnergy
+#print axioms HeatSobolev.fourierEnergy_heat_le
+#print axioms HeatSobolev.fourierEnergy_heat_succ_le
+#print axioms FeffermanSobolev.sobolevEnergy_lt_top_of_feffermanDecay
+#print axioms FeffermanSchwartz.fourierInv_fourier_cplx_of_fefferman
+#print axioms InverseSobolev.contDiff_fourierInv_of_all_energy
+#print axioms ProductHm.norm_mulF_le
+#print axioms NonlinearHm.norm_NSN_le
+#print axioms NonlinearHm.norm_NSN_sub_le
+#print axioms MildExistence.local_mild_existence
+#print axioms MildExistence.unique_mild_in_ball
+#print axioms GradBound.bddAbove_norm_fderiv
+#print axioms LerayHeat.norm_leray_le
+#print axioms LerayHeat.heat_heat
+#print axioms LerayHeat.tendsto_heat_zero

@@ -31,6 +31,22 @@ jobs:
           grep "^AUDIT SUMMARY" axioms.txt
       - name: One-command verification (scripts/verify.sh, as documented in README and paper)
         run: bash scripts/verify.sh
+      - name: Build the Scratch modules behind the paper's main theorem (10.5281/zenodo.24152113, Appendix B)
+        run: |
+          set -o pipefail
+          lake build Scratch.FeffermanSchwartz Scratch.FeffermanSobolev Scratch.GradBound Scratch.HeatSobolev Scratch.InverseSobolev Scratch.LerayHeat Scratch.LogBoundLocal Scratch.MildExistence Scratch.NonlinearHm Scratch.ProductHm Scratch.R3BKMContinuation Scratch.SobolevFourier Scratch.TetherRateCounterexample Scratch.TetherRateDerivation Scratch.TetherRateLipschitz Scratch.RepairedTetherRate Scratch.VorticityMaxAttained 2>&1 | tee build-rate.log
+      - name: '#print axioms for all 69 Appendix B theorems (only propext, Classical.choice, Quot.sound allowed)'
+        run: |
+          set -o pipefail
+          lake env lean scripts/PrintRateAxioms.lean 2>&1 | tee axioms-rate.raw.txt
+          python3 scripts/check_rate_axioms.py axioms-rate.raw.txt | tee axioms-rate.txt
+      - name: Kernel re-check (leanchecker) of the Appendix B modules
+        run: |
+          set -o pipefail
+          LC="$(dirname "$(elan which lean)")/leanchecker"
+          for m in Scratch.FeffermanSchwartz Scratch.FeffermanSobolev Scratch.GradBound Scratch.HeatSobolev Scratch.InverseSobolev Scratch.LerayHeat Scratch.LogBoundLocal Scratch.MildExistence Scratch.NonlinearHm Scratch.ProductHm Scratch.R3BKMContinuation Scratch.SobolevFourier Scratch.TetherRateCounterexample Scratch.TetherRateDerivation Scratch.TetherRateLipschitz Scratch.RepairedTetherRate Scratch.VorticityMaxAttained FrohmanianTether.TetheredLyapunov FrohmanianTether.StrainBoundRefutation; do
+            lake env "$LC" "$m" && echo "leanchecker $m: exit 0" || { echo "leanchecker $m: FAILED"; exit 1; }
+          done 2>&1 | tee leanchecker-rate.txt
       - name: Upload axiom report
         if: always()
         uses: actions/upload-artifact@v4
@@ -39,3 +55,7 @@ jobs:
           path: |
             axioms.txt
             print_axioms.txt
+            build-rate.log
+            axioms-rate.raw.txt
+            axioms-rate.txt
+            leanchecker-rate.txt
