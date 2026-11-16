@@ -222,6 +222,13 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms KatoMaximal.sobolevEnergy_physicalMild_lt_top
 #print axioms KatoMaximal.continuous_hsSq_physicalMild
 #print axioms KatoMaximal.katoPonce_h3_energy_physicalMild
+#print axioms KatoMaximal.restart_from_slice
+#print axioms KatoMaximal.unique_inclMap_of_eq_incl
+#print axioms KatoMaximal.inclMap_glue_unique
+#print axioms KatoMaximal.incl_persistPath_endpoint
+#print axioms KatoMaximal.restartTime_eq
+#print axioms KatoMaximal.extend_persistPath
+#print axioms KatoMaximal.inclMap_restart_unique
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -397,7 +404,14 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``KatoMaximal.isFeffermanSolutionOn_physicalMild_le,
     ``KatoMaximal.sobolevEnergy_physicalMild_lt_top,
     ``KatoMaximal.continuous_hsSq_physicalMild,
-    ``KatoMaximal.katoPonce_h3_energy_physicalMild]
+    ``KatoMaximal.katoPonce_h3_energy_physicalMild,
+    ``KatoMaximal.restart_from_slice,
+    ``KatoMaximal.unique_inclMap_of_eq_incl,
+    ``KatoMaximal.inclMap_glue_unique,
+    ``KatoMaximal.incl_persistPath_endpoint,
+    ``KatoMaximal.restartTime_eq,
+    ``KatoMaximal.extend_persistPath,
+    ``KatoMaximal.inclMap_restart_unique]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
