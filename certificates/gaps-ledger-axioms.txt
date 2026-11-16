@@ -1,0 +1,83 @@
+Gaps-ledger kernel axiom certificate
+====================================
+Note: "Identified strain kernel A(theta,omega) and a conditional regularity criterion for 3D
+Navier-Stokes (kappa = 3/2): named open hypotheses, gaps T1-T10, and the current Lean
+implications", third version of the gaps record, concept 10.5281/zenodo.22835068
+(first version 10.5281/zenodo.22835069; second version 10.5281/zenodo.24148258).
+Author: Benjamin Stanley Frohman (ORCID 0009-0006-7068-3718). Generated 2026-11-16.
+
+Toolchain: leanprover/lean4:v4.30.0-rc1 (Lake 5.0.0-src+714601b)
+Mathlib:   0c154d67103f74be3a0f2c509f72ccbf5be9f2a7 (lake-manifest.json of all three repositories)
+
+This certificate shows which axioms the cited declarations depend on. It does not prove any
+open hypothesis. The named hypotheses (PeriodicTetherClosingBound, FrohmanianTetherRateSmooth,
+R3BKMContinuation, PeriodicDirectionDepletionBound, ...) are Prop-valued definitions passed as
+explicit binders; they remain open. No T-item of the gaps record is closed.
+
+Result: 42 declarations, every axiom set contained in
+{propext, Classical.choice, Quot.sound}; no sorryAx, no Lean.ofReduceBool.
+Source scan (comments and strings stripped) for sorry / admit / native_decide / axiom
+declarations: 0 in every .lean file of frohmanian-tether-sdiff and fefferman-clay-navier-stokes;
+0 in every built module of NS_Millennium_Proof (its archival, unbuilt docs/ and historical/
+files contain 105 sorry and 1 axiom declaration; none is imported by a built module or cited).
+
+[1] BenFrohman/frohmanian-tether-sdiff
+    Lean sources identical to main c213b5acdb24cb074340253edddb7978be166cae; the commit that adds
+    this file adds only scripts/PrintGapsLedgerAxioms.lean, this certificate, and a step in
+    scripts/verify.sh. Produced locally by:
+      lake build && lake env lean scripts/PrintGapsLedgerAxioms.lean
+    (31 declarations)
+    'FrohmanianTether.ClayStatements.PeriodicTetherClosingBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.TetherImpliesBKM.PeriodicTetherBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.FrohmanianTetherBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.FrohmanianTetherRate' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.ClayStatements.FrohmanianTetherClosingBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayA.FrohmanianTetherRateSmooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayA.R3BKMContinuationAt' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayA.R3BKMContinuation' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayA.Clay_A_Fefferman' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.Pillars.periodicBKMContinuation_of_classical' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.Pillars.clay_B_exact_of_periodic_tether_closing_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.Pillars.clay_B_exact_unique_of_periodic_tether_closing_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.Pillars.periodicSmoothSolution_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.Pillars.clay_B_exact_unique_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.ClayStatements.frohmanian_conditional_regularity_of_closing_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'ConditionalRegularity.conditional_regularity_of_open_hyps' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayA.ceiling_of_rate' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayA.clay_A_fefferman_of_frohmanianTetherRateSmooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayA.frohmanianTetherRateSmooth_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayA.r3BKMContinuationAt_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayA.frohmanianTetherRateSmoothGlobal_of_no_global_solution' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'TetherRateCounterexample.not_forall_frohmanianTetherRate' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'TetherRateCounterexample.not_frohmanianTetherRate_U' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'TetherRateCounterexample.not_frohmanianTetherBound_U' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.TetherDefinitionAudit.not_forall_localTetherRateV014' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'NavierStokes3D.transported_scalar_maximum_principle' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'TetheredLyapunov.comparison_ode_exists' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'TetheredLyapunov.uniform_majorant_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'Symplectori.SymplecticConstraint.kksPointwise_cyclic_jacobi_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.antisymmetric_correction_diagonal_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+[2] BenFrohman/fefferman-clay-navier-stokes, main 8d8a0cf60b06d111fdee59215797b32e6029eeff
+    Kernel output of CI run 43928116535 ("Lean certificate", push, success):
+    https://github.com/BenFrohman/fefferman-clay-navier-stokes/actions/runs/43928116535
+    That run prints 245 declarations, all within the standard three. Cited lines:
+    'FeffermanClayNS.clay_reduces_to_direction_curvature_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayNS.old_periodicDirectionDepletionBound_unsatisfiable' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayNS.jumpPath_oneSided_depletion_clause' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FeffermanClayNS.periodicTetherClosingBound_of_directionDepletion' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+[3] BenFrohman/NS_Millennium_Proof, main b8d2f1eaa3e749eb2cb321b629259d199a4fd6b0
+    CI run 43928069777 ("Lean CI", push, success) prints 261 declarations, all within the
+    standard three: https://github.com/BenFrohman/NS_Millennium_Proof/actions/runs/43928069777
+    The cited declarations, printed locally at that commit with
+      lake build NS_Millennium_Proof.Modules.MainTheorem NS_Millennium_Proof.Modules.TetherRateCounterexample
+      lake env lean <file with the #print axioms lines below>
+    'FrohmanianTether.HighSetDepletionAndBKM.clay_reduces_to_direction_curvature_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.HighSetDepletionAndBKM.clay_reduces_to_uniform_vorticity_envelope' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'FrohmanianTether.ClayStatements.frohmanianTetherRate_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'TetherRateCounterexample.not_forall_frohmanianTetherRate' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'TetherRateCounterexample.not_frohmanianTetherRate_U' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'TetherRateCounterexample.not_frohmanianTetherBound_U' depends on axioms: [propext, Classical.choice, Quot.sound]
