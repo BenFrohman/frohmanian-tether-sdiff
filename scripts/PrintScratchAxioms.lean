@@ -31,6 +31,7 @@ import Scratch.MildEnergy
 import Scratch.MildEnergyIneq
 import Scratch.MildPressureSmooth
 import Scratch.MildFlux
+import Scratch.KatoMaximal
 
 open Lean Elab Command
 
@@ -216,6 +217,11 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms MildFlux.tame_physicalOfHm
 #print axioms MildFlux.tame_lerayPressure
 #print axioms MildFlux.h3IBPVanishingFlux_physicalMild
+#print axioms KatoMaximal.isFeffermanSolutionOn_mono
+#print axioms KatoMaximal.isFeffermanSolutionOn_physicalMild_le
+#print axioms KatoMaximal.sobolevEnergy_physicalMild_lt_top
+#print axioms KatoMaximal.continuous_hsSq_physicalMild
+#print axioms KatoMaximal.katoPonce_h3_energy_physicalMild
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -386,7 +392,12 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``MildFlux.h3IBPVanishingFlux_of_tame,
     ``MildFlux.tame_physicalOfHm,
     ``MildFlux.tame_lerayPressure,
-    ``MildFlux.h3IBPVanishingFlux_physicalMild]
+    ``MildFlux.h3IBPVanishingFlux_physicalMild,
+    ``KatoMaximal.isFeffermanSolutionOn_mono,
+    ``KatoMaximal.isFeffermanSolutionOn_physicalMild_le,
+    ``KatoMaximal.sobolevEnergy_physicalMild_lt_top,
+    ``KatoMaximal.continuous_hsSq_physicalMild,
+    ``KatoMaximal.katoPonce_h3_energy_physicalMild]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
