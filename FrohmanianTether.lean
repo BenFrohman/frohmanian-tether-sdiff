@@ -43,6 +43,7 @@ import FrohmanianTether.TetheredLyapunov
 import FrohmanianTether.TetherImpliesBKM
 import FrohmanianTether.TorusStrainExclusion
 import FrohmanianTether.Uniqueness
+import FrohmanianTether.Semantics
 
 /-!
 # FrohmanianTether
