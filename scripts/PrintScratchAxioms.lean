@@ -30,6 +30,7 @@ import Scratch.PlancherelBridge
 import Scratch.MildEnergy
 import Scratch.MildEnergyIneq
 import Scratch.MildPressureSmooth
+import Scratch.MildFlux
 
 open Lean Elab Command
 
@@ -210,6 +211,11 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms MildPressureSmooth.contDiffOn_presMild_nat
 #print axioms MildPressureSmooth.contDiffOn_presMild
 #print axioms MildPressureSmooth.isFeffermanSolutionOn_physicalMild
+#print axioms MildFlux.wordIBP_of_tame
+#print axioms MildFlux.h3IBPVanishingFlux_of_tame
+#print axioms MildFlux.tame_physicalOfHm
+#print axioms MildFlux.tame_lerayPressure
+#print axioms MildFlux.h3IBPVanishingFlux_physicalMild
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -375,7 +381,12 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``MildPressureSmooth.presMild_eq_inclExt,
     ``MildPressureSmooth.contDiffOn_presMild_nat,
     ``MildPressureSmooth.contDiffOn_presMild,
-    ``MildPressureSmooth.isFeffermanSolutionOn_physicalMild]
+    ``MildPressureSmooth.isFeffermanSolutionOn_physicalMild,
+    ``MildFlux.wordIBP_of_tame,
+    ``MildFlux.h3IBPVanishingFlux_of_tame,
+    ``MildFlux.tame_physicalOfHm,
+    ``MildFlux.tame_lerayPressure,
+    ``MildFlux.h3IBPVanishingFlux_physicalMild]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
