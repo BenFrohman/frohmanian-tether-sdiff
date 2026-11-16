@@ -26,6 +26,7 @@ import Scratch.MildJointSmoothInf
 import Scratch.MildDivFree
 import Scratch.MildReal
 import Scratch.MildMomentum
+import Scratch.PlancherelBridge
 
 open Lean Elab Command
 
@@ -181,6 +182,11 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms MildMomentum.physicalOfHm_NSNsucc
 #print axioms MildMomentum.laplacian_physicalOfHm
 #print axioms MildMomentum.momentum_physicalMild
+#print axioms PlancherelBridge.integral_smul_fourierInv_eq
+#print axioms PlancherelBridge.coeFn_fourierInv_toL2V
+#print axioms PlancherelBridge.memLp_fourierInvBCF
+#print axioms PlancherelBridge.lintegral_fourierInvBCF_sq
+#print axioms PlancherelBridge.fourier_toLp_fourierInvBCF
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -321,7 +327,12 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``MildMomentum.realify_fourierInv_NSN,
     ``MildMomentum.physicalOfHm_NSNsucc,
     ``MildMomentum.laplacian_physicalOfHm,
-    ``MildMomentum.momentum_physicalMild]
+    ``MildMomentum.momentum_physicalMild,
+    ``PlancherelBridge.integral_smul_fourierInv_eq,
+    ``PlancherelBridge.coeFn_fourierInv_toL2V,
+    ``PlancherelBridge.memLp_fourierInvBCF,
+    ``PlancherelBridge.lintegral_fourierInvBCF_sq,
+    ``PlancherelBridge.fourier_toLp_fourierInvBCF]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
