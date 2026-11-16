@@ -25,6 +25,7 @@ import Scratch.FourierInvFDerivCn
 import Scratch.MildJointSmoothInf
 import Scratch.MildDivFree
 import Scratch.MildReal
+import Scratch.MildMomentum
 
 open Lean Elab Command
 
@@ -169,6 +170,17 @@ audit in `scripts/AxiomAudit.lean` / `scripts/PrintAxioms.lean` is left unchange
 #print axioms MildReal.refl_persistPath
 #print axioms MildReal.refl_persistPath_high
 #print axioms MildReal.cplx_physicalMild
+#print axioms MildMomentum.fourier_conv_eq
+#print axioms MildMomentum.fourierInv_mulF
+#print axioms MildMomentum.fourierInv_dH_mulF_Lij
+#print axioms MildMomentum.sum_fourierInv_dH_self
+#print axioms MildMomentum.realify_fourierInv_divTensor
+#print axioms MildMomentum.leray_sub_divTensor_coord_ae
+#print axioms MildMomentum.realify_fourierInv_leray_sub
+#print axioms MildMomentum.realify_fourierInv_NSN
+#print axioms MildMomentum.physicalOfHm_NSNsucc
+#print axioms MildMomentum.laplacian_physicalOfHm
+#print axioms MildMomentum.momentum_physicalMild
 
 elab "#strict_scratch_axiom_audit" : command => do
   let std : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -298,7 +310,18 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``MildReal.isMild_reflPath,
     ``MildReal.refl_persistPath,
     ``MildReal.refl_persistPath_high,
-    ``MildReal.cplx_physicalMild]
+    ``MildReal.cplx_physicalMild,
+    ``MildMomentum.fourier_conv_eq,
+    ``MildMomentum.fourierInv_mulF,
+    ``MildMomentum.fourierInv_dH_mulF_Lij,
+    ``MildMomentum.sum_fourierInv_dH_self,
+    ``MildMomentum.realify_fourierInv_divTensor,
+    ``MildMomentum.leray_sub_divTensor_coord_ae,
+    ``MildMomentum.realify_fourierInv_leray_sub,
+    ``MildMomentum.realify_fourierInv_NSN,
+    ``MildMomentum.physicalOfHm_NSNsucc,
+    ``MildMomentum.laplacian_physicalOfHm,
+    ``MildMomentum.momentum_physicalMild]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
