@@ -12,6 +12,8 @@
 
 [certificates/CERTIFICATE.md](certificates/CERTIFICATE.md): commit `ec37cc2`, `leanprover/lean4:v4.30.0-rc1`. `lake build` passes; the sorry/axiom scan finds 0 hits; **920 theorems depend only on `propext`, `Classical.choice`, `Quot.sound`**; 42 of 42 modules replayed through the kernel, 0 failures ([CI run](https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/43937873684)).
 
+Paper [10.5281/zenodo.24152113](https://doi.org/10.5281/zenodo.24152113) (conditional reduction of Fefferman's Problem (A)): [certificates/fefferman-clay-a-conditional/CERTIFICATE.md](certificates/fefferman-clay-a-conditional/CERTIFICATE.md). At `b497281` (feat/r3-bkm-continuation) the 102 Scratch theorems and at `7745af0` (feat/tether-rate-derivation, CI [43932523196](https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/43932523196)) the 69 Appendix B theorems, including the conditional main theorem `clay_A_fefferman_of_rateLipschitz_of_kato`, depend only on `propext`, `Classical.choice`, `Quot.sound`. The root `CERTIFICATE.md` describes release 0.1.5 at `5d7c9d0` and is superseded by `certificates/CERTIFICATE.md` for the current `main`.
+
 Lean 4 formalization and manuscript for *The Frohmanian Tether Bound Implies Global Smoothness on 𝕋³ under Beale–Kato–Majda Continuation, and Implies BKM Integrability: Kernel-Checked Conditional Theorems in Lean 4* (Benjamin Stanley Frohman), version 0.1.6.
 
 ## Scope (read this first)
