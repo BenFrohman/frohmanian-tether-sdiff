@@ -6,7 +6,9 @@ import Mathlib.Analysis.SpecialFunctions.JapaneseBracket
 Decomposition of the classical hypothesis `RepairedTether.R3BKMContinuationAt` into
 named analytic inputs, with every logical / ODE step between them kernel-checked.
 
-* `KatoMaximalSolution ν u₀`: OPEN in Lean. Existence of a Fefferman-class solution
+* `KatoMaximalSolution ν u₀`: proved for `ν > 0` and smooth, divergence-free,
+  Fefferman-decaying data in `KatoMaximal.katoMaximalSolution_of_feffermanDecay`
+  (`Scratch/KatoMaximal.lean`; local Kato theory). Existence of a Fefferman-class solution
   on a time set `S` (`[0, ∞)` or `[0, T*)`) with finite, continuous, right-differentiable
   `H³` energy satisfying `d/dt ‖u‖²_{H³} ≤ C_k ‖∇u‖_∞ ‖u‖²_{H³}`, and the `H³`
   blow-up alternative if `T* < ∞`.
@@ -54,7 +56,8 @@ lemma mω_nonneg (u : TimeDependentVelocity) (t : ℝ) : 0 ≤ Mω u t :=
   Real.iSup_nonneg fun _ => norm_nonneg _
 
 /-! ## Named inputs (precisely stated sub-Props).
-`BKMLogInequality` is proved in `LogBoundLocal`; `KatoMaximalSolution` is not proved here. -/
+`BKMLogInequality` is proved in `LogBoundLocal`; `KatoMaximalSolution` is proved (for `ν > 0`)
+in `KatoMaximal.katoMaximalSolution_of_feffermanDecay`, which imports this file. -/
 
 /-- **BKM logarithmic inequality** (Beale–Kato–Majda 1984, eq. (3.2)–(3.5); m = 3 > 5/2).
 There is a constant `C > 0` such that for every smooth divergence-free `f` with
@@ -72,7 +75,9 @@ constant `C_k ≥ 0` such that: on every `[0, T) ⊆ S`, `(u, p)` is a Fefferman
 solution from `u₀`; `‖u(t)‖²_{H³}` is finite at every `t ∈ S` and continuous on
 `S`; at every `s ∈ S` the map `t ↦ ‖u(t)‖²_{H³}` has a right derivative
 `d ≤ C_k ‖∇u(s)‖_∞ ‖u(s)‖²_{H³}`; and either `S = [0, ∞)` or `S = [0, T*)` for
-some `T* > 0` with `‖u‖²_{H³}` unbounded on `S`. OPEN in Lean. -/
+some `T* > 0` with `‖u‖²_{H³}` unbounded on `S`. Proved for `ν > 0` and smooth,
+divergence-free, Fefferman-decaying `u₀` in `KatoMaximal.katoMaximalSolution_of_feffermanDecay`
+(`Scratch/KatoMaximal.lean`); this is local Kato theory, not global regularity. -/
 def KatoMaximalSolution (ν : ℝ) (u₀ : VelocityField) : Prop :=
   ∃ (S : Set ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure) (Ck : ℝ), 0 ≤ Ck ∧
     (∀ T : ℝ, Ico (0 : ℝ) T ⊆ S → IsFeffermanSolutionOn ν T u₀ u p) ∧
