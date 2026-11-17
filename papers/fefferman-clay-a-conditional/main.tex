@@ -49,9 +49,9 @@ This paper records a \textbf{conditional} reduction of Fefferman's official Clay
 
 The main theorem, \lean{clay_A_fefferman_of_rateLipschitz_of_kato}, states: if the Lipschitz / almost-everywhere form of the repaired tether rate, \lean{FrohmanianTetherRateLipschitz}, holds for every Fefferman datum and every $\nu>0$, and if \lean{KatoMaximalSolution} holds for every such datum, then \lean{Clay_A_Fefferman} holds. A parallel route, \lean{clay_A_fefferman_of_rate_of_kato}, uses the earlier right-derivative form \lean{FrohmanianTetherRateSmooth} in place of the Lipschitz form. As written, the two rate hypotheses are not comparable: a right derivative with only an upper bound need not be locally Lipschitz, and a Lipschitz function need not be right-differentiable at every time. A partial implication Smooth${}\Rightarrow{}$Lipschitz is proved under an extra local bound on the right derivative.
 
-Additional kernel-checked Kato infrastructure---including the Gagliardo--Nirenberg inequality and Kato--Ponce commutator estimate used by the $H^3$ energy bound, local $\Hs$ persistence on the $H^3$ existence interval, $C^n$ regularity in time of the mild path, the identity $\partial_t u=\nu\Delta u-N(u)$ in $\widehat{H}^m$, joint $C^2$ regularity of the realized mild field (including the one-sided time derivative at $t=0$), a Leray pressure, and the vanishing of $\int_{\R^3}\mathrm{div}\,F$ for a $C^1$ integrable field with integrable divergence---is recorded in Section~\ref{sec:kato}. These results do not discharge \lean{KatoMaximalSolution}.
+Additional kernel-checked Kato infrastructure---including the Gagliardo--Nirenberg inequality and Kato--Ponce commutator estimate used by the $H^3$ energy bound, local $\Hs$ persistence on the $H^3$ existence interval, $C^n$ regularity in time of the mild path, the identity $\partial_t u=\nu\Delta u-N(u)$ in $\widehat{H}^m$, joint $C^2$ regularity of the realized mild field (including the one-sided time derivative at $t=0$), a Leray pressure, and the vanishing of $\int_{\R^3}\mathrm{div}\,F$ for a $C^1$ integrable field with integrable divergence---is recorded in Section~\ref{sec:kato}. On top of that infrastructure, \lean{KatoMaximalSolution}\ $\nu$ $u_0$ is proved for every $\nu>0$ and every smooth, divergence-free $u_0$ satisfying Fefferman decay (Theorem~\ref{thm:kato-proved}); together with the logarithmic inequality this gives \lean{R3BKMContinuation}\ $\nu$ for every $\nu>0$ (Theorem~\ref{thm:r3bkm}), and \lean{Clay_A_Fefferman} follows from \lean{FrohmanianTetherRateSmooth} alone (Theorem~\ref{thm:clayA-rate}). These are local and conditional results, not global regularity.
 
-\textbf{This paper does not resolve any Clay Millennium Problem, and it does not claim unconditional three-dimensional Navier--Stokes regularity.} The official statement of Problem~(A) is reproduced unchanged. Both \lean{FrohmanianTetherRateLipschitz} and \lean{KatoMaximalSolution} remain unsettled for general Fefferman data (each is proved at the zero datum). The Beale--Kato--Majda logarithmic inequality is proved. The remaining analytic gaps in the rate are strain control along solutions and direction coercivity at a vorticity maximum.
+\textbf{This paper does not resolve any Clay Millennium Problem, and it does not claim unconditional three-dimensional Navier--Stokes regularity.} The official statement of Problem~(A) is reproduced unchanged. Both rate hypotheses, \lean{FrohmanianTetherRateLipschitz} and \lean{FrohmanianTetherRateSmooth}, remain unsettled for general Fefferman data (each is proved at the zero datum). \lean{KatoMaximalSolution} is proved for $\nu>0$ and Fefferman data, and the Beale--Kato--Majda logarithmic inequality is proved; a uniform vorticity ceiling remains a hypothesis of \lean{R3BKMContinuation}. The remaining analytic gaps in the rate are strain control along solutions and direction coercivity at a vorticity maximum.
 \end{abstract}
 
 \tableofcontents
@@ -70,6 +70,7 @@ Fefferman's official statement of Clay Problem~(A)~\cite{Fefferman} asks for a g
 \item The earlier Smooth form of the rate, together with the same Kato hypothesis, also implies \lean{Clay_A_Fefferman} (Theorem~\ref{thm:main-smooth}; \lean{clay_A_fefferman_of_rate_of_kato}, \lean{Scratch/LogBoundLocal.lean:719}).
 \item A comparison lemma that turns a locally Lipschitz cubic differential inequality holding almost everywhere into a uniform ceiling $M(t)\le\max\bigl(M(0),C/\kappa\bigr)$ (Section~\ref{sec:comparison}).
 \item The Beale--Kato--Majda logarithmic inequality on $\R^3$, as a theorem, not a hypothesis (Section~\ref{sec:bkm}; \lean{bkmLogInequality}, \lean{Scratch/LogBoundLocal.lean:659}).
+\item \lean{KatoMaximalSolution}\ $\nu$ $u_0$ for every $\nu>0$ and every smooth, divergence-free $u_0$ satisfying~(4) (Theorem~\ref{thm:kato-proved}); \lean{R3BKMContinuation}\ $\nu$ for every $\nu>0$ (Theorem~\ref{thm:r3bkm}); and \lean{Clay_A_Fefferman} conditional on \lean{FrohmanianTetherRateSmooth} alone (Theorem~\ref{thm:clayA-rate}).
 \item The evolution identities for $|\omega|$ at a spatial maximum, the algebraic assembly of the cubic rate, parabolic scaling of $M$, attainment of the vorticity maximum under decay at infinity, a shear counterexample to attainment without decay, and Lipschitz / Rademacher / Danskin regularity of $M$ under a uniform bound on $\partial_t\omega$ (Sections~\ref{sec:evolution}--\ref{sec:scaling}).
 \item A kernel-checked refutation of a universal pointwise strain bound, and a kernel-checked refutation of the original (unrepaired) tether rate (Sections~\ref{sec:strain} and~\ref{sec:refute}).
 \item A body of Kato-type infrastructure on the Fourier-side spaces $\Hs$: the Leray projector and heat semigroup, equality of Fourier and spatial $\Hs$ energies, heat smoothing, Duhamel estimates, a tame product estimate for $s\ge 3$, the bilinear map $\mathrm{NSN}:\Hs\to H^{s-1}$, local mild existence and uniqueness in $H^3$, local persistence of $\Hs$ regularity on the $H^3$ existence interval, $C^n$ regularity in time of the mild path in $\widehat{H}^m$, the identity $\partial_t u=\nu\Delta u-N(u)$ in those spaces, joint $C^2$ regularity of the realized mild field (including the one-sided time derivative at $t=0$), a Gagliardo--Nirenberg inequality and Kato--Ponce commutator estimate, a Leray pressure, and the vanishing of $\int_{\R^3}\mathrm{div}\,F$ under an integrability hypothesis (Section~\ref{sec:kato}).
@@ -78,7 +79,7 @@ Fefferman's official statement of Clay Problem~(A)~\cite{Fefferman} asks for a g
 \paragraph{What remains unsettled.}
 \begin{enumerate}[label=(\arabic*)]
 \item \lean{FrohmanianTetherRateLipschitz} (and likewise \lean{FrohmanianTetherRateSmooth}) for general Fefferman data. Both are proved at $u_0=0$.
-\item \lean{KatoMaximalSolution} for general Fefferman data. It is proved at $u_0=0$. Local persistence of $\Hs$ regularity on the $H^3$ existence interval and the Kato--Ponce commutator estimate are proved. The remaining formal pieces are listed in Section~\ref{sec:kato}: joint $C^\infty$ regularity of the realized mild field, the pointwise incompressible momentum equation with a pressure, the energy inequality in the Fefferman class, the energy right-derivative formula, the vanishing-flux package \lean{H3IBPVanishingFlux}, and assembly of the maximal interval with the $H^3$ blow-up alternative.
+\item A uniform ceiling on $\|\omega\|_\infty$ along local Fefferman-class solutions, for general Fefferman data. This is the remaining premise of \lean{R3BKMContinuation} (Theorem~\ref{thm:r3bkm}); \lean{KatoMaximalSolution} itself is proved for $\nu>0$ and Fefferman data (Theorem~\ref{thm:kato-proved}).
 \item \lean{StrainControlledByVorticity} (inequality~3) and \lean{DirectionCoercivityAtMax} (inequality~4), along Navier--Stokes solutions.
 \item Propagation of Fefferman decay (or vanishing of vorticity at infinity) from $t=0$ to later snapshots.
 \end{enumerate}
@@ -215,6 +216,13 @@ The same conclusion \lean{Clay_A_Fefferman} follows if, in Theorem~\ref{thm:main
 \end{theorem}
 
 This is \lean{clay_A_fefferman_of_rate_of_kato} (\lean{Scratch/LogBoundLocal.lean:719--725}). The older packaging with an unreduced continuation hypothesis is \lean{clay_A_fefferman_of_frohmanianTetherRateSmooth} (\lean{RepairedTetherRate.lean:115}).
+
+\begin{theorem}[Conditional reduction to the Smooth rate alone]
+\label{thm:clayA-rate}
+Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ holds. Then \lean{Clay_A_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay_A_Fefferman}.
+\end{theorem}
+
+This is \lean{KatoContinuation.clay_A_fefferman_of_rate} (\lean{Scratch/KatoContinuation.lean:49}). It is Theorem~\ref{thm:main-smooth} with the Kato hypothesis discharged by Theorem~\ref{thm:kato-proved}. Its statement is locked in \lean{Scratch/FeffermanSemantics.lean}.
 
 \subsection{Non-vacuity, and a global form that cannot feed Problem~(A)}
 
@@ -620,10 +628,10 @@ The argument, as assembled in \lean{Scratch/LogBound.lean} and \lean{Scratch/Log
 \emph{Assembly.} Summing the nine component derivatives and taking the supremum over $x_0$ produces a constant $C$ (an explicit combination of the kernel constant $A$, bump bounds, and the constants in \lean{GradBound}) for which~\eqref{eq:bkm} holds. The function $X=1+\|f\|_2^2+\|\omega\|_\infty\bigl(1+\log(1+\|f\|_{H^3}^2)\bigr)$ is at least $1$, so constant terms may be absorbed into a multiple of $X$.
 \end{proof}
 
-The inequality~\eqref{eq:bkm} is a pointwise estimate for a single smooth snapshot of finite $H^3$ energy. Combined with a Kato--Ponce bound on $\frac{d}{dt}\|u\|_{H^3}^2$ and a maximal-interval alternative in $H^3$, it yields the Beale--Kato--Majda continuation criterion: a uniform ceiling on $\|\omega\|_\infty$ prevents $H^3$ blow-up. That combination is formalized as \lean{katoBKMMaximal_of_kato_of_log} (\lean{R3BKMContinuation.lean:208}) and \lean{r3BKMContinuation_of_kato_of_log} (:269). The log inequality is no longer a hypothesis. The remaining input is \lean{KatoMaximalSolution}.
+The inequality~\eqref{eq:bkm} is a pointwise estimate for a single smooth snapshot of finite $H^3$ energy. Combined with a Kato--Ponce bound on $\frac{d}{dt}\|u\|_{H^3}^2$ and a maximal-interval alternative in $H^3$, it yields the Beale--Kato--Majda continuation criterion: a uniform ceiling on $\|\omega\|_\infty$ prevents $H^3$ blow-up. That combination is formalized as \lean{katoBKMMaximal_of_kato_of_log} (\lean{R3BKMContinuation.lean:208}) and \lean{r3BKMContinuation_of_kato_of_log} (:269). The log inequality is no longer a hypothesis. The other input, \lean{KatoMaximalSolution}, is proved for $\nu>0$ and Fefferman data in Theorem~\ref{thm:kato-proved}, which gives Theorem~\ref{thm:r3bkm}.
 
 %======================================================================
-\section{Kato infrastructure that is proved, and the remaining maximal-solution items}
+\section{Kato infrastructure, and the proof of the Kato maximal solution}
 \label{sec:kato}
 
 \begin{definition}[Kato maximal solution]
@@ -643,7 +651,19 @@ C_k\,\|\nabla u\|_\infty\,\|u\|_{H^3}^2;
 
 The Lean docstring of this definition mentions uniqueness, persistence of $\Hs$ regularity with $T^*$ independent of $s$, parabolic smoothing up to $t=0$, energy equality, and a Kato--Ponce commutator estimate. The formal proposition is exactly the list (i)--(iii) above: one pair $(u,p)$ on a single interval $S$, Fefferman-class membership on every compactly contained subinterval, an $H^3$ energy inequality of Kato--Ponce type, and the $H^3$ blow-up alternative. Persistence for every $s$, uniqueness, and energy equality are not conjuncts of the proposition as stated.
 
-The proposition is unsettled for general Fefferman data. It is proved at the zero datum: \lean{katoMaximalSolution_zero} (\lean{R3BKMContinuation.lean:254}).
+\begin{theorem}[Kato maximal solution for Fefferman data]
+\label{thm:kato-proved}
+Let $\nu>0$, and let $u_0$ be smooth, divergence-free, and satisfy Fefferman decay~(4). Then \lean{KatoMaximalSolution}\ $\nu$ $u_0$ holds in the sense of Definition~\ref{def:kato}: there exist a time set $S$, fields $(u,p)$ and a constant $C_k\ge 0$ satisfying (i)--(iii) of that definition. This is a maximal Fefferman-class solution with an $H^3$ blow-up alternative; it does not assert global regularity.
+\end{theorem}
+
+This is \lean{KatoMaximal.katoMaximalSolution_of_feffermanDecay} (\lean{Scratch/KatoMaximal.lean:2103}, branch \lean{feat/r3-bkm-continuation}). Its statement is locked against the theorem above in \lean{Scratch/FeffermanSemantics.lean} (Truth Gate). It is also proved at the zero datum: \lean{katoMaximalSolution_zero} (\lean{R3BKMContinuation.lean:254}).
+
+\begin{theorem}[Classical BKM continuation on $\R^3$]
+\label{thm:r3bkm}
+For every $\nu>0$, \lean{R3BKMContinuation}\ $\nu$ holds: for every smooth, divergence-free $u_0$ satisfying~(4), if one ceiling $Y$ bounds $\|\omega\|_\infty$ along every local Fefferman-class solution from $u_0$, that is, $\|\omega(t)\|_\infty$ is finite and $\|\omega(t)\|_\infty\le Y$ for every local Fefferman-class solution $(u,p)$ from $u_0$ on $[0,T)$ and every $t\in[0,T)$, then $u_0$ has a global Fefferman solution: smooth functions $p$ and $u$ on $\R^3\times[0,\infty)$ that satisfy (1), (2), (3), (6) and (7) of Section~\ref{sec:fefferman}. A uniform vorticity ceiling remains a hypothesis; this is not a regularity theorem.
+\end{theorem}
+
+This is \lean{KatoContinuation.r3BKMContinuation_of_pos} (\lean{Scratch/KatoContinuation.lean:41}). It feeds Theorem~\ref{thm:kato-proved} and \lean{bkmLogInequality} into \lean{r3BKMContinuation_of_kato_of_log}. Its statement is locked in \lean{Scratch/FeffermanSemantics.lean}.
 
 \subsection{Infrastructure that is kernel-checked}
 \label{sec:kato-proved}
@@ -687,7 +707,7 @@ A smooth Fefferman datum, complexified, is a Schwartz map (\lean{FeffermanSchwar
 Fefferman decay implies $\int_{\R^3}|u_0|^2<\infty$ (\lean{R3BKM.lintegral_sq_lt_top_of_feffermanDecay}, \lean{R3BKMContinuation.lean:98}).
 
 \paragraph{Local persistence of $\Hs$ regularity.}
-A mild solution in $H^{k+1}$ remains a mild solution in that space on the $H^3$ local existence interval of its $H^3$ inclusion (\lean{PersistenceHm.persist_on_H3_time}, \lean{Scratch/PersistenceHm.lean:1842}; for Fefferman data, \lean{FeffermanMild.persist_fefferman}, \lean{Scratch/FeffermanMild.lean:112}). This is local persistence on the Kato existence time in $H^3$, for every $k\ge 2$. It is not persistence on a maximal interval $T^*$ independent of $s$, which remains part of the open assembly in Section~\ref{sec:kato-open}.
+A mild solution in $H^{k+1}$ remains a mild solution in that space on the $H^3$ local existence interval of its $H^3$ inclusion (\lean{PersistenceHm.persist_on_H3_time}, \lean{Scratch/PersistenceHm.lean:1842}; for Fefferman data, \lean{FeffermanMild.persist_fefferman}, \lean{Scratch/FeffermanMild.lean:112}). This is local persistence on the Kato existence time in $H^3$, for every $k\ge 2$. It is not persistence on a maximal interval $T^*$ independent of $s$; that statement is not a conjunct of Definition~\ref{def:kato} and is not claimed here.
 
 \paragraph{Time regularity of the mild path, and the mild equation.}
 If $m\ge 2$ and $m+2n\le k$, the included mild path is $C^n$ in time as an $\widehat{H}^m$-valued map on $[0,T)$ (\lean{MildPathSmooth.contDiffOn_inclExt}, \lean{Scratch/MildPathSmooth.lean:100}). Its time derivative equals $\nu\Delta u-N(u)$ in $\widehat{H}^m$ (\lean{MildPathSmooth.mildSDeriv_eq_NSNsucc}, :44; equivalently \lean{MildTimeDeriv.mildSDeriv_eq_lap}, \lean{Scratch/MildTimeDeriv.lean:328}, for the definition \lean{mildSDeriv} at :180).
@@ -696,7 +716,7 @@ If $m\ge 2$ and $m+2n\le k$, the included mild path is $C^n$ in time as an $\wid
 The physical field \lean{physicalMild} associated with a smooth Fefferman datum (\lean{Scratch/FeffermanMild.lean:277}) is, on $\R^3\times[0,T)$ with $T$ the $H^3$ local time, jointly continuous (\lean{MildJointSmooth.continuousOn_physicalMild}, \lean{Scratch/MildJointSmooth.lean:54}), jointly $C^1$ (\lean{contDiffOn_physicalMild_one}, :73), and jointly $C^2$ (\lean{contDiffOn_physicalMild_two}, :108, commit \jointhash). The $C^1$ and $C^2$ statements include the one-sided time derivative at $t=0$. Each snapshot is spatially $C^\infty$ (\lean{FeffermanMild.contDiff_physicalMild}, \lean{FeffermanMild.lean:319}). Joint $C^\infty$ regularity is not proved.
 
 \paragraph{Kato--Ponce commutator and the conditional $H^3$ energy bound.}
-The Gagliardo--Nirenberg inequality used by the $H^3$ commutator is proved (\lean{KatoPonceCommutator.h3GagliardoNirenberg}, \lean{Scratch/KatoPonceCommutator.lean:1725}, commit \texttt{a1a0e51f3f522384ff963c7b918439f6326c78ea}). The commutator estimate \lean{H3CommutatorEstimate} itself is proved (\lean{h3CommutatorEstimate}, :3320, commit \texttt{6f0a5ca9efd99a091d7b94f8ad5ae88f6111f0d6}; the statement of the proposition is at \lean{KatoPonce.lean:516} and is unchanged). Consequently the $H^3$ energy bound holds with that estimate discharged: \lean{katoPonce_h3_energy'} (:3426, commit \texttt{875b195b70645452ee2972ced302ddc5ead92db4}) has no \lean{H3CommutatorEstimate} hypothesis. Partial-derivative commutation along a Fefferman-class solution is proved (\lean{KatoPonceHypotheses.h3PartialCommutation}, \lean{Scratch/KatoPonceHypotheses.lean:341}, commit \texttt{4fb2d6398b6418229669c40c461f4dbd99ac00ea}; from joint smoothness, \lean{h3PartialCommutation_of_contDiff}, :333). The remaining hypotheses of \lean{katoPonce_h3_energy'} are $0\le\nu$, membership in \lean{IsFeffermanSolutionOn}, finite $H^3$ energy on $[0,T)$, \lean{H3EnergyRightDerivativeFormula} (\lean{KatoPonce.lean:439}), and \lean{H3IBPVanishingFlux} (:501). The last two are open.
+The Gagliardo--Nirenberg inequality used by the $H^3$ commutator is proved (\lean{KatoPonceCommutator.h3GagliardoNirenberg}, \lean{Scratch/KatoPonceCommutator.lean:1725}, commit \texttt{a1a0e51f3f522384ff963c7b918439f6326c78ea}). The commutator estimate \lean{H3CommutatorEstimate} itself is proved (\lean{h3CommutatorEstimate}, :3320, commit \texttt{6f0a5ca9efd99a091d7b94f8ad5ae88f6111f0d6}; the statement of the proposition is at \lean{KatoPonce.lean:516} and is unchanged). Consequently the $H^3$ energy bound holds with that estimate discharged: \lean{katoPonce_h3_energy'} (:3426, commit \texttt{875b195b70645452ee2972ced302ddc5ead92db4}) has no \lean{H3CommutatorEstimate} hypothesis. Partial-derivative commutation along a Fefferman-class solution is proved (\lean{KatoPonceHypotheses.h3PartialCommutation}, \lean{Scratch/KatoPonceHypotheses.lean:341}, commit \texttt{4fb2d6398b6418229669c40c461f4dbd99ac00ea}; from joint smoothness, \lean{h3PartialCommutation_of_contDiff}, :333). The remaining hypotheses of \lean{katoPonce_h3_energy'} are $0\le\nu$, membership in \lean{IsFeffermanSolutionOn}, finite $H^3$ energy on $[0,T)$, \lean{H3EnergyRightDerivativeFormula} (\lean{KatoPonce.lean:439}), and \lean{H3IBPVanishingFlux} (:501). Along the realized maximal field both are proved (\lean{h3EnergyRightDerivativeFormula_physicalMaximal}, \lean{Scratch/KatoMaximal.lean:1861}; \lean{h3IBPVanishingFlux_physicalMaximal}, :2036). As propositions about an arbitrary \lean{IsFeffermanSolutionOn} solution they remain unsettled.
 
 \paragraph{Leray pressure.}
 A Leray pressure is constructed from an $\Hs$ Fourier representative for $s\ge 3$ (\lean{LerayPressure.lerayPressure}, \lean{Scratch/LerayPressure.lean:306}, with the Fourier-side field \lean{lerayPressureHm} at :202), and is $C^n$ when $n+2\le s$ (\lean{contDiff_lerayPressure}, :347, commit \texttt{f584cfa7c0fc5bd6c0433e5766a58efa8df454ab}). This does not by itself identify the pressure in the pointwise momentum equation, nor prove that the mild field is divergence-free.
@@ -704,21 +724,19 @@ A Leray pressure is constructed from an $\Hs$ Fourier representative for $s\ge 3
 \paragraph{Whole-space integral of a divergence.}
 If $F$ is $C^1$ on $\R^3$ and both $F$ and $\mathrm{div}\,F$ are integrable, then $\int_{\R^3}\mathrm{div}\,F=0$ (\lean{DivergenceWholeSpace.integral_div_eq_zero}, \lean{Scratch/DivergenceWholeSpace.lean:302}, commit \katohash; the compactly supported case is \lean{integral_div_eq_zero_of_hasCompactSupport}, :182). This is the whole-space flux identity under those integrability hypotheses. It does not discharge \lean{H3IBPVanishingFlux}, whose remaining obstruction is the integrability of the relevant products and derivatives (a Plancherel identification of physical $L^2$ norms of derivatives of the inverse-Fourier representative is not proved).
 
-These theorems are the infrastructure. They do not, separately or together, prove \lean{KatoMaximalSolution} for general data.
+These theorems are the infrastructure. The assembly that proves \lean{KatoMaximalSolution} for $\nu>0$ and Fefferman data is Theorem~\ref{thm:kato-proved}.
 
-\subsection{Remaining items}
+\subsection{Items discharged by Theorem~\ref{thm:kato-proved}}
 \label{sec:kato-open}
 
-The following pieces of Definition~\ref{def:kato} are unsettled for general Fefferman data, at commit \katohash.
+The following pieces of Definition~\ref{def:kato} were listed as unsettled at commit \katohash. For $\nu>0$ and smooth, divergence-free data satisfying~(4), each is now discharged for the realized maximal field inside the proof of Theorem~\ref{thm:kato-proved} (\lean{Scratch/KatoMaximal.lean}).
 \begin{enumerate}[label=(\roman*)]
-\item \textbf{Joint $C^\infty$.} That the realized mild field is jointly $C^\infty$ on $\R^3\times[0,T)$. Joint continuity, joint $C^1$ and joint $C^2$, including the one-sided time derivative at $t=0$, are proved. The step from $C^2$ to every finite order is not complete.
-\item \textbf{Incompressible momentum equation.} That the realized mild field is divergence-free and satisfies the pointwise Navier--Stokes momentum equation with a pressure (and a one-sided time derivative at $t=0$). A Leray pressure is defined and proved smooth; the identification of that pressure with the momentum equation, and $\mathrm{div}\,u=0$ along the mild path, are not proved.
-\item \textbf{Energy inequality.} The comparison $\int|u(t)|^2\le\int|u_0|^2$ in the Fefferman class, as a lower Lebesgue integral, for every snapshot of the realized mild field.
-\item \textbf{Energy derivative and vanishing flux.} The remaining hypotheses of \lean{katoPonce_h3_energy'} (and therefore of Definition~\ref{def:kato}(ii) along a Fefferman-class solution): \lean{H3EnergyRightDerivativeFormula} and \lean{H3IBPVanishingFlux}. The latter is not implied by \lean{IsFeffermanSolutionOn}: that class fixes the pressure only up to a function of time and puts no decay on later snapshots, so the required integrability and flux identities are not controlled.
-\item \textbf{Maximal interval.} Assembly of a maximal $S$ with the $H^3$ blow-up alternative of Definition~\ref{def:kato}(iii). Persistence of $\Hs$ regularity on that maximal interval, with $T^*$ independent of $s$, is likewise not proved.
+\item \textbf{Joint $C^\infty$, the incompressible momentum equation, and the energy inequality.} Fefferman-class membership on every $[0,T)\subseteq S$: \lean{isFeffermanSolutionOn_physicalMaximal} (:1809), with the energy inequality \lean{energyInequality_physicalMaximal} (:1793).
+\item \textbf{Energy derivative and vanishing flux.} \lean{h3EnergyRightDerivativeFormula_physicalMaximal} (:1861) and \lean{h3IBPVanishingFlux_physicalMaximal} (:2036), giving the $H^3$ energy inequality \lean{katoPonce_h3_energy_physicalMaximal} (:2071). As propositions about an arbitrary \lean{IsFeffermanSolutionOn} solution, \lean{H3EnergyRightDerivativeFormula} and \lean{H3IBPVanishingFlux} remain unsettled; that class fixes the pressure only up to a function of time and puts no decay on later snapshots.
+\item \textbf{Maximal interval.} The maximal $S$ with the $H^3$ blow-up alternative of Definition~\ref{def:kato}(iii): \lean{hsSq_blowup_alternative} (:1229). Persistence of $\Hs$ regularity on that maximal interval with $T^*$ independent of $s$ is not a conjunct of Definition~\ref{def:kato} and is not claimed.
 \end{enumerate}
 
-A classical reference for local existence in $\Hs$ and the blow-up alternative is Kato~\cite{Kato}. That citation is unformalized background; it is not a Lean theorem and is not used as a hidden hypothesis of Theorems~\ref{thm:main-lip} or~\ref{thm:main-smooth}. Those theorems take \lean{KatoMaximalSolution} as an explicit, still-open input.
+A classical reference for local existence in $\Hs$ and the blow-up alternative is Kato~\cite{Kato}. That citation is unformalized background; it is not a Lean theorem and is not used as a hidden hypothesis of Theorems~\ref{thm:main-lip} or~\ref{thm:main-smooth}. Those theorems take \lean{KatoMaximalSolution} as an explicit input; Theorem~\ref{thm:kato-proved} proves it for $\nu>0$ and Fefferman data, and Theorem~\ref{thm:clayA-rate} records the resulting reduction.
 
 Snapshot decay propagation (Section~\ref{sec:attain}) is not a conjunct of \lean{KatoMaximalSolution} as stated. Given the local persistence and inverse-Fourier regularity already proved, the remaining analytic step for later snapshots is vanishing of vorticity at infinity. That step is listed as a separate open item in Section~\ref{sec:open}.
 
@@ -749,11 +767,14 @@ Item & Status & Lean pointer; rate files at \ratecommit, Kato files at \katocomm
 same, at $u_0=0$ & proved & \lean{frohmanianTetherRateLipschitz_zero}, :263 \\
 \lean{FrohmanianTetherRateSmooth} for general data & unsettled & \lean{RepairedTetherRate.lean:74} \\
 same, at $u_0=0$ & proved & \lean{frohmanianTetherRateSmooth_zero}, :170 \\
-\lean{KatoMaximalSolution} for general data & unsettled & \lean{R3BKMContinuation.lean:76}; remaining items in \S\ref{sec:kato-open} \\
+\lean{KatoMaximalSolution} for $\nu>0$ and Fefferman data & proved & \lean{katoMaximalSolution_of_feffermanDecay}, \lean{KatoMaximal.lean:2103} (Theorem~\ref{thm:kato-proved}) \\
+\lean{R3BKMContinuation}\ $\nu$ for $\nu>0$ (conditional continuation) & proved & \lean{r3BKMContinuation_of_pos}, \lean{KatoContinuation.lean:41} (Theorem~\ref{thm:r3bkm}) \\
+Uniform $\|\omega\|_\infty$ ceiling for general Fefferman data & unsettled & premise of \lean{R3BKMContinuation} \\
 same, at $u_0=0$ & proved & \lean{katoMaximalSolution_zero}, :254 \\
 \lean{BKMLogInequality} & proved & \lean{bkmLogInequality}, \lean{LogBoundLocal.lean:659} \\
 Lipschitz rate ${}+{}$ Kato ${}\Rightarrow{}$ Clay~(A) & proved (implication) & \lean{clay_A_fefferman_of_rateLipschitz_of_kato}, \lean{TetherRateLipschitz.lean:251} \\
 Smooth rate ${}+{}$ Kato ${}\Rightarrow{}$ Clay~(A) & proved (implication) & \lean{clay_A_fefferman_of_rate_of_kato}, \lean{LogBoundLocal.lean:719} \\
+Smooth rate ${}\Rightarrow{}$ Clay~(A) & proved (implication) & \lean{clay_A_fefferman_of_rate}, \lean{KatoContinuation.lean:49} (Theorem~\ref{thm:clayA-rate}) \\
 Smooth ${}\Rightarrow{}$ Lipschitz, with a locally bounded right derivative & proved & \lean{frohmanianTetherRateLipschitz_of_smooth_of_locallyBddRightDeriv}, :361 \\
 Smooth ${}\Rightarrow{}$ Lipschitz, with no extra bound & unsettled & \S\ref{sec:incomparable} \\
 Comparison ceiling, Lipschitz / a.e.\ form & proved & \lean{comparison_ode_stability_lipschitz}, :82 \\
@@ -776,18 +797,20 @@ That uniform bound on $\partial_t\omega$, for general Fefferman solutions & unse
 \lean{h3CommutatorEstimate} & proved & \lean{KatoPonceCommutator.lean:3320}, commit \texttt{6f0a5ca}; statement at \lean{KatoPonce.lean:516} \\
 \lean{katoPonce_h3_energy'} (commutator discharged) & proved, with remaining hypotheses & \lean{KatoPonceCommutator.lean:3426}, commit \texttt{875b195} \\
 \lean{h3PartialCommutation} & proved & \lean{KatoPonceHypotheses.lean:341}, commit \texttt{4fb2d63} \\
-\lean{H3EnergyRightDerivativeFormula} & unsettled & \lean{KatoPonce.lean:439} \\
-\lean{H3IBPVanishingFlux} & unsettled; not implied by \lean{IsFeffermanSolutionOn} & \lean{KatoPonce.lean:501} \\
+\lean{H3EnergyRightDerivativeFormula} for arbitrary Fefferman-class solutions & unsettled & \lean{KatoPonce.lean:439} \\
+same, along the realized maximal field & proved & \lean{h3EnergyRightDerivativeFormula_physicalMaximal}, \lean{KatoMaximal.lean:1861} \\
+\lean{H3IBPVanishingFlux} for arbitrary Fefferman-class solutions & unsettled; not implied by \lean{IsFeffermanSolutionOn} & \lean{KatoPonce.lean:501} \\
+same, along the realized maximal field & proved & \lean{h3IBPVanishingFlux_physicalMaximal}, \lean{KatoMaximal.lean:2036} \\
 Local $\Hs$ persistence on the $H^3$ existence interval & proved & \lean{persist_on_H3_time}, \lean{PersistenceHm.lean:1842}; \lean{persist_fefferman}, \lean{FeffermanMild.lean:112} \\
 $C^n$ in time of the mild path in $\widehat{H}^m$ & proved & \lean{contDiffOn_inclExt}, \lean{MildPathSmooth.lean:100} \\
 $\partial_t u=\nu\Delta u-N(u)$ in $\widehat{H}^m$ & proved & \lean{mildSDeriv_eq_NSNsucc}, \lean{MildPathSmooth.lean:44} \\
 Joint $C^0$, $C^1$, $C^2$ of \lean{physicalMild}, including the one-sided derivative at $t=0$ & proved & \lean{MildJointSmooth.lean:54,73,108}, commit \jointcommit \\
-Joint $C^\infty$ of \lean{physicalMild} & unsettled & \S\ref{sec:kato-open} \\
+Joint $C^\infty$ of the realized maximal field & proved & \lean{isFeffermanSolutionOn_physicalMaximal}, \lean{KatoMaximal.lean:1809} \\
 \lean{lerayPressure} and \lean{contDiff_lerayPressure} & proved & \lean{LerayPressure.lean:306,347}, commit \texttt{f584cfa} \\
 $\int_{\R^3}\mathrm{div}\,F=0$ for $C^1$ integrable $F$ with integrable divergence & proved & \lean{integral_div_eq_zero}, \lean{DivergenceWholeSpace.lean:302}, commit \katocommit \\
-Divergence-free and pointwise momentum equation for the mild field & unsettled & \S\ref{sec:kato-open} \\
-Energy inequality for the realized mild field & unsettled & \S\ref{sec:kato-open} \\
-Maximal interval and $H^3$ blow-up alternative & unsettled & \S\ref{sec:kato-open} \\
+Divergence-free and pointwise momentum equation for the realized maximal field & proved & \lean{isFeffermanSolutionOn_physicalMaximal}, \lean{KatoMaximal.lean:1809} \\
+Energy inequality for the realized maximal field & proved & \lean{energyInequality_physicalMaximal}, \lean{KatoMaximal.lean:1793} \\
+Maximal interval and $H^3$ blow-up alternative & proved & \lean{hsSq_blowup_alternative}, \lean{KatoMaximal.lean:1229} \\
 Kato infrastructure of \S\ref{sec:kato-proved} & proved & cited there, at \katocommit \\
 T1--T10 of the gaps ledger & unsettled & \S\ref{sec:t1t10}; none is discharged here \\
 \end{longtable}

@@ -7,12 +7,12 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 mkdir -p truth-gate-report
-echo "== 1/4 static checks"
+echo "== 1/5 static checks"
 python3 scripts/truth_gate_check.py | tee truth-gate-report/static.txt
 MOD=$(python3 -c "import json;print(json.load(open('TRUTH_GATE.lock'))['semantics_module'])")
-echo "== 2/4 lake build (default targets)"
+echo "== 2/5 lake build (default targets)"
 lake build 2>&1 | tee truth-gate-report/build.log
-echo "== 3/4 lake build $MOD"
+echo "== 3/5 lake build $MOD"
 lake build "$MOD" 2>&1 | tee -a truth-gate-report/build.log
 python3 - <<'PY'
 import json, re, sys
@@ -29,9 +29,27 @@ if bad:
     print("TRUTH GATE FAIL: sorry in build outside draft dirs:\n" + "\n".join(bad)); sys.exit(1)
 print("build: no sorry outside draft dirs")
 PY
-echo "== 4/4 kernel audit of the lock (axioms, non-vacuity, transport)"
+echo "== 4/5 kernel audit of the lock (axioms, non-vacuity, transport)"
 lake env lean scripts/TruthGateAudit.lean 2>&1 | tee truth-gate-report/audit.txt
 grep -q 'TRUTH GATE AUDIT PASS' truth-gate-report/audit.txt
 if grep -qE 'TRUTH GATE FAIL|error:|sorryAx' truth-gate-report/audit.txt; then exit 1; fi
+echo "== 5/5 additional locks (build, sorry scan, kernel audit)"
+python3 - <<'PY2' > truth-gate-report/additional.txt
+import json
+for ex in json.load(open("TRUTH_GATE.lock")).get("additional_locks", []):
+    print(ex["semantics_module"], ex["audit_file"])
+PY2
+while read -r XMOD XAUDIT; do
+  [ -n "$XMOD" ] || continue
+  echo "-- lake build $XMOD"
+  lake build "$XMOD" 2>&1 | tee truth-gate-report/build-additional.log
+  if grep -E "declaration uses 'sorry'" truth-gate-report/build-additional.log | grep -q "$(echo "$XMOD" | tr . /)"; then
+    echo "TRUTH GATE FAIL: sorry in $XMOD"; exit 1
+  fi
+  echo "-- kernel audit $XAUDIT"
+  lake env lean "$XAUDIT" 2>&1 | tee truth-gate-report/audit-additional.txt
+  grep -q 'TRUTH GATE AUDIT PASS' truth-gate-report/audit-additional.txt
+  if grep -qE 'TRUTH GATE FAIL|error:|sorryAx' truth-gate-report/audit-additional.txt; then exit 1; fi
+done < truth-gate-report/additional.txt
 sha256sum TRUTH_GATE.lock "$(python3 -c "import json;print(json.load(open('TRUTH_GATE.lock'))['semantics_file'])")" > truth-gate-report/sha256.txt
 echo "TRUTH GATE PASS at $(git rev-parse HEAD 2>/dev/null || echo unknown)"
