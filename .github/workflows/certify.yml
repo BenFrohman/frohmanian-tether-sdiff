@@ -9,7 +9,7 @@ on:
 # Prevents a redundant push run and a PR run from racing on the same SHA
 # (and from colliding on artifact names).
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
