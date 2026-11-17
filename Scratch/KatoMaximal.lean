@@ -1985,6 +1985,23 @@ theorem h3EnergyRightDerivativeFormula_physicalMaximal {T : ℝ}
       Complex.conj_re]
     ring
 
+/-- The convective term of a maximal slice is the physical field of
+`divTensor` of the corresponding iterated path. -/
+lemma convective_physicalMaximal (hdiv : ∀ x, div u₀ x = 0) {k : ℕ}
+    (hk : 2 ≤ k) {t : ℝ} (ht : 0 ≤ t) (n : ℕ)
+    (hn : t ≤ (iteratePath hf hdec hν hk n).t) :
+    convective (physicalMaximal hf hdec hν t)
+        (physicalMaximal hf hdec hν t) =
+      physicalOfHm (divTensor (three_le_succ hk)
+        (ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+          (iteratePath hf hdec hν hk n).path t)) := by
+  funext x
+  rw [physicalMaximal_eq_iterate_high hf hdec hν hk ht n hn]
+  exact (realify_fourierInv_divTensor (three_le_succ hk)
+    (lerayH_IccExtend_iteratePath hf hdec hν hdiv hk n t)
+    (fourierInv_im_eq_zero
+      (refl_IccExtend_iteratePath hf hdec hν hk n t)) x).symm
+
 end Lift
 
 end KatoMaximal
@@ -2050,3 +2067,4 @@ end KatoMaximal
 #print axioms KatoMaximal.isFeffermanSolutionOn_physicalMaximal
 #print axioms KatoMaximal.timeSliceDeriv_physicalMaximal_of_le
 #print axioms KatoMaximal.h3EnergyRightDerivativeFormula_physicalMaximal
+#print axioms KatoMaximal.convective_physicalMaximal

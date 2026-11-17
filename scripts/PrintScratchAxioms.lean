@@ -468,7 +468,8 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``KatoMaximal.energyInequality_physicalMaximal,
     ``KatoMaximal.isFeffermanSolutionOn_physicalMaximal,
     ``KatoMaximal.timeSliceDeriv_physicalMaximal_of_le,
-    ``KatoMaximal.h3EnergyRightDerivativeFormula_physicalMaximal]
+    ``KatoMaximal.h3EnergyRightDerivativeFormula_physicalMaximal,
+    ``KatoMaximal.convective_physicalMaximal]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
