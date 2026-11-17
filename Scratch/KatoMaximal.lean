@@ -1343,6 +1343,28 @@ theorem isFeffermanSolutionOn_physicalMaximal_le
         (Tfeff_nonneg hf hdec hν)).symm
       (isFeffermanSolutionOn_physicalMild_le hf hdec hν hdiv hT)
 
+/-- Every slice of every iterated path is Leray-fixed, given
+divergence-free initial data. -/
+theorem lerayH_iteratePath (hdiv : ∀ x, div u₀ x = 0) {k : ℕ} (hk : 2 ≤ k)
+    (n : ℕ) (t : Icc (0 : ℝ) (iteratePath hf hdec hν hk n).t) :
+    lerayH (k + 1) ((iteratePath hf hdec hν hk n).path t) =
+      (iteratePath hf hdec hν hk n).path t :=
+  MildDivFree.lerayH_mildS hk (iteratePath hf hdec hν hk n).ht hν
+    (MildDivFree.lerayH_toHmFeff hf hdec hdiv (k + 1))
+    (iteratePath hf hdec hν hk n).mild t
+
+lemma lerayH_IccExtend_iteratePath (hdiv : ∀ x, div u₀ x = 0) {k : ℕ} (hk : 2 ≤ k)
+    (n : ℕ) (s : ℝ) :
+    lerayH (k + 1)
+      (ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+        (iteratePath hf hdec hν hk n).path s) =
+      ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+        (iteratePath hf hdec hν hk n).path s := by
+  rw [ContinuousMap.coe_IccExtend]
+  exact lerayH_iteratePath hf hdec hν hdiv hk n
+    (projIcc 0 (iteratePath hf hdec hν hk n).t
+      (iteratePath hf hdec hν hk n).ht s)
+
 end Lift
 
 end KatoMaximal
@@ -1387,3 +1409,5 @@ end KatoMaximal
 #print axioms KatoMaximal.isFeffermanSolutionOn_of_empty
 #print axioms KatoMaximal.isFeffermanSolutionOn_congr
 #print axioms KatoMaximal.isFeffermanSolutionOn_physicalMaximal_le
+#print axioms KatoMaximal.lerayH_iteratePath
+#print axioms KatoMaximal.lerayH_IccExtend_iteratePath
