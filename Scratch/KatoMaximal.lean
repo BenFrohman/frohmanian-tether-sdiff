@@ -1452,6 +1452,48 @@ theorem contDiffOn_physicalMaximal {T : ℝ}
       (univ ×ˢ Ico 0 T) :=
   contDiffOn_infty.2 fun N => contDiffOn_physicalMaximal_nat hf hdec hν N hS
 
+lemma presMaximal_eq_inclExt {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hm : 3 ≤ m)
+    (hle : m ≤ k + 1) {t : ℝ} (ht : 0 ≤ t) (n : ℕ)
+    (hn : t ≤ (iteratePath hf hdec hν hk n).t) :
+    presMaximal hf hdec hν t =
+      lerayPressure hm (inclExt hle (iteratePath hf hdec hν hk n).ht
+        (iteratePath hf hdec hν hk n).path t) := by
+  rw [presMaximal_eq_iterate_high hf hdec hν hk ht n hn]
+  set U :=
+    ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+      (iteratePath hf hdec hν hk n).path t
+  refine lerayPressure_congr (three_le_succ hk) hm ?_
+  exact (ProductHm.coeFn_incl_vol hle U).symm
+
+/-- Joint `C^N` of the realized maximal pressure on every `[0, T)` contained
+in an iterated existence interval. -/
+theorem contDiffOn_presMaximal_of_le (N : ℕ) {k : ℕ} (hk : 2 ≤ k)
+    (hnk : N + 3 + 2 * N ≤ k) {T : ℝ} (n : ℕ)
+    (hT : T ≤ (iteratePath hf hdec hν hk n).t) :
+    ContDiffOn ℝ N (fun q : T3 × ℝ => presMaximal hf hdec hν q.2 q.1)
+      (univ ×ˢ Ico 0 T) := by
+  have hle : N + 3 ≤ k + 1 := MildPathSmooth.le_succ_of_mul_two_le hnk
+  have hs3 : 3 ≤ N + 3 := by omega
+  set W := iteratePath hf hdec hν hk n
+  set γ := inclExt hle W.ht W.path
+  have hγ : ContDiffOn ℝ N γ (Ico 0 W.t) :=
+    MildPathSmooth.contDiffOn_inclExt hk (by omega : 2 ≤ N + 3) hnk hν
+      W.ht W.mild
+  have hγT : ContDiffOn ℝ N γ (Ico 0 T) :=
+    hγ.mono (Ico_subset_Ico_right hT)
+  have hP : ContDiffOn ℝ N (fun t => lerayPressureHm hs3 (γ t)) (Ico 0 T) :=
+    (contDiff_lerayPressureHm hs3).comp_contDiffOn hγT
+  have hC := FourierInvFDeriv.contDiffOn_uncurry_clm_path (le_refl (N + 3))
+    (Complex.reCLM.comp coord0ℝ) hP
+  refine hC.congr ?_
+  intro q hq
+  have ht0 : 0 ≤ q.2 := hq.2.1
+  have hn' : q.2 ≤ W.t := hq.2.2.le.trans hT
+  rw [presMaximal_eq_inclExt hf hdec hν hk hs3 hle ht0 n hn']
+  unfold lerayPressure
+  rw [physicalInv_def]
+  rfl
+
 end Lift
 
 end KatoMaximal
@@ -1503,3 +1545,5 @@ end KatoMaximal
 #print axioms KatoMaximal.contDiffOn_physicalMaximal_of_le
 #print axioms KatoMaximal.contDiffOn_physicalMaximal_nat
 #print axioms KatoMaximal.contDiffOn_physicalMaximal
+#print axioms KatoMaximal.presMaximal_eq_inclExt
+#print axioms KatoMaximal.contDiffOn_presMaximal_of_le
