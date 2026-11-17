@@ -1546,6 +1546,75 @@ lemma inclExt_three_iteratePath {k : ℕ} (hk : 2 ≤ k) (hle : 3 ≤ k + 1)
     (by norm_num : 2 ≤ 2) n s
   rw [InclNSN.incl_irrel hle (three_le_succ hk), h, incl_self_Hm]
 
+/-- The momentum equation for the realized maximal field, at every time
+in an iterated existence interval. -/
+theorem momentum_physicalMaximal_of_le (hdiv : ∀ x, div u₀ x = 0) {n : ℕ}
+    {t : ℝ}
+    (ht : t ∈ Ico (0 : ℝ) (iteratePath hf hdec hν (by norm_num : 2 ≤ 4) n).t)
+    (x : T3) :
+    derivWithin (fun s => physicalMaximal hf hdec hν s x) (Ici 0) t +
+        convective (physicalMaximal hf hdec hν t)
+          (physicalMaximal hf hdec hν t) x +
+        pressureGradient (presMaximal hf hdec hν t) x =
+      ν • laplacian (physicalMaximal hf hdec hν t) x + 0 := by
+  have hk4 : 2 ≤ 4 := by norm_num
+  have hm2 : 2 + 2 ≤ 4 := le_refl 4
+  set W := iteratePath hf hdec hν hk4 n
+  have hT := W.ht
+  set u := W.path
+  have hu := W.mild
+  set γ := inclExt (le_succ_of_add_two_le hm2) hT u
+  set L : Hm 2 →L[ℝ] T3 :=
+    realifyCLM.comp (FourierInvFDeriv.evMap (le_refl 2) x)
+  have hfun : ∀ s, s ∈ Icc (0 : ℝ) W.t →
+      physicalMaximal hf hdec hν s x = L (γ s) := by
+    intro s hs
+    rw [physicalMaximal_eq_inclExt hf hdec hν hk4
+      (le_succ_of_add_two_le hm2) hs.1 n hs.2]
+    rfl
+  have hγd := hasDerivWithinAt_mildS_incl_Ico hk4 hm2 hν hT hu ht
+  have hmem : Ico 0 W.t ∈ 𝓝[Ici (0 : ℝ)] t := by
+    rw [← Ici_inter_Iio]
+    exact inter_mem_nhdsWithin _ (Iio_mem_nhds ht.2)
+  have hder : HasDerivWithinAt (fun s => physicalMaximal hf hdec hν s x)
+      (L (mildSDeriv hk4 hm2 hν hT (toHmFeff u₀ hf hdec (4 + 1)) u t))
+      (Ici 0) t := by
+    have hLder :=
+      (L.hasFDerivAt.comp_hasDerivWithinAt t hγd).mono_of_mem_nhdsWithin hmem
+    refine hLder.congr_of_eventuallyEq ?_ (hfun t ⟨ht.1, le_of_lt ht.2⟩)
+    filter_upwards [hmem] with s hs
+    exact hfun s ⟨hs.1, hs.2.le⟩
+  rw [hder.derivWithin (uniqueDiffOn_Ici 0 t ht.1),
+    MildPathSmooth.mildSDeriv_eq_NSNsucc hk4 (le_refl 2) hm2 hν hT hu
+      ⟨ht.1, le_of_lt ht.2⟩,
+    map_sub, map_smul]
+  have hlap : L (HeatDeriv.lapH 2 (inclExt (add_two_le_succ hm2) hT u t)) =
+      laplacian (physicalMaximal hf hdec hν t) x := by
+    rw [physicalMaximal_eq_inclExt hf hdec hν hk4 (add_two_le_succ hm2) ht.1
+      n (le_of_lt ht.2), laplacian_physicalOfHm (le_refl 2)]
+    rfl
+  have h3 := inclExt_three_iteratePath hf hdec hν hk4
+    (InclNSN.le_succ_succ (InclNSN.le_of_add_two_le hm2)) n t
+  have hn2 : t ≤ (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).t :=
+    (le_of_lt ht.2).trans_eq
+      (iteratePath_t_unique hf hdec hν hk4 (by norm_num : 2 ≤ 2) n)
+  have hnsn : L (NSNsucc (le_refl 2)
+      (inclExt (InclNSN.le_succ_succ (InclNSN.le_of_add_two_le hm2)) hT u t)) =
+      convective (physicalMaximal hf hdec hν t)
+        (physicalMaximal hf hdec hν t) x +
+      pressureGradient (presMaximal hf hdec hν t) x := by
+    change physicalOfHm _ x = _
+    rw [h3, physicalMaximal_eq_iterate hf hdec hν ht.1 n hn2,
+      presMaximal_eq_iterate hf hdec hν ht.1 n hn2,
+      physicalOfHm_NSNsucc (le_refl 2)
+        (lerayH_IccExtend_iteratePath hf hdec hν hdiv
+          (by norm_num : 2 ≤ 2) n t)
+        (fourierInv_im_eq_zero
+          (refl_IccExtend_iteratePath hf hdec hν
+            (by norm_num : 2 ≤ 2) n t)) x]
+  rw [hlap, hnsn]
+  abel
+
 end Lift
 
 end KatoMaximal
@@ -1603,3 +1672,4 @@ end KatoMaximal
 #print axioms KatoMaximal.contDiffOn_presMaximal
 #print axioms KatoMaximal.physicalMaximal_zero
 #print axioms KatoMaximal.inclExt_three_iteratePath
+#print axioms KatoMaximal.momentum_physicalMaximal_of_le
