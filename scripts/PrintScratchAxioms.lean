@@ -32,6 +32,7 @@ import Scratch.MildEnergyIneq
 import Scratch.MildPressureSmooth
 import Scratch.MildFlux
 import Scratch.KatoMaximal
+import Scratch.KatoContinuation
 
 open Lean Elab Command
 
@@ -475,7 +476,9 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``KatoMaximal.convective_physicalMaximal_divTensor6,
     ``KatoMaximal.h3IBPVanishingFlux_physicalMaximal,
     ``KatoMaximal.katoPonce_h3_energy_physicalMaximal,
-    ``KatoMaximal.katoMaximalSolution_of_feffermanDecay]
+    ``KatoMaximal.katoMaximalSolution_of_feffermanDecay,
+    ``KatoContinuation.r3BKMContinuation_of_pos,
+    ``KatoContinuation.clay_A_fefferman_of_rate]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
