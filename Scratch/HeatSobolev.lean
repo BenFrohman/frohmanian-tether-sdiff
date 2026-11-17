@@ -1,9 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.SobolevFourier
 
-/-! # Heat semigroup on the Fourier-side Sobolev scale (item 2: smoothing)
+/-!
+ # Heat semigroup on the Fourier-side Sobolev scale (item 2: smoothing)
 
 * `fourierEnergy_heat_le`: `‖e^{τΔ}F‖²_{H^m} ≤ ‖F‖²_{H^m}`;
-* `fourierEnergy_heat_succ_le`: `‖e^{τΔ}F‖²_{H^{m+1}} ≤ (1 + 1/(2τ)) ‖F‖²_{H^m}` (`τ > 0`). -/
+* `fourierEnergy_heat_succ_le`: `‖e^{τΔ}F‖²_{H^{m+1}} ≤ (1 + 1/(2τ)) ‖F‖²_{H^m}` (`τ > 0`).
+-/
 
 open MeasureTheory FourierTransform Real
 open scoped ENNReal

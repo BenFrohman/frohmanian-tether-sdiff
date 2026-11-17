@@ -1,13 +1,21 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.MildEnergy
 import Scratch.IBPWholeSpace
 import Scratch.MildDivFree
 
-/-! # The energy inequality for the realized mild field
+/-!
+ # The energy inequality for the realized mild field
 
 The nonlinearity does no work, `∫ ⟨u, (u·∇)u⟩ = 0` for a bounded,
 divergence-free `C¹` field with `u, ∇u ∈ L²`; on the Fourier side the Leray
 projector is self-adjoint and fixes the slice, and the Laplacian is
-dissipative.  Hence the `L²` energy of the mild path is non-increasing. -/
+dissipative.  Hence the `L²` energy of the mild path is non-increasing.
+-/
 
 open MeasureTheory Real Filter Topology Set FourierTransform
 open scoped ENNReal ContDiff

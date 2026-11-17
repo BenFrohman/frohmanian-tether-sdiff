@@ -1,11 +1,19 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.DuhamelUp
 import Scratch.FourierEmbedding
 
-/-! # Fourier-side `H³` product estimate (item 3, scalar `lintegral` form)
+/-!
+ # Fourier-side `H³` product estimate (item 3, scalar `lintegral` form)
 
 * `young_L1_L2`: `∫ (∫ f(ξ-η) g(η) dη)² dξ ≤ (∫ f)² ∫ g²` (`f, g ≥ 0`).
 * weight inequality `w(ξ) ≤ 2 (w(ξ-η) + w(η))`, `w = 1 + 4π²|ξ|²`.
-* `L¹` control `∫ |F| ≤ C (∫ w² |F|²)^{1/2}`. -/
+* `L¹` control `∫ |F| ≤ C (∫ w² |F|²)^{1/2}`.
+-/
 
 open MeasureTheory Real
 open scoped ENNReal

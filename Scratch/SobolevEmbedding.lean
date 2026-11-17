@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Comp
@@ -12,10 +18,12 @@ import Mathlib.MeasureTheory.Integral.MeanInequalities
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
-/-! # Elementary Sobolev embedding on ℝ³ (unit-cube averaging)
+/-!
+ # Elementary Sobolev embedding on ℝ³ (unit-cube averaging)
 
 For `h : ℝ³ → ℝ` smooth, `|h x| ≤ ∑_{b ∈ {0,1}³} ‖D₂^{b₂} D₁^{b₁} D₀^{b₀} h‖_{L²(ℝ³)}`.
-No decay or compact support is assumed. -/
+No decay or compact support is assumed.
+-/
 
 open MeasureTheory Set
 open scoped ContDiff ENNReal

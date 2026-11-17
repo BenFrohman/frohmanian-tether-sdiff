@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.InverseSobolev
 import Scratch.NonlinearSmooth
 import Mathlib.Topology.ContinuousMap.Bounded.Normed
@@ -5,12 +11,14 @@ import Mathlib.Analysis.Fourier.FourierTransformDeriv
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Comp
 
-/-! # Inverse Fourier as a bounded linear map `Ĥ^m → (ℝ³ →ᵇ ℂ³)`
+/-!
+ # Inverse Fourier as a bounded linear map `Ĥ^m → (ℝ³ →ᵇ ℂ³)`
 
 For `m ≥ 2`, an `Ĥ^m` representative is unweighted-integrable, so its
 inverse Fourier transform is a bounded continuous function, and the map
 is bounded linear. Evaluation is therefore jointly continuous in the
-representative and the spatial variable. -/
+representative and the spatial variable.
+-/
 
 open MeasureTheory FourierTransform Real Filter Topology Set BoundedContinuousFunction
 open scoped ENNReal

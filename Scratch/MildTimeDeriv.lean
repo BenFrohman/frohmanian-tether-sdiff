@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.DuhamelDeriv
 import Scratch.DuhamelUp
 import Scratch.PersistenceHm
@@ -7,12 +13,14 @@ import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Deriv
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 
-/-! # Time derivative of a high-regularity mild path in a lower `Ĥ^m`
+/-!
+ # Time derivative of a high-regularity mild path in a lower `Ĥ^m`
 
 A mild path in `C([0,T]; Ĥ^{k+1})` is identified, after inclusion to `Ĥ^m`
 (`m ≤ k`), with the same-space heat-plus-Duhamel formula.  Its right
 derivative in `Ĥ^m` along `[t0, T]` then follows from `HeatDeriv` and
-`DuhamelDeriv.hasDerivWithinAt_duhνSame_Ici`. -/
+`DuhamelDeriv.hasDerivWithinAt_duhνSame_Ici`.
+-/
 
 open MeasureTheory Real Filter Topology Set
 open scoped ENNReal

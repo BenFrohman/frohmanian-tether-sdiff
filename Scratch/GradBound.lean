@@ -1,10 +1,18 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.FourierCutoff
 import Scratch.R3BKMContinuation
 
-/-! # Bounded gradient from finite `H³` energy on ℝ³ (BKMLogInequality, item 1)
+/-!
+ # Bounded gradient from finite `H³` energy on ℝ³ (BKMLogInequality, item 1)
 
 `‖∇u(x)‖ ≤ C ‖u‖_{H³}` for smooth `u : ℝ³ → ℝ³`, one absolute constant `C < ∞`
-(no decay assumed); hence `sobolevEnergy 3 u < ⊤ → BddAbove (range ‖∇u‖)`. -/
+(no decay assumed); hence `sobolevEnergy 3 u < ⊤ → BddAbove (range ‖∇u‖)`.
+-/
 
 open MeasureTheory FourierCutoff FourierEmb
 open scoped ENNReal ContDiff

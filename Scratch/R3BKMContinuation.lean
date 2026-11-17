@@ -1,7 +1,14 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.RepairedTetherRate
 import Mathlib.Analysis.SpecialFunctions.JapaneseBracket
 
-/-! # Toward `R3BKMContinuation` (classical continuation on ℝ³)
+/-!
+ # Toward `R3BKMContinuation` (classical continuation on ℝ³)
 
 Decomposition of the classical hypothesis `RepairedTether.R3BKMContinuationAt` into
 named analytic inputs, with every logical / ODE step between them kernel-checked.

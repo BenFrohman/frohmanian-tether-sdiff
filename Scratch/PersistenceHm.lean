@@ -1,14 +1,22 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.NonlinearHm
 import Scratch.MildExistence
 import Mathlib.Topology.MetricSpace.Contracting
 
-/-! # Persistence of `Ĥ^{k+1}` regularity on the `Ĥ³` existence time
+/-!
+ # Persistence of `Ĥ^{k+1}` regularity on the `Ĥ³` existence time
 
 Local mild existence in `C([0,T]; Ĥ^{k+1})` for `k ≥ 2`, commutation of the
 inclusion `Ĥ^{k+1} ↪ Ĥ³` with the heat semigroup, product, derivative, Leray
 projector and the nonlinearity, and (later in this file) the Duhamel cocycle,
 restart, a priori bound depending only on the `Ĥ³` radius, and persistence of
-`∩_m Ĥ^m` up to the `Ĥ³` local time. -/
+`∩_m Ĥ^m` up to the `Ĥ³` local time.
+-/
 
 open MeasureTheory Real Filter Topology Set Metric ContinuousMap
 open scoped ENNReal NNReal Convolution

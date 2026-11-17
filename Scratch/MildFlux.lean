@@ -9,13 +9,15 @@ import Scratch.KatoPonceCommutator
 import Scratch.KatoPonceHypotheses
 import Scratch.DivergenceWholeSpace
 
-/-! # Vanishing flux along the realized mild solution
+/-!
+ # Vanishing flux along the realized mild solution
 
 Word derivatives of the physical fields of `Ĥ^m` slices are bounded and in
 `L²`; every integrand of `WordIBP` is then dominated by a bounded multiple of
 a product of two `L²` functions, and every flux is the integral of the
 divergence of an integrable `C¹` field with integrable divergence, which
-vanishes by `integral_div_eq_zero`. -/
+vanishes by `integral_div_eq_zero`.
+-/
 
 open MeasureTheory Real Filter Topology Set
 open scoped ENNReal ContDiff

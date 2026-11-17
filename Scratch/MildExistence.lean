@@ -1,7 +1,19 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.Nonlinear
 import Mathlib.Topology.ContinuousMap.Compact
 import Mathlib.Topology.ContinuousMap.Ordered
 import Mathlib.Topology.MetricSpace.Contracting
+
+/-!
+# Scratch.MildExistence
+
+Machine-checked Lean 4 module.
+-/
 
 set_option maxHeartbeats 800000
 set_option linter.unusedVariables false

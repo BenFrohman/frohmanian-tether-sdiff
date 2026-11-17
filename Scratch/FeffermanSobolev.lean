@@ -1,17 +1,25 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.SobolevHilbert
 import Scratch.ProductEstimate
 import Mathlib.Analysis.Fourier.FourierTransformDeriv
 import Mathlib.Analysis.Fourier.Inversion
 import Mathlib.Analysis.SpecialFunctions.JapaneseBracket
 
-/-! # Fefferman data has finite `H^m` energy of every order; inverse Fourier of `Ĥ^m`
+/-!
+ # Fefferman data has finite `H^m` energy of every order; inverse Fourier of `Ĥ^m`
 
 Item 4 foundations:
 * Fefferman decay plus `C^∞` imply `sobolevEnergy m < ⊤` and `fourierEnergy m < ⊤` for all `m`,
   so the initial datum lands in every `Ĥ^m` via `toHm`.
 * Converse of the Fourier–Sobolev matching: an `Ĥ^m` representative with `m ≥ n + 2` has
   integrable moments of order `≤ n`, so its inverse Fourier transform is `C^n`. If a physical
-  `L²` field has finite Fourier energy of every order, it agrees a.e. with a `C^∞` function. -/
+  `L²` field has finite Fourier energy of every order, it agrees a.e. with a `C^∞` function.
+-/
 
 open MeasureTheory FourierTransform Real Filter Topology
 open scoped ENNReal ContDiff InnerProductSpace

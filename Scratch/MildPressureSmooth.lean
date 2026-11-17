@@ -1,14 +1,22 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.MildEnergyIneq
 import Scratch.MildJointSmoothInf
 import Scratch.NonlinearSmooth
 
-/-! # Joint `C^∞` of the Leray pressure along the mild path
+/-!
+ # Joint `C^∞` of the Leray pressure along the mild path
 
 The Fourier-side pressure `lerayPressureHm` is a continuous quadratic map on
 `Ĥ^s`, hence `C^∞`; composed with the `C^n` mild path in `Ĥ^{n+3}` it is a
 `C^n` path, and joint `C^n` of `(x, G) ↦ 𝓕⁻ G x` gives joint `C^n` of the
 physical pressure.  The physical pressure depends on the slice only through
-its a.e. class, so the index can be raised freely. -/
+its a.e. class, so the index can be raised freely.
+-/
 
 open MeasureTheory Real Filter Topology Set FourierTransform
 open scoped ENNReal ContDiff Convolution

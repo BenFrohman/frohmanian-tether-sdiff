@@ -1,15 +1,23 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.NonlinearHm
 import Scratch.PersistenceHm
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Comp
 import Mathlib.Analysis.Calculus.ContDiff.Operations
 
-/-! # `C^∞` regularity of the Navier–Stokes nonlinearity on `Ĥ^s`
+/-!
+ # `C^∞` regularity of the Navier–Stokes nonlinearity on `Ĥ^s`
 
 The product `mulF` is a bounded bilinear map on `Ĥ^s` (`s ≥ 3`), hence
 `C^∞`.  The projected divergence `N(u) = ℙ ∇·(u ⊗ u)` is a composition of
 this quadratic map with continuous linear maps, so it is `C^∞` as a map
-`Ĥ^s → Ĥ^{s-1}`. -/
+`Ĥ^s → Ĥ^{s-1}`.
+-/
 
 open MeasureTheory Real Filter Topology
 open scoped ENNReal

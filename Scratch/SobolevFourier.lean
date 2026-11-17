@@ -1,12 +1,20 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.LerayHeat
 import Scratch.R3BKMContinuation
 import Mathlib.Analysis.Distribution.TemperedDistribution
 import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
 
-/-! # Fourier-side Sobolev energy on `L²(ℝ³; ℂ³)` matched to `R3BKM.sobolevEnergy`
+/-!
+ # Fourier-side Sobolev energy on `L²(ℝ³; ℂ³)` matched to `R3BKM.sobolevEnergy`
 
 Key analytic input: for `g : ℝ³ → ℂ³` of class `C¹` with `g, ∂_m g ∈ L²`,
-`𝓕(∂_m g) = 2πi ⟪ξ, m⟫ 𝓕 g` a.e. (via tempered distributions and integration by parts). -/
+`𝓕(∂_m g) = 2πi ⟪ξ, m⟫ 𝓕 g` a.e. (via tempered distributions and integration by parts).
+-/
 
 open MeasureTheory SchwartzMap FourierTransform Real LineDeriv
 open scoped ENNReal ContDiff InnerProductSpace

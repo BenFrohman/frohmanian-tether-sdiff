@@ -1,9 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.LogBound
 import Scratch.GradBound
 import Scratch.SobolevBridge
 import Mathlib.Analysis.Complex.ExponentialBounds
 
-/-! # Localized BKM log bound: from Schwartz fields to smooth finite-`H³` fields -/
+/-!
+ # Localized BKM log bound: from Schwartz fields to smooth finite-`H³` fields
+-/
 
 open MeasureTheory SchwartzMap FourierTransform Real FourierCutoff FourierEmb
 open scoped ENNReal Laplacian ContDiff

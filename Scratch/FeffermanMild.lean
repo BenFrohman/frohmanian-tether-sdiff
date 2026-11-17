@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.PersistenceHm
 import Scratch.FeffermanSchwartz
 import Scratch.FeffermanSobolev
@@ -5,14 +11,16 @@ import Scratch.InverseSobolev
 import Mathlib.Analysis.Fourier.LpSpace
 import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 
-/-! # From persisted mild solutions of Fefferman data to `IsFeffermanSolutionOn`
+/-!
+ # From persisted mild solutions of Fefferman data to `IsFeffermanSolutionOn`
 
 For Fefferman initial data (`C^∞`, divergence-free, `FeffermanDecay`) and `ν > 0`,
 the `Ĥ^{k+1}` mild solution on the `Ĥ³` local time is realized as a physical field
 via inverse Fourier transform. This file develops that realization and the upgrade
 to `IsFeffermanSolutionOn` on `[0, T)`, then the maximal interval and the `H³`
 blow-up alternative. The Kato–Ponce right-derivative bound is not proved here; it
-appears as a named hypothesis in the assembly of `KatoMaximalSolution`. -/
+appears as a named hypothesis in the assembly of `KatoMaximalSolution`.
+-/
 
 open MeasureTheory FourierTransform Real Filter Topology Set Metric
 open scoped ENNReal ContDiff InnerProductSpace

@@ -1,6 +1,13 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.MildMomentum
 
-/-! # Plancherel bridge for `Ĥ^m` representatives
+/-!
+ # Plancherel bridge for `Ĥ^m` representatives
 
 For `G ∈ Ĥ^m` with `m ≥ 2` (so the representative is in `L¹ ∩ L²`), the
 pointwise inverse Fourier transform `𝓕⁻ G` (the function packaged by
@@ -8,7 +15,8 @@ pointwise inverse Fourier transform `𝓕⁻ G` (the function packaged by
 transform of `G`.  Consequently it lies in `L²`, its `L²` norm equals the
 unweighted `L²` norm of `G` (Plancherel), and its `L²` Fourier transform is
 `G` again.  The proof identifies both as tempered distributions and uses
-`ae_eq_of_integral_contDiff_smul_eq`. -/
+`ae_eq_of_integral_contDiff_smul_eq`.
+-/
 
 open MeasureTheory Real Filter Topology Set FourierTransform
 open scoped ENNReal ContDiff SchwartzMap

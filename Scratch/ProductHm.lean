@@ -1,14 +1,22 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.ProductEstimate
 import Scratch.InverseSobolev
 import Scratch.ProductH3
 import Mathlib.Analysis.Convolution
 
-/-! # Tame product estimates on `Ĥ^m` for all `m ≥ 3`
+/-!
+ # Tame product estimates on `Ĥ^m` for all `m ≥ 3`
 
 Fourier-side convolution bound with weight `ω^m`, and the tame form
 `∫ ω^m (F*G)² ≤ C_m C_w ((∫ ω³ G²)(∫ ω^m F²) + (∫ ω³ F²)(∫ ω^m G²))`,
 which on `Ĥ^m` yields
-`‖F ⋆[L] G‖_{Ĥ^m} ≤ C_m ‖L‖ (‖F‖_{Ĥ^m} ‖G‖_{Ĥ³} + ‖F‖_{Ĥ³} ‖G‖_{Ĥ^m})`. -/
+`‖F ⋆[L] G‖_{Ĥ^m} ≤ C_m ‖L‖ (‖F‖_{Ĥ^m} ‖G‖_{Ĥ³} + ‖F‖_{Ĥ³} ‖G‖_{Ĥ^m})`.
+-/
 
 open MeasureTheory Real Filter Topology
 open scoped ENNReal Convolution

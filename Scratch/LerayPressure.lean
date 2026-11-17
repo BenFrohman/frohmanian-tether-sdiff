@@ -1,9 +1,16 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.ProductHm
 import Scratch.NonlinearHm
 import Scratch.FourierInvBCF
 import Mathlib.Topology.ContinuousMap.Bounded.Normed
 
-/-! # Leray pressure of an `Ĥ^m` velocity slice
+/-!
+ # Leray pressure of an `Ĥ^m` velocity slice
 
 This file packages the Fourier-side Leray pressure
 

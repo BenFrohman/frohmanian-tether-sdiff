@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.HeatDeriv
 import Scratch.MildExistence
 import Scratch.DuhamelUp
@@ -6,13 +12,15 @@ import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.Deriv.Slope
 
-/-! # Time derivative of the same-space Duhamel integral
+/-!
+ # Time derivative of the same-space Duhamel integral
 
 The same-space viscosity Duhamel integral is
 `duhνSame ν G t = ∫₀ᵗ e^{ν(t-s)Δ} G(s) ds` in `Ĥ^m`.  Its one-sided
 time derivative, for a source in `Ĥ^{m+2}`, is `G(t) + ν Δ(∫₀ᵗ e^{ν(t-s)Δ} G(s) ds)`,
 obtained from the Duhamel cocycle, the heat-semigroup derivative in
-`HeatDeriv`, and an averaging argument for the increment. -/
+`HeatDeriv`, and an averaging argument for the increment.
+-/
 
 open MeasureTheory FourierTransform Real Filter Topology Set
 open scoped ENNReal

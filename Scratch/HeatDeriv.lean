@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.Duhamel
 import Scratch.ProductHm
 import Mathlib.Analysis.Calculus.Deriv.Basic
@@ -5,12 +11,14 @@ import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.LinearAlgebra.Complex.Module
 
-/-! # Time derivative of the heat semigroup on `Ĥ^s`
+/-!
+ # Time derivative of the heat semigroup on `Ĥ^s`
 
 The Fourier-side Laplacian `lapH : Ĥ^{m+2} →L Ĥ^m` is multiplication by
 `-4π²|ξ|²`. For `G ∈ Ĥ^{m+2}` and `τ ≥ 0`, the curve
 `σ ↦ e^{σΔ} G`, viewed in `Ĥ^m`, has a one-sided derivative at `τ` along
-`[0, ∞)` equal to `e^{τΔ}(Δ G)`. -/
+`[0, ∞)` equal to `e^{τΔ}(Δ G)`.
+-/
 
 open MeasureTheory FourierTransform Real Filter Topology Set
 open scoped ENNReal

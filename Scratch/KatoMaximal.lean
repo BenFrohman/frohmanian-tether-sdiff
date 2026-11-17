@@ -9,7 +9,8 @@ import Scratch.KatoPonceCommutator
 import Scratch.KatoPonceHypotheses
 import Scratch.R3BKMContinuation
 
-/-! # `KatoMaximalSolution` along the realized mild path
+/-!
+ # `KatoMaximalSolution` along the realized mild path
 
 On the first existence interval `[0, Tfeff)`, the realized mild field is a
 Fefferman-class solution with finite continuous `H³` energy, and the
@@ -24,7 +25,8 @@ blow-up alternative. The result is `katoMaximalSolution_of_feffermanDecay`:
 for `ν > 0` and smooth, divergence-free, Fefferman-decaying data,
 `R3BKM.KatoMaximalSolution ν u₀` holds. This is local Kato theory: either
 the solution exists on `[0, ∞)`, or on a finite `[0, T*)` with unbounded
-`H³` energy. It does not assert global regularity. -/
+`H³` energy. It does not assert global regularity.
+-/
 
 open MeasureTheory Real Filter Topology Set
 open scoped ENNReal ContDiff

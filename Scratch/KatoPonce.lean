@@ -1,6 +1,13 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.GradBound
 
-/-! # Kato–Ponce H³ energy inequality for Fefferman-class solutions
+/-!
+ # Kato–Ponce H³ energy inequality for Fefferman-class solutions
 
 Target (the Kato–Ponce conjunct of `R3BKM.KatoMaximalSolution`): there is a
 constant `C_k ≥ 0` such that, for every solution `u` in Fefferman's smooth class

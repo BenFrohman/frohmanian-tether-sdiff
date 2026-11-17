@@ -1,9 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.FourierCutoff
 
-/-! # Frequency-truncated BKM log bound: Fourier-multiplier blocks
+/-!
+ # Frequency-truncated BKM log bound: Fourier-multiplier blocks
 
 Block operator `mult P h x = ∫ 𝐞⟪ξ,x⟫ P(ξ) 𝓕h(ξ) dξ`. For integrable `P` it is convolution with
-`𝓕⁻P`, so `|mult P h x| ≤ ‖𝓕⁻P‖₁ · sup|h|`, and dilating `P` does not change `‖𝓕⁻P‖₁`. -/
+`𝓕⁻P`, so `|mult P h x| ≤ ‖𝓕⁻P‖₁ · sup|h|`, and dilating `P` does not change `‖𝓕⁻P‖₁`.
+-/
 
 open MeasureTheory SchwartzMap FourierTransform Real
 open scoped ENNReal ContDiff InnerProductSpace

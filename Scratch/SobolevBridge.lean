@@ -1,10 +1,18 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.SobolevEmbedding
 import Scratch.R3BKMContinuation
 
-/-! # `H³ ↪ L^∞` on ℝ³ in the repo's Sobolev energy (`R3BKM.sobolevEnergy`, :32)
+/-!
+ # `H³ ↪ L^∞` on ℝ³ in the repo's Sobolev energy (`R3BKM.sobolevEnergy`, :32)
 
 `|f x j| ≤ 8 ‖f‖_{H³}` for every smooth `f : ℝ³ → ℝ³`, component `j`, point `x`
-(no decay assumed). -/
+(no decay assumed).
+-/
 
 open MeasureTheory Set SobolevR3
 open scoped ContDiff ENNReal

@@ -1,17 +1,25 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.MildPathSmooth
 import Scratch.FeffermanMild
 import Scratch.FourierInvBCF
 import Scratch.FourierInvFDeriv
 import Mathlib.Analysis.Calculus.ContDiff.FiniteDimension
 
-/-! # Joint space-time smoothness of the realized mild path
+/-!
+ # Joint space-time smoothness of the realized mild path
 
 The included mild path is `C^n` as an `Ĥ^m`-valued curve when
 `m + 2n ≤ k`.  Inverse Fourier transform is a bounded linear map
 `Ĥ^m → (ℝ³ →ᵇ ℂ³)` for `m ≥ 2`, which gives joint continuity of the
 physical field on `ℝ³ × [0, T)`.  Finite-dimensional `C^{n+1}`
 characterization then bootstraps to joint `C^∞`, including the
-one-sided time derivative at `t = 0`. -/
+one-sided time derivative at `t = 0`.
+-/
 
 open MeasureTheory FourierTransform Real Filter Topology Set
 open scoped ENNReal ContDiff

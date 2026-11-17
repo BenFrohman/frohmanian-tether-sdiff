@@ -1,7 +1,14 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.KatoPonce
 import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 
-/-! # Discharge of `H3PartialCommutation`
+/-!
+ # Discharge of `H3PartialCommutation`
 
 This file proves `KatoPonce.H3PartialCommutation` for every pair of
 `C^∞` fields, and therefore for every time slice of a

@@ -1,11 +1,19 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.ProductHm
 import Scratch.Nonlinear
 
-/-! # Derivative `Ĥ^s → Ĥ^{s-1}` and the Navier–Stokes nonlinearity on `Ĥ^s`
+/-!
+ # Derivative `Ĥ^s → Ĥ^{s-1}` and the Navier–Stokes nonlinearity on `Ĥ^s`
 
 For `s ≥ 3`, `N(u) = ℙ ∇·(u ⊗ u)` maps `Ĥ^s` to `Ĥ^{s-1}` and satisfies the tame bound
 `‖N(u)‖_{Ĥ^{s-1}} ≤ 18 C_s ‖u‖_{Ĥ^s} ‖u‖_{Ĥ³}`, together with a Lipschitz estimate
-sufficient for continuity along bounded `Ĥ^s` curves. -/
+sufficient for continuity along bounded `Ĥ^s` curves.
+-/
 
 open MeasureTheory Real Filter Topology
 open scoped ENNReal Convolution

@@ -1,12 +1,22 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import FrohmanianTether.ExplicitFlows
 import FrohmanianTether.TetherDefinitionAudit
 
-/-! Scratch (not part of the library): status of `FrohmanianTetherRate` on `𝕋³` data.
+/-!
+# Scratch.TetherRateStatus
+
+ Scratch (not part of the library): status of `FrohmanianTetherRate` on `𝕋³` data.
 `FrohmanianTetherRate` quantifies over `IsPhysicalNSSolution` paths, which require
 `Integrable (‖u t‖²)` on ℝ³. A continuous nonzero `ℤ³`-periodic datum is never `L²(ℝ³)`, so no
 such path starts there and the Prop holds *vacuously* for every periodic datum. Hence
 "FrohmanianTetherRate holds on 𝕋³" is provable and carries no information about
-`PeriodicTetherClosingBound` / `Clay_B_exact`. -/
+`PeriodicTetherClosingBound` / `Clay_B_exact`.
+-/
 
 open MeasureTheory NavierStokes3D FrohmanianTether
 

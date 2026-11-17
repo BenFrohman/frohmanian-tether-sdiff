@@ -1,12 +1,20 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.MildReal
 import Scratch.MildPathSmooth
 
-/-! # The momentum equation for the realized mild field
+/-!
+ # The momentum equation for the realized mild field
 
 Physical identification of the Fourier-side Navier–Stokes nonlinearity:
 `𝓕⁻ (F ⋆[B] G) = B (𝓕⁻ F) (𝓕⁻ G)` for integrable representatives, the
 convective term and the Leray pressure gradient of a real, divergence-free
-`Ĥ^s` slice, and the resulting pointwise momentum equation. -/
+`Ĥ^s` slice, and the resulting pointwise momentum equation.
+-/
 
 open MeasureTheory Real Filter Topology Set FourierTransform
 open scoped ENNReal ContDiff Convolution

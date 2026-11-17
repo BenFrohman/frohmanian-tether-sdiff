@@ -1,14 +1,22 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.MildDivFree
 import Scratch.LerayPressure
 
-/-! # The realized mild field is real
+/-!
+ # The realized mild field is real
 
 `refl G (ξ) = conj (G (-ξ))` is a real-linear isometry of every `Ĥ^m`.  It
 commutes with the heat, Leray, derivative and Laplacian multipliers, with the
 Fourier-side products, and with the smoothing Duhamel integral, and it fixes
 the representative of real Fefferman data.  So `refl ∘ u` is again a mild
 solution in the working ball; uniqueness gives `refl (u t) = u t`, and the
-inverse Fourier transform of a `refl`-fixed representative is real. -/
+inverse Fourier transform of a `refl`-fixed representative is real.
+-/
 
 open MeasureTheory Real Filter Topology Set
 open scoped ENNReal ContDiff ComplexConjugate

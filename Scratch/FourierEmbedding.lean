@@ -1,12 +1,20 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Mathlib.Analysis.Distribution.FourierMultiplier
 import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import Mathlib.Analysis.SpecialFunctions.JapaneseBracket
 import Mathlib.MeasureTheory.Integral.MeanInequalities
 
-/-! # Fourier-side `H² ↪ L^∞` on ℝ³ for Schwartz functions
+/-!
+ # Fourier-side `H² ↪ L^∞` on ℝ³ for Schwartz functions
 
 `‖g x‖ ≤ (∫ (1 + 4π²|ξ|²)^{-2} dξ)^{1/2} ‖g - Δg‖_{L²}` (Fourier inversion, Plancherel,
-Cauchy–Schwarz). -/
+Cauchy–Schwarz).
+-/
 
 open MeasureTheory SchwartzMap FourierTransform Real
 open scoped ENNReal Laplacian

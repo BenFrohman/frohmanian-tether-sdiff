@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.KatoPonce
 import Scratch.IBPWholeSpace
 import Mathlib.Analysis.Calculus.FDeriv.CompCLM
@@ -8,7 +14,8 @@ import Mathlib.Data.Real.ConjExponents
 import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 import Scratch.FourierCutoff
 
-/-! # The H³ Kato commutator estimate
+/-!
+ # The H³ Kato commutator estimate
 
 This file proves (or, where a remaining analytic input is still named, reduces)
 `KatoPonce.H3CommutatorEstimate`: there is `C ≥ 0` such that for every

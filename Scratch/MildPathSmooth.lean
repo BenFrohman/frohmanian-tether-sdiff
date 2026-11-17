@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.MildTimeDeriv
 import Scratch.NonlinearSmooth
 import Scratch.InclNSN
@@ -5,11 +11,13 @@ import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Deriv
 import Mathlib.Analysis.Calculus.ContDiff.Comp
 
-/-! # Higher time-regularity of an included mild path
+/-!
+ # Higher time-regularity of an included mild path
 
 Once the path is known to be `C¹` in every `Ĥ^m` with two spare
 derivatives, the identity `∂t u = ν Δu - N(u)` together with `C^∞` of
-`N` bootstraps to `C^n` in `Ĥ^m` whenever `m + 2n ≤ k`. -/
+`N` bootstraps to `C^n` in `Ĥ^m` whenever `m + 2n ≤ k`.
+-/
 
 open MeasureTheory Real Filter Topology Set
 open scoped ENNReal

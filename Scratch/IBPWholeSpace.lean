@@ -1,7 +1,14 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import FrohmanianTether.NS_Equations
 import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
 
-/-! # Whole-space integration by parts on ℝ³
+/-!
+ # Whole-space integration by parts on ℝ³
 
 `T3` is `EuclideanSpace ℝ (Fin 3)`, i.e. the physical domain ℝ³ (not a torus).
 Mathlib already has whole-space IBP for integrable functions, with no decay

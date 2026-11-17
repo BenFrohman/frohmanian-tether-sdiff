@@ -1,14 +1,22 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Mathlib.Analysis.Fourier.LpSpace
 import Mathlib.Analysis.InnerProductSpace.Projection.Basic
 import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
-/-! # Leray projector and heat semigroup on `L²(ℝ³; ℂ³)` (Fourier side, Plancherel)
+/-!
+ # Leray projector and heat semigroup on `L²(ℝ³; ℂ³)` (Fourier side, Plancherel)
 
 Pointwise Fourier multipliers `ξ ↦ T ξ` with `‖T ξ‖ ≤ 1` act on `L²` with norm `≤ 1`;
 conjugating by Mathlib's `L²` Fourier isometry gives
 * the **Leray projector** `ℙ = 𝓕⁻ ∘ (Π_ξ) ∘ 𝓕`, `Π_ξ` = orthogonal projection onto `ξ^⊥`;
-* the **heat semigroup** `e^{τΔ} = 𝓕⁻ ∘ (e^{-4π²τ|ξ|²}) ∘ 𝓕`, `τ = ν t ≥ 0`. -/
+* the **heat semigroup** `e^{τΔ} = 𝓕⁻ ∘ (e^{-4π²τ|ξ|²}) ∘ 𝓕`, `τ = ν t ≥ 0`.
+-/
 
 open MeasureTheory FourierTransform
 open scoped ENNReal ComplexInnerProductSpace

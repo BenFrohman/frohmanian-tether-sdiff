@@ -1,9 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.PersistenceHm
 
-/-! # Inclusion commutes with the `Ĥ^s` product and the NS nonlinearity
+/-!
+ # Inclusion commutes with the `Ĥ^s` product and the NS nonlinearity
 
 General-index versions of the `PersistenceHm` commutation lemmas, which
-only treated the drop `Ĥ^{k+1} ↪ Ĥ³`. -/
+only treated the drop `Ĥ^{k+1} ↪ Ĥ³`.
+-/
 
 open MeasureTheory Real Filter Topology
 open scoped ENNReal Convolution

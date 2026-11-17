@@ -1,11 +1,19 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.SobolevFourier
 import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import Mathlib.LinearAlgebra.Multilinear.Basic
 
-/-! # Fefferman data is Schwartz, and Fourier inversion is pointwise
+/-!
+ # Fefferman data is Schwartz, and Fourier inversion is pointwise
 
 Under `ContDiff ℝ ∞` and `FeffermanDecay`, the complexified field `cplx ∘ f` is a
-Schwartz map `𝓢(ℝ³, ℂ³)`. Consequently `𝓕⁻ (𝓕 (cplx ∘ f)) = cplx ∘ f` pointwise. -/
+Schwartz map `𝓢(ℝ³, ℂ³)`. Consequently `𝓕⁻ (𝓕 (cplx ∘ f)) = cplx ∘ f` pointwise.
+-/
 
 open MeasureTheory FourierTransform Real SchwartzMap
 open scoped ENNReal ContDiff InnerProductSpace

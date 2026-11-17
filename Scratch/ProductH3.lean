@@ -1,11 +1,19 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.ProductEstimate
 import Mathlib.Analysis.Convolution
 
-/-! # Bilinear product on `Ĥ³` (Fourier-side convolution)
+/-!
+ # Bilinear product on `Ĥ³` (Fourier-side convolution)
 
 For any continuous bilinear `L : V →L[ℂ] V →L[ℂ] V`, the convolution
 `(F ⋆[L] G)(ξ) = ∫ L(F η)(G(ξ-η)) dη` lands in `Ĥ³` and satisfies
-`‖F ⋆[L] G‖_{Ĥ³} ≤ C_⋆ ‖L‖ ‖F‖_{Ĥ³} ‖G‖_{Ĥ³}`. -/
+`‖F ⋆[L] G‖_{Ĥ³} ≤ C_⋆ ‖L‖ ‖F‖_{Ĥ³} ‖G‖_{Ĥ³}`.
+-/
 
 open MeasureTheory Real Filter Topology
 open scoped ENNReal Convolution

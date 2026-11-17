@@ -1,13 +1,21 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.FeffermanMild
 import Scratch.FourierInvFDeriv
 
-/-! # The realized mild field is divergence-free
+/-!
+ # The realized mild field is divergence-free
 
 The Leray projector `lerayH` commutes with the heat multipliers and with the
 smoothing Duhamel integral, fixes the nonlinearity `NSN = lerayH ∘ divTensor`,
 and fixes the Fourier representative of divergence-free Fefferman data.  Hence
 every slice of the persisted mild path is a fixed point of `lerayH`, and the
-physical divergence of a fixed point of `lerayH` vanishes identically. -/
+physical divergence of a fixed point of `lerayH` vanishes identically.
+-/
 
 open MeasureTheory Real Filter Topology Set
 open scoped ENNReal ContDiff

@@ -1,12 +1,20 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.ProductEstimate
 import Scratch.SobolevHilbert
 import Mathlib.Analysis.Fourier.FourierTransformDeriv
 
-/-! # Inverse Fourier of `Ĥ^m`: moment integrability and `C^n` regularity
+/-!
+ # Inverse Fourier of `Ĥ^m`: moment integrability and `C^n` regularity
 
 Converse to the Fourier–Sobolev matching: if `G ∈ Ĥ^m` and `m ≥ n + 2`, then
 `ξ ↦ ‖ξ‖^n ‖G ξ‖` is integrable, so `𝓕⁻ G` is `C^n`. If a physical `L²` field has
-finite Fourier energy of every order, `𝓕⁻ (𝓕 F)` is `C^∞`. -/
+finite Fourier energy of every order, `𝓕⁻ (𝓕 F)` is `C^∞`.
+-/
 
 open MeasureTheory FourierTransform Real
 open scoped ENNReal

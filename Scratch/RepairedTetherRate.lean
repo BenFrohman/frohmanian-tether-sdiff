@@ -1,6 +1,15 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import FrohmanianTether.ClayStatements
 
-/-! Scratch (local only, not part of the library).
+/-!
+# Scratch.RepairedTetherRate
+
+ Scratch (local only, not part of the library).
 
 1. `Clay_A_Fefferman`: Fefferman's official Problem (A), stated literally.
 2. `FrohmanianTetherRateSmooth`: a repaired tether rate. It quantifies over local solutions in
@@ -9,7 +18,8 @@ import FrohmanianTether.ClayStatements
 3. `clay_A_fefferman_of_frohmanianTetherRateSmooth`: rate + named classical continuation
    hypothesis ⟹ `Clay_A_Fefferman`. Both hypotheses are shown satisfiable at `u₀ = 0`.
 4. The global-solution form of the rate is vacuous when no global solution exists
-   (`frohmanianTetherRateSmoothGlobal_of_no_global_solution`), so it cannot feed Clay (A). -/
+   (`frohmanianTetherRateSmoothGlobal_of_no_global_solution`), so it cannot feed Clay (A).
+-/
 
 open MeasureTheory NavierStokes3D FrohmanianTether
 open scoped ContDiff

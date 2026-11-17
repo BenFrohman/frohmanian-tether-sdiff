@@ -1,13 +1,21 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.MildJointSmooth
 import Scratch.FourierInvFDerivCn
 
-/-! # Joint `C^∞` of the realized mild field
+/-!
+ # Joint `C^∞` of the realized mild field
 
 For every `n`, persistence at regularity `k = 3n + 3` puts the included mild
 path in `C^n([0, T); Ĥ^{n+3})`; joint `C^n` of `(x, G) ↦ 𝓕⁻ G x` for
 `m ≥ n + 3` then gives joint `C^n` of the physical field on `ℝ³ × [0, T)`,
 including one-sided derivatives at `t = 0`.  Since `n` is arbitrary the
-field is `C^∞` on `ℝ³ × [0, T)`. -/
+field is `C^∞` on `ℝ³ × [0, T)`.
+-/
 
 open MeasureTheory Filter Topology Set
 open scoped ContDiff

@@ -1,13 +1,21 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.FourierInvFDeriv
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Comp
 
-/-! # Higher joint regularity of the uncurried inverse Fourier transform
+/-!
+ # Higher joint regularity of the uncurried inverse Fourier transform
 
 Mutual induction: for every `n`, the uncurried map `(x, G) ↦ 𝓕⁻ G x` and the
 evaluation map `x ↦ (G ↦ 𝓕⁻ G x)` are `C^n` whenever `m ≥ n + 3`.  The
 successor step reuses the `C²` decomposition of `jointFDeriv` and the
-operator expansion of `spatFDerivCLM`. -/
+operator expansion of `spatFDerivCLM`.
+-/
 
 open MeasureTheory Filter Topology Set
 open scoped ContDiff

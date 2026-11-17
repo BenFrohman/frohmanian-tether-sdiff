@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.FourierInvBCF
 import Scratch.InclNSN
 import Mathlib.Analysis.Calculus.FDeriv.Basic
@@ -12,13 +18,15 @@ import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Topology.ContinuousMap.Bounded.Normed
 
-/-! # Spatial Fréchet derivative of the inverse Fourier transform on `Ĥ^m`
+/-!
+ # Spatial Fréchet derivative of the inverse Fourier transform on `Ĥ^m`
 
 For `m ≥ 3`, the inverse Fourier transform of an `Ĥ^m` representative is
 `C¹`, and its spatial Fréchet derivative in direction `v` is the inverse
 Fourier transform of the directional multiplier `(2πi) ⟨ξ, v⟩`, packaged
 as `∑ j, vⱼ • 𝓕⁻ (dHⱼ G)`.  Statements are written in terms of
-`fourierInvBCF` so that `𝓕⁻` does not appear in elaborated types. -/
+`fourierInvBCF` so that `𝓕⁻` does not appear in elaborated types.
+-/
 
 open MeasureTheory FourierTransform Real Filter Topology Set Asymptotics BoundedContinuousFunction
 open scoped ENNReal InnerProductSpace

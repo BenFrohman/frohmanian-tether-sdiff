@@ -1,12 +1,20 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.FourierEmbedding
 import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 import Mathlib.Analysis.Calculus.ContDiff.Bounds
 import Mathlib.Algebra.Order.Chebyshev
 
-/-! # `H² ↪ L^∞` on ℝ³ for every smooth function (no decay assumed)
+/-!
+ # `H² ↪ L^∞` on ℝ³ for every smooth function (no decay assumed)
 
 Localize with a translated bump, apply the Schwartz-class Fourier bound
-`FourierEmb.enorm_le_weight_L2`, and bound `φ f - Δ(φ f)` by the multi-index `H²` energy. -/
+`FourierEmb.enorm_le_weight_L2`, and bound `φ f - Δ(φ f)` by the multi-index `H²` energy.
+-/
 
 open MeasureTheory SchwartzMap FourierTransform Real
 open scoped ENNReal Laplacian ContDiff

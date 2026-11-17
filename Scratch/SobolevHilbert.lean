@@ -1,10 +1,18 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.HeatSobolev
 
-/-! # Fourier-side Sobolev Hilbert spaces `Ĥ^m = L²(sobW m dξ; ℂ³)` and multipliers between them
+/-!
+ # Fourier-side Sobolev Hilbert spaces `Ĥ^m = L²(sobW m dξ; ℂ³)` and multipliers between them
 
 `Hm m` is the Fourier image of `H^m`: by `SobolevFourier.sobolevEnergy_eq_fourierEnergy`,
 `‖𝓕 F‖²_{Hm m} = fourierEnergy m F = sobolevEnergy m f`. Bounded symbols act between the spaces;
-in particular the heat multiplier contracts `Hm m` and maps `Hm m → Hm (m+1)` (smoothing). -/
+in particular the heat multiplier contracts `Hm m` and maps `Hm m → Hm (m+1)` (smoothing).
+-/
 
 open MeasureTheory FourierTransform Real
 open scoped ENNReal

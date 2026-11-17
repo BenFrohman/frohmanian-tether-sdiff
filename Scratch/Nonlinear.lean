@@ -1,8 +1,16 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.ProductH3
 import Scratch.DuhamelUp
 
-/-! # Bilinear `Ĥ³` product: additivity, coordinate maps, derivative `Ĥ³ → Ĥ²`,
-and the Navier–Stokes nonlinearity `N(u) = ℙ ∇·(u ⊗ u)` as a quadratic map `Ĥ³ → Ĥ²`. -/
+/-!
+ # Bilinear `Ĥ³` product: additivity, coordinate maps, derivative `Ĥ³ → Ĥ²`,
+and the Navier–Stokes nonlinearity `N(u) = ℙ ∇·(u ⊗ u)` as a quadratic map `Ĥ³ → Ĥ²`.
+-/
 
 open MeasureTheory Real Filter Topology
 open scoped ENNReal Convolution

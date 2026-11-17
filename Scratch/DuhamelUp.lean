@@ -1,10 +1,18 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.Duhamel
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
 
-/-! # Smoothing Duhamel estimate `Ĥ^m → Ĥ^{m+1}` and continuity of the Duhamel integral
+/-!
+ # Smoothing Duhamel estimate `Ĥ^m → Ĥ^{m+1}` and continuity of the Duhamel integral
 
-`‖∫₀ᵗ e^{(t-s)Δ} G(s) ds‖_{Ĥ^{m+1}} ≤ M (t + 2√t)` when `‖G(s)‖_{Ĥ^m} ≤ M` on `[0,t]`. -/
+`‖∫₀ᵗ e^{(t-s)Δ} G(s) ds‖_{Ĥ^{m+1}} ≤ M (t + 2√t)` when `‖G(s)‖_{Ĥ^m} ≤ M` on `[0,t]`.
+-/
 
 open MeasureTheory FourierTransform Real Filter Topology Set
 open scoped ENNReal

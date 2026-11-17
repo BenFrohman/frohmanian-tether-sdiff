@@ -1,10 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.IBPWholeSpace
 import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 import Mathlib.Analysis.Calculus.Gradient.Basic
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
 import Mathlib.Topology.ContinuousMap.CompactlySupported
 
-/-! # Whole-space vanishing of `∫ div F`
+/-!
+ # Whole-space vanishing of `∫ div F`
 
 If `F : ℝ³ → ℝ³` is `C¹` and both `F` and `div F` are integrable, then
 `∫ div F = 0`. The compactly-supported case is integration by parts

@@ -1,13 +1,21 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 import Scratch.PlancherelBridge
 import Scratch.KatoPonce
 
-/-! # The `H³` energy of the realized mild field
+/-!
+ # The `H³` energy of the realized mild field
 
 Word derivatives of the physical field of an `Ĥ^m` slice are physical
 fields of the corresponding Fourier multipliers; with the Plancherel bridge
 this identifies the physical `H³` pairing `∑_{|α|≤3} ∫ ⟨∂^α u, ∂^α v⟩` with
 the real part of the `Ĥ³` inner product, and yields the right-derivative
-formula for `‖u(t)‖²_{H³}` along the mild path. -/
+formula for `‖u(t)‖²_{H³}` along the mild path.
+-/
 
 open MeasureTheory Real Filter Topology Set FourierTransform
 open scoped ENNReal ContDiff

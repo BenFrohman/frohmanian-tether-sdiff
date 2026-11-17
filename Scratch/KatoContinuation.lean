@@ -7,7 +7,8 @@ Authors: Benjamin Stanley Frohman
 import Scratch.KatoMaximal
 import Scratch.LogBoundLocal
 
-/-! # Classical BKM continuation on ℝ³ from the Kato maximal solution
+/-!
+ # Classical BKM continuation on ℝ³ from the Kato maximal solution
 
 `KatoMaximal.katoMaximalSolution_of_feffermanDecay` proves
 `R3BKM.KatoMaximalSolution ν u₀` for `ν > 0` and smooth, divergence-free,
@@ -24,7 +25,8 @@ ceiling exists, and it is not a regularity theorem for Navier–Stokes.
 `clay_A_fefferman_of_rate` is the remaining conditional form of
 `R3BKM.clay_A_fefferman_of_rate_of_kato_of_log`: its only hypothesis is the
 tether rate `FrohmanianTetherRateSmooth u₀ ν` for all admissible `ν, u₀`,
-which is not proved in this repository. -/
+which is not proved in this repository.
+-/
 
 open NavierStokes3D FrohmanianTether RepairedTether R3BKM
 open scoped ContDiff
