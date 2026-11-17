@@ -1418,6 +1418,40 @@ theorem contDiffOn_physicalMaximal_of_le (N : ℕ) {k : ℕ} (hk : 2 ≤ k)
             (q.1, inclExt hle W.ht W.path q.2)) := by
           simpa [FourierInvFDeriv.uncurryFourierInvBCF] using hreal.symm
 
+/-- Joint `C^N` of the realized maximal field on every `[0, T) ⊆ Smax`. -/
+theorem contDiffOn_physicalMaximal_nat (N : ℕ) {T : ℝ}
+    (hS : Ico (0 : ℝ) T ⊆ Smax hf hdec hν (by norm_num : 2 ≤ 2)) :
+    ContDiffOn ℝ N (fun q : T3 × ℝ => physicalMaximal hf hdec hν q.2 q.1)
+      (univ ×ˢ Ico 0 T) := by
+  have hk : 2 ≤ 3 * N + 3 := by omega
+  have hnk : N + 3 + 2 * N ≤ 3 * N + 3 := by omega
+  rcases le_or_gt T 0 with hT0 | hT0
+  · have hempty : Ico (0 : ℝ) T = ∅ := Ico_eq_empty_of_le hT0
+    rw [hempty, prod_empty]
+    exact contDiffOn_empty
+  · intro q hq
+    obtain ⟨ht0, n, hn⟩ := hS hq.2
+    have hn' : q.2 ≤ (iteratePath hf hdec hν hk n).t :=
+      hn.trans_eq (iteratePath_t_unique hf hdec hν
+        (by norm_num : 2 ≤ 2) hk n)
+    have hlt : q.2 < (iteratePath hf hdec hν hk (n + 1)).t :=
+      lt_of_le_of_lt hn' (iteratePath_t_strict_mono hf hdec hν hk n)
+    set T' := (iteratePath hf hdec hν hk (n + 1)).t
+    have hloc :=
+      contDiffOn_physicalMaximal_of_le hf hdec hν N hk hnk (n + 1) le_rfl
+    have hq' : q ∈ univ ×ˢ Ico (0 : ℝ) T' := ⟨hq.1, ⟨hq.2.1, hlt⟩⟩
+    have hnhd : univ ×ˢ Ico (0 : ℝ) T' ∈ 𝓝[univ ×ˢ Ico (0 : ℝ) T] q :=
+      mem_nhdsWithin.2 ⟨univ ×ˢ Iio T', isOpen_univ.prod isOpen_Iio,
+        ⟨hq.1, hlt⟩, fun p hp => ⟨hp.1.1, ⟨hp.2.2.1, hp.1.2⟩⟩⟩
+    exact (hloc.contDiffWithinAt hq').mono_of_mem_nhdsWithin hnhd
+
+/-- Joint `C^∞` of the realized maximal field on every `[0, T) ⊆ Smax`. -/
+theorem contDiffOn_physicalMaximal {T : ℝ}
+    (hS : Ico (0 : ℝ) T ⊆ Smax hf hdec hν (by norm_num : 2 ≤ 2)) :
+    ContDiffOn ℝ ∞ (fun q : T3 × ℝ => physicalMaximal hf hdec hν q.2 q.1)
+      (univ ×ˢ Ico 0 T) :=
+  contDiffOn_infty.2 fun N => contDiffOn_physicalMaximal_nat hf hdec hν N hS
+
 end Lift
 
 end KatoMaximal
@@ -1467,3 +1501,5 @@ end KatoMaximal
 #print axioms KatoMaximal.div_physicalMaximal
 #print axioms KatoMaximal.physicalMaximal_eq_inclExt
 #print axioms KatoMaximal.contDiffOn_physicalMaximal_of_le
+#print axioms KatoMaximal.contDiffOn_physicalMaximal_nat
+#print axioms KatoMaximal.contDiffOn_physicalMaximal
