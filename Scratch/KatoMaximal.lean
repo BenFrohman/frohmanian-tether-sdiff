@@ -2058,6 +2058,37 @@ theorem h3IBPVanishingFlux_physicalMaximal (hdiv : ∀ x, div u₀ x = 0)
   · rw [convective_physicalMaximal_divTensor6 hf hdec hν hdiv ht0 n hn6]
     exact tame_divTensorIteratePath6 hf hdec hν n t
 
+/-- **Kato–Ponce `H³` energy inequality on the maximal time set.** One
+constant `Ck ≥ 0` (from `katoPonce_h3_energy'`) works at every `s ∈ Smax`:
+the `H³` energy of the realized maximal field has a right derivative `d`
+at `s` with `d ≤ Ck ‖∇u(s)‖_∞ ‖u(s)‖²_{H³}`. -/
+theorem katoPonce_h3_energy_physicalMaximal (hdiv : ∀ x, div u₀ x = 0) :
+    ∃ Ck : ℝ, 0 ≤ Ck ∧
+      ∀ s ∈ Smax hf hdec hν (by norm_num : 2 ≤ 2),
+        ∃ d : ℝ,
+          HasDerivWithinAt (fun t => hsSq 3 (physicalMaximal hf hdec hν t)) d
+            (Ici s) s ∧
+          d ≤ Ck * gradSup (physicalMaximal hf hdec hν s) *
+            hsSq 3 (physicalMaximal hf hdec hν s) := by
+  obtain ⟨Ck, hCk, hE⟩ := katoPonce_h3_energy'
+  refine ⟨Ck, hCk, ?_⟩
+  intro s hs
+  obtain ⟨hs0, n, hn⟩ := hs
+  have hk2 : 2 ≤ 2 := by norm_num
+  set T := (iteratePath hf hdec hν hk2 (n + 1)).t
+  have hlt : s < T :=
+    lt_of_le_of_lt hn (iteratePath_t_strict_mono hf hdec hν hk2 n)
+  have hS : Ico (0 : ℝ) T ⊆ Smax hf hdec hν hk2 :=
+    fun τ hτ => ⟨hτ.1, n + 1, le_of_lt hτ.2⟩
+  have hsol := isFeffermanSolutionOn_physicalMaximal hf hdec hν hdiv hS
+  exact hE ν T u₀ (physicalMaximal hf hdec hν) (presMaximal hf hdec hν)
+    hν.le hsol
+    (fun t ht => sobolevEnergy_physicalMaximal_lt_top hf hdec hν (hS ht))
+    (h3EnergyRightDerivativeFormula_physicalMaximal hf hdec hν hS)
+    (fun t ht => h3PartialCommutation hsol ht)
+    (fun t ht => h3IBPVanishingFlux_physicalMaximal hf hdec hν hdiv (hS ht))
+    s ⟨hs0, hlt⟩
+
 end Lift
 
 end KatoMaximal
@@ -2128,3 +2159,4 @@ end KatoMaximal
 #print axioms KatoMaximal.tame_divTensorIteratePath6
 #print axioms KatoMaximal.convective_physicalMaximal_divTensor6
 #print axioms KatoMaximal.h3IBPVanishingFlux_physicalMaximal
+#print axioms KatoMaximal.katoPonce_h3_energy_physicalMaximal
