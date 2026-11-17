@@ -21,10 +21,16 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Collect lake certificate environment
+        if: always()
+        run: bash scripts/collect_lake_certificate.sh cert-bundle
       - name: Get Mathlib cache
         run: lake exe cache get
       - name: Build
-        run: lake build
+        run: |
+          set -o pipefail
+          mkdir -p cert-bundle
+          lake build 2>&1 | tee cert-bundle/lake-build.log
       - name: Build Scratch
         run: |
           lake build Scratch
@@ -55,6 +61,21 @@ jobs:
       # fail the job on any kernel or audit failure. A GitHub artifact-API outage
       # (HTML error page instead of JSON, as in run 43093930648) must not fail a
       # already-certified build.
+      - name: Copy axiom outputs into the certificate bundle
+        if: always()
+        run: |
+          mkdir -p cert-bundle
+          for f in axioms.txt print_axioms.txt scratch_axioms.txt; do
+            if [ -f "$f" ]; then cp -a "$f" cert-bundle/; fi
+          done
+          bash scripts/finalize_lake_certificate.sh cert-bundle
+      - name: Upload lake certificate bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lake-certificate-certify-${{ github.event_name }}-${{ github.run_id }}
+          path: cert-bundle/
+          if-no-files-found: warn
       - name: Upload axiom report
         if: always()
         continue-on-error: true

@@ -12,4 +12,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: leanprover/lean-action@v1
+      - name: Install elan (toolchain pinned by lean-toolchain)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Collect lake certificate environment
+        if: always()
+        run: bash scripts/collect_lake_certificate.sh cert-bundle
+      - name: Get Mathlib cache
+        run: |
+          if grep -q '"name": *"mathlib"' lake-manifest.json 2>/dev/null; then lake exe cache get; else echo "no mathlib dependency"; fi
+      - name: lake build
+        run: |
+          set -o pipefail
+          mkdir -p cert-bundle
+          lake build 2>&1 | tee cert-bundle/lake-build.log
+      - name: Finalize certificate bundle
+        if: always()
+        run: bash scripts/finalize_lake_certificate.sh cert-bundle
+      - name: Upload lake certificate bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lake-certificate-build-${{ github.event_name }}-${{ github.run_id }}
+          path: cert-bundle/
+          if-no-files-found: warn

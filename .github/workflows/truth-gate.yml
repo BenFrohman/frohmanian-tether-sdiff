@@ -46,10 +46,29 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Collect lake certificate environment
+        if: always()
+        run: bash scripts/collect_lake_certificate.sh cert-bundle
       - name: Mathlib cache (Mathlib is never rebuilt here)
         run: lake exe cache get
+      - name: lake build (log kept for the certificate bundle; verify-lock classifies any failure)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          mkdir -p cert-bundle
+          lake build 2>&1 | tee cert-bundle/lake-build.log
       - name: verify-lock (every phase runs; classified TRUTH GATE VERDICT at the end)
         run: bash scripts/verify-lock.sh
+      - name: Finalize certificate bundle
+        if: always()
+        run: bash scripts/finalize_lake_certificate.sh cert-bundle
+      - name: Upload lake certificate bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lake-certificate-truth-gate-${{ github.event_name }}-${{ github.run_id }}
+          path: cert-bundle/
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
