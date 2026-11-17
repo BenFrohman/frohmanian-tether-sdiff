@@ -26,7 +26,7 @@ open MeasureTheory Real Filter Topology Set
 open scoped ENNReal ContDiff
 
 set_option autoImplicit false
-set_option maxHeartbeats 800000
+set_option maxHeartbeats 2000000
 
 noncomputable section
 namespace KatoMaximal
@@ -638,6 +638,419 @@ lemma presMaximal_eq_iterate {t : ℝ} (ht : 0 ≤ t) (n : ℕ)
   exact (congrArg (lerayPressure (le_refl 3)) hleft.symm).trans
     (congrArg (lerayPressure (le_refl 3)) hright)
 
+lemma restartPath_mild3 {k : ℕ} (hk : 2 ≤ k) (w0 : Hm (k + 1)) :
+    IsMild (localTime_nonneg hν (incl (three_le_succ hk) w0)) ν
+      (incl (three_le_succ hk) w0) (inclMap hk (restartPath hk hν w0)) :=
+  (persist_on_H3_time hk hν w0).choose_spec.2.1
+
+lemma restartPath_memBall {k : ℕ} (hk : 2 ≤ k) (w0 : Hm (k + 1)) :
+    inclMap hk (restartPath hk hν w0) ∈
+      closedBall (0 : XT (localTime ν (incl (three_le_succ hk) w0)))
+        (rad (incl (three_le_succ hk) w0)) :=
+  (persist_on_H3_time hk hν w0).choose_spec.2.2
+
+lemma IccExtend_of_nonpos {T : ℝ} (hT : 0 ≤ T) {E : Type*}
+    [TopologicalSpace E] (u : C(Icc (0 : ℝ) T, E)) {s : ℝ} (hs : s ≤ 0) :
+    ContinuousMap.IccExtend hT u s = ContinuousMap.IccExtend hT u 0 := by
+  change u (projIcc 0 T hT s) = u (projIcc 0 T hT 0)
+  rw [projIcc_of_le_left (h := hT) hs, projIcc_left (h := hT)]
+
+lemma IccExtend_of_ge {T : ℝ} (hT : 0 ≤ T) {E : Type*}
+    [TopologicalSpace E] (u : C(Icc (0 : ℝ) T, E)) {s : ℝ} (hs : T ≤ s) :
+    ContinuousMap.IccExtend hT u s = ContinuousMap.IccExtend hT u T := by
+  change u (projIcc 0 T hT s) = u (projIcc 0 T hT T)
+  rw [projIcc_of_right_le (h := hT) hs, projIcc_right (h := hT)]
+
+lemma IccExtend_endpoint {k : ℕ} {hk : 2 ≤ k} {ν : ℝ} {u₀ : Hm (k + 1)}
+    (W : MildPath hk ν u₀) :
+    ContinuousMap.IccExtend W.ht W.path W.t = W.endpoint := by
+  rw [ContinuousMap.coe_IccExtend,
+    Set.IccExtend_of_mem (hx := ⟨W.ht, le_rfl⟩)]
+  rfl
+
+lemma IccExtend_eq_cast {T T' : ℝ} (hTT : T = T') (hT : 0 ≤ T) (hT' : 0 ≤ T')
+    {E : Type*} [TopologicalSpace E] (u : C(Icc (0 : ℝ) T, E)) (t : ℝ) :
+    ContinuousMap.IccExtend hT u t =
+      ContinuousMap.IccExtend hT' (hTT ▸ u) t := by
+  subst hTT
+  rfl
+
+lemma inclMap_eq_cast {k : ℕ} (hk : 2 ≤ k) {T T' : ℝ} (hTT : T = T')
+    (u : XTs k T) : inclMap hk (hTT ▸ u) = hTT ▸ inclMap hk u := by
+  subst hTT
+  rfl
+
+lemma memBall_cast {T T' : ℝ} (hTT : T = T') {R : ℝ} {u : XT T}
+    (hu : u ∈ closedBall (0 : XT T) R) :
+    (hTT ▸ u) ∈ closedBall (0 : XT T') R := by
+  subst hTT
+  exact hu
+
+lemma isMild_cast {T T' : ℝ} (hTT : T = T') (hT : 0 ≤ T) (hT' : 0 ≤ T')
+    {u₀ : Hm 3} {u : XT T} (hu : IsMild hT ν u₀ u) :
+    IsMild hT' ν u₀ (hTT ▸ u) := by
+  subst hTT
+  exact hu
+
+/-- Uniqueness of included `Ĥ³` shadows on intervals of equal length,
+obtained by substituting the time equality before applying
+`unique_inclMap_of_eq_incl`. -/
+lemma unique_inclMap_of_eq_incl_times {k k' : ℕ} (hk : 2 ≤ k) (hk' : 2 ≤ k')
+    (hν : 0 < ν)
+    {T T' : ℝ} (hT : 0 ≤ T) (hT' : 0 ≤ T') (hTT : T = T')
+    {w : Hm (k + 1)} {w' : Hm (k' + 1)}
+    (hdata : incl (three_le_succ hk) w = incl (three_le_succ hk') w')
+    (hTδ : T + 2 * Real.sqrt (T / ν) ≤ delta (incl (three_le_succ hk) w))
+    {u : XTs k T} {v : XTs k' T'}
+    (huB : inclMap hk u ∈
+      closedBall (0 : XT T) (rad (incl (three_le_succ hk) w)))
+    (hvB : inclMap hk' v ∈
+      closedBall (0 : XT T') (rad (incl (three_le_succ hk') w')))
+    (huM : IsMild hT ν (incl (three_le_succ hk) w) (inclMap hk u))
+    (hvM : IsMild hT' ν (incl (three_le_succ hk') w') (inclMap hk' v)) :
+    inclMap hk u = hTT.symm ▸ inclMap hk' v := by
+  subst hTT
+  exact unique_inclMap_of_eq_incl hk hk' hν hT hdata hTδ huB hvB huM hvM
+
+/-- If two mild paths of equal duration have the same included `Ĥ³`
+initial datum and both lie in the working ball, their included shadows
+agree at every real time. The time equality is substituted before the
+paths are compared, so the proof never rewrites along `▸`. -/
+lemma IccExtend_inclMap_of_eq_incl_times {k k' : ℕ} (hk : 2 ≤ k) (hk' : 2 ≤ k')
+    (hν : 0 < ν)
+    {T T' : ℝ} (hT : 0 ≤ T) (hT' : 0 ≤ T') (hTT : T = T')
+    {w : Hm (k + 1)} {w' : Hm (k' + 1)}
+    (hdata : incl (three_le_succ hk) w = incl (three_le_succ hk') w')
+    (hTδ : T + 2 * Real.sqrt (T / ν) ≤ delta (incl (three_le_succ hk) w))
+    {u : XTs k T} {v : XTs k' T'}
+    (huB : inclMap hk u ∈
+      closedBall (0 : XT T) (rad (incl (three_le_succ hk) w)))
+    (hvB : inclMap hk' v ∈
+      closedBall (0 : XT T') (rad (incl (three_le_succ hk') w')))
+    (huM : IsMild hT ν (incl (three_le_succ hk) w) (inclMap hk u))
+    (hvM : IsMild hT' ν (incl (three_le_succ hk') w') (inclMap hk' v))
+    (t : ℝ) :
+    ContinuousMap.IccExtend hT (inclMap hk u) t =
+      ContinuousMap.IccExtend hT' (inclMap hk' v) t := by
+  subst hTT
+  exact congrArg (fun p => ContinuousMap.IccExtend hT p t)
+    (unique_inclMap_of_eq_incl hk hk' hν hT hdata hTδ huB hvB huM hvM)
+
+/-- If two slices have the same included `Ĥ³` datum, the included
+`Ĥ³` shadows of their restart paths agree at every time. -/
+theorem IccExtend_restartPath_incl {k k' : ℕ} (hk : 2 ≤ k) (hk' : 2 ≤ k')
+    {w : Hm (k + 1)} {w' : Hm (k' + 1)}
+    (hdata : incl (three_le_succ hk) w = incl (three_le_succ hk') w') (t : ℝ) :
+    incl (three_le_succ hk)
+        (ContinuousMap.IccExtend
+          (localTime_nonneg hν (incl (three_le_succ hk) w))
+          (restartPath hk hν w) t) =
+      incl (three_le_succ hk')
+        (ContinuousMap.IccExtend
+          (localTime_nonneg hν (incl (three_le_succ hk') w'))
+          (restartPath hk' hν w') t) := by
+  set hτ0 := localTime_nonneg hν (incl (three_le_succ hk) w)
+  set hτ0' := localTime_nonneg hν (incl (three_le_succ hk') w')
+  have hτ :
+      localTime ν (incl (three_le_succ hk) w) =
+        localTime ν (incl (three_le_succ hk') w') :=
+    congrArg (localTime ν) hdata
+  have hL :
+      incl (three_le_succ hk)
+          (ContinuousMap.IccExtend hτ0 (restartPath hk hν w) t) =
+        ContinuousMap.IccExtend hτ0 (inclMap hk (restartPath hk hν w)) t :=
+    incl_IccExtend hk hτ0 (restartPath hk hν w) t
+  have hR :
+      incl (three_le_succ hk')
+          (ContinuousMap.IccExtend hτ0' (restartPath hk' hν w') t) =
+        ContinuousMap.IccExtend hτ0' (inclMap hk' (restartPath hk' hν w')) t :=
+    incl_IccExtend hk' hτ0' (restartPath hk' hν w') t
+  have hmid :
+      ContinuousMap.IccExtend hτ0 (inclMap hk (restartPath hk hν w)) t =
+        ContinuousMap.IccExtend hτ0' (inclMap hk' (restartPath hk' hν w')) t :=
+    IccExtend_inclMap_of_eq_incl_times hk hk' hν hτ0 hτ0' hτ hdata
+      (localTime_visc hν (incl (three_le_succ hk) w))
+      (restartPath_memBall hν hk w) (restartPath_memBall hν hk' w')
+      (restartPath_mild3 hν hk w) (restartPath_mild3 hν hk' w') t
+  exact hL.trans (hmid.trans hR.symm)
+
+lemma IccExtend_next_le {k : ℕ} {hk : 2 ≤ k} {u₀ : Hm (k + 1)}
+    (W : MildPath hk ν u₀) {s : ℝ} (hs : s ≤ W.t) :
+    ContinuousMap.IccExtend (W.next hν).ht (W.next hν).path s =
+      ContinuousMap.IccExtend W.ht W.path s := by
+  rcases le_or_gt 0 s with hs0 | hs0
+  · exact IccExtend_glue_le hk W.ht
+      (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+      W.path (restartPath hk hν W.endpoint)
+      (restartPath_zero hk hν W.endpoint) ⟨hs0, hs⟩
+  · have hL := IccExtend_of_nonpos (W.next hν).ht (W.next hν).path hs0.le
+    have hR := IccExtend_of_nonpos W.ht W.path hs0.le
+    have h0 : (0 : ℝ) ∈ Icc 0 W.t := ⟨le_rfl, W.ht⟩
+    rw [hL, hR]
+    exact IccExtend_glue_le hk W.ht
+      (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+      W.path (restartPath hk hν W.endpoint)
+      (restartPath_zero hk hν W.endpoint) h0
+
+lemma IccExtend_next_gt {k : ℕ} {hk : 2 ≤ k} {u₀ : Hm (k + 1)}
+    (W : MildPath hk ν u₀) {s : ℝ} (hs0 : W.t ≤ s)
+    (hs : s ∈ Icc 0 (W.next hν).t) :
+    ContinuousMap.IccExtend (W.next hν).ht (W.next hν).path s =
+      ContinuousMap.IccExtend
+        (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+        (restartPath hk hν W.endpoint) (s - W.t) :=
+  IccExtend_glue_gt hk W.ht
+    (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+    W.path (restartPath hk hν W.endpoint)
+    (restartPath_zero hk hν W.endpoint) hs0 hs
+
+/-- Iterated existence times are independent of the Sobolev index, and the
+included `Ĥ³` shadows of the iterated paths agree at every time. -/
+theorem iteratePath_incl_unique {k k' : ℕ} (hk : 2 ≤ k) (hk' : 2 ≤ k') (n : ℕ) :
+    (iteratePath hf hdec hν hk n).t = (iteratePath hf hdec hν hk' n).t ∧
+      ∀ t : ℝ,
+        incl (three_le_succ hk)
+            (ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+              (iteratePath hf hdec hν hk n).path t) =
+          incl (three_le_succ hk')
+            (ContinuousMap.IccExtend (iteratePath hf hdec hν hk' n).ht
+              (iteratePath hf hdec hν hk' n).path t) := by
+  induction n with
+  | zero =>
+    refine ⟨rfl, fun t => ?_⟩
+    have hL :=
+      incl_IccExtend hk (Tfeff_nonneg hf hdec hν) (persistPath hf hdec hν hk) t
+    have hR :=
+      incl_IccExtend hk' (Tfeff_nonneg hf hdec hν) (persistPath hf hdec hν hk') t
+    have hmid :=
+      congrArg (fun p => ContinuousMap.IccExtend (Tfeff_nonneg hf hdec hν) p t)
+        (inclMap_persistPath_unique hf hdec hν hk hk')
+    exact hL.trans (hmid.trans hR.symm)
+  | succ n ih =>
+    obtain ⟨hT, hincl⟩ := ih
+    set W := iteratePath hf hdec hν hk n
+    set W' := iteratePath hf hdec hν hk' n
+    have hend :
+        incl (three_le_succ hk) W.endpoint =
+          incl (three_le_succ hk') W'.endpoint := by
+      have h1 : incl (three_le_succ hk) W.endpoint =
+          incl (three_le_succ hk) (ContinuousMap.IccExtend W.ht W.path W.t) :=
+        congrArg (incl (three_le_succ hk)) (IccExtend_endpoint W).symm
+      have h2 := hincl W.t
+      have h3 :
+          ContinuousMap.IccExtend W'.ht W'.path W.t =
+            ContinuousMap.IccExtend W'.ht W'.path W'.t :=
+        congrArg (ContinuousMap.IccExtend W'.ht W'.path) hT
+      have h4 : incl (three_le_succ hk')
+            (ContinuousMap.IccExtend W'.ht W'.path W'.t) =
+          incl (three_le_succ hk') W'.endpoint :=
+        congrArg _ (IccExtend_endpoint W')
+      exact h1.trans (h2.trans ((congrArg (incl (three_le_succ hk')) h3).trans h4))
+    have hτ :
+        localTime ν (incl (three_le_succ hk) W.endpoint) =
+          localTime ν (incl (three_le_succ hk') W'.endpoint) :=
+      congrArg (localTime ν) hend
+    have htSucc : (W.next hν).t = (W'.next hν).t := by
+      change W.t + localTime ν (incl (three_le_succ hk) W.endpoint) =
+        W'.t + localTime ν (incl (three_le_succ hk') W'.endpoint)
+      rw [hT, hτ]
+    refine ⟨htSucc, fun t => ?_⟩
+    change
+      incl (three_le_succ hk)
+          (ContinuousMap.IccExtend (W.next hν).ht (W.next hν).path t) =
+        incl (three_le_succ hk')
+          (ContinuousMap.IccExtend (W'.next hν).ht (W'.next hν).path t)
+    rcases le_or_gt t W.t with ht | ht
+    · have hle := IccExtend_next_le hν W ht
+      have htW' : t ≤ W'.t := hT ▸ ht
+      have hle' := IccExtend_next_le hν W' htW'
+      exact (congrArg (incl (three_le_succ hk)) hle).trans
+        ((hincl t).trans (congrArg (incl (three_le_succ hk')) hle'.symm))
+    · have ht' : W'.t < t := by rwa [← hT]
+      have hpos : 0 ≤ t := W.ht.trans ht.le
+      rcases le_or_gt t (W.next hν).t with ht1 | ht1
+      · have hs : t ∈ Icc 0 (W.next hν).t := ⟨hpos, ht1⟩
+        have ht1' : t ≤ (W'.next hν).t := htSucc ▸ ht1
+        have hs' : t ∈ Icc 0 (W'.next hν).t := ⟨hpos, ht1'⟩
+        have hgt := IccExtend_next_gt hν W ht.le hs
+        have hgt' := IccExtend_next_gt hν W' ht'.le hs'
+        have hsub : t - W.t = t - W'.t := congrArg (fun s => t - s) hT
+        have hrest := IccExtend_restartPath_incl hν hk hk' hend (t - W'.t)
+        have hshift :
+            incl (three_le_succ hk)
+                (ContinuousMap.IccExtend
+                  (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+                  (restartPath hk hν W.endpoint) (t - W.t)) =
+              incl (three_le_succ hk)
+                (ContinuousMap.IccExtend
+                  (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+                  (restartPath hk hν W.endpoint) (t - W'.t)) :=
+          congrArg (fun s =>
+            incl (three_le_succ hk)
+              (ContinuousMap.IccExtend
+                (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+                (restartPath hk hν W.endpoint) s)) hsub
+        exact (congrArg (incl (three_le_succ hk)) hgt).trans
+          (hshift.trans (hrest.trans
+            (congrArg (incl (three_le_succ hk')) hgt'.symm)))
+      · have hL := IccExtend_of_ge (W.next hν).ht (W.next hν).path ht1.le
+        have ht1' : (W'.next hν).t ≤ t := htSucc ▸ ht1.le
+        have hR := IccExtend_of_ge (W'.next hν).ht (W'.next hν).path ht1'
+        have hW : (W.next hν).t ∈ Icc 0 (W.next hν).t :=
+          ⟨(W.next hν).ht, le_rfl⟩
+        have hW' : (W'.next hν).t ∈ Icc 0 (W'.next hν).t :=
+          ⟨(W'.next hν).ht, le_rfl⟩
+        have hnext0 : W.t ≤ (W.next hν).t := MildPath.next_t_ge hν W
+        have hnext0' : W'.t ≤ (W'.next hν).t := MildPath.next_t_ge hν W'
+        have hgt := IccExtend_next_gt hν W hnext0 hW
+        have hgt' := IccExtend_next_gt hν W' hnext0' hW'
+        have hsub : (W.next hν).t - W.t = (W'.next hν).t - W'.t := by
+          rw [MildPath.next_t, MildPath.next_t, add_sub_cancel_left,
+            add_sub_cancel_left, hτ]
+        have hrest :=
+          IccExtend_restartPath_incl hν hk hk' hend ((W'.next hν).t - W'.t)
+        have hshift :
+            incl (three_le_succ hk)
+                (ContinuousMap.IccExtend
+                  (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+                  (restartPath hk hν W.endpoint) ((W.next hν).t - W.t)) =
+              incl (three_le_succ hk)
+                (ContinuousMap.IccExtend
+                  (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+                  (restartPath hk hν W.endpoint) ((W'.next hν).t - W'.t)) :=
+          congrArg (fun s =>
+            incl (three_le_succ hk)
+              (ContinuousMap.IccExtend
+                (localTime_nonneg hν (incl (three_le_succ hk) W.endpoint))
+                (restartPath hk hν W.endpoint) s)) hsub
+        exact (congrArg (incl (three_le_succ hk)) (hL.trans hgt)).trans
+          (hshift.trans (hrest.trans
+            (congrArg (incl (three_le_succ hk')) (hgt'.symm.trans hR.symm))))
+
+lemma iteratePath_t_unique {k k' : ℕ} (hk : 2 ≤ k) (hk' : 2 ≤ k') (n : ℕ) :
+    (iteratePath hf hdec hν hk n).t = (iteratePath hf hdec hν hk' n).t :=
+  (iteratePath_incl_unique hf hdec hν hk hk' n).1
+
+lemma IccExtend_iteratePath_incl {k k' : ℕ} (hk : 2 ≤ k) (hk' : 2 ≤ k')
+    (n : ℕ) (t : ℝ) :
+    incl (three_le_succ hk)
+        (ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+          (iteratePath hf hdec hν hk n).path t) =
+      incl (three_le_succ hk')
+        (ContinuousMap.IccExtend (iteratePath hf hdec hν hk' n).ht
+          (iteratePath hf hdec hν hk' n).path t) :=
+  (iteratePath_incl_unique hf hdec hν hk hk' n).2 t
+
+lemma iteratePath_t_strict_mono {k : ℕ} (hk : 2 ≤ k) (n : ℕ) :
+    (iteratePath hf hdec hν hk n).t <
+      (iteratePath hf hdec hν hk (n + 1)).t := by
+  rw [iteratePath_succ, MildPath.next_t]
+  exact lt_add_of_pos_right _ (localTime_pos hν _)
+
+lemma Tfeff_pos : 0 < Tfeff hf hdec hν :=
+  localTime_pos hν _
+
+/-- The realized physical field agrees with the physical field of any
+iterated path, independently of the Sobolev index. -/
+lemma physicalMaximal_eq_iterate_high {k : ℕ} (hk : 2 ≤ k) {t : ℝ} (ht : 0 ≤ t)
+    (n : ℕ) (hn : t ≤ (iteratePath hf hdec hν hk n).t) :
+    physicalMaximal hf hdec hν t =
+      physicalOfHm
+        (ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+          (iteratePath hf hdec hν hk n).path t) := by
+  have hn2 : t ≤ (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).t := by
+    rwa [← iteratePath_t_unique hf hdec hν hk (by norm_num : 2 ≤ 2) n]
+  rw [physicalMaximal_eq_iterate hf hdec hν ht n hn2,
+    ← physicalOfHm_incl (three_le_succ (by norm_num : 2 ≤ 2)),
+    IccExtend_iteratePath_incl hf hdec hν (by norm_num : 2 ≤ 2) hk n t,
+    physicalOfHm_incl (three_le_succ hk)]
+
+lemma presMaximal_eq_iterate_high {k : ℕ} (hk : 2 ≤ k) {t : ℝ} (ht : 0 ≤ t)
+    (n : ℕ) (hn : t ≤ (iteratePath hf hdec hν hk n).t) :
+    presMaximal hf hdec hν t =
+      lerayPressure (three_le_succ hk)
+        (ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+          (iteratePath hf hdec hν hk n).path t) := by
+  have hn2 : t ≤ (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).t := by
+    rwa [← iteratePath_t_unique hf hdec hν hk (by norm_num : 2 ≤ 2) n]
+  rw [presMaximal_eq_iterate hf hdec hν ht n hn2]
+  refine lerayPressure_congr (le_refl 3) (three_le_succ hk) ?_
+  have hinc := IccExtend_iteratePath_incl hf hdec hν
+    (by norm_num : 2 ≤ 2) hk n t
+  set U := ContinuousMap.IccExtend
+      (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).ht
+      (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).path t
+  set U' := ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+      (iteratePath hf hdec hν hk n).path t
+  have hL :=
+    (ProductHm.coeFn_incl_vol (three_le_succ (by norm_num : 2 ≤ 2)) U).symm
+  have hR := ProductHm.coeFn_incl_vol (three_le_succ hk) U'
+  rw [hinc] at hL
+  exact hL.trans hR
+
+lemma inMaximal_iff {k k' : ℕ} (hk : 2 ≤ k) (hk' : 2 ≤ k') (t : ℝ) :
+    inMaximal hf hdec hν hk t ↔ inMaximal hf hdec hν hk' t := by
+  constructor
+  · rintro ⟨ht, n, hn⟩
+    exact ⟨ht, n, hn.trans_eq (iteratePath_t_unique hf hdec hν hk hk' n)⟩
+  · rintro ⟨ht, n, hn⟩
+    exact ⟨ht, n, hn.trans_eq (iteratePath_t_unique hf hdec hν hk' hk n)⟩
+
+lemma Smax_unique {k k' : ℕ} (hk : 2 ≤ k) (hk' : 2 ≤ k') :
+    Smax hf hdec hν hk = Smax hf hdec hν hk' := by
+  ext t
+  exact inMaximal_iff hf hdec hν hk hk' t
+
+lemma Smax_eq_Ici_of_unbounded {k : ℕ} (hk : 2 ≤ k)
+    (hunb : ∀ M : ℝ, ∃ n : ℕ, M < (iteratePath hf hdec hν hk n).t) :
+    Smax hf hdec hν hk = Ici 0 := by
+  ext t
+  constructor
+  · exact fun ht => ht.1
+  · intro ht
+    obtain ⟨n, hn⟩ := hunb t
+    exact ⟨ht, n, hn.le⟩
+
+lemma iteratePath_t_lt_csSup {k : ℕ} (hk : 2 ≤ k)
+    (hbd : BddAbove (Set.range fun n => (iteratePath hf hdec hν hk n).t))
+    (n : ℕ) :
+    (iteratePath hf hdec hν hk n).t <
+      sSup (Set.range fun n => (iteratePath hf hdec hν hk n).t) :=
+  lt_of_lt_of_le (iteratePath_t_strict_mono hf hdec hν hk n)
+    (le_csSup hbd ⟨n + 1, rfl⟩)
+
+lemma Smax_eq_Ico_of_bounded {k : ℕ} (hk : 2 ≤ k)
+    (hbd : BddAbove (Set.range fun n => (iteratePath hf hdec hν hk n).t)) :
+    0 < sSup (Set.range fun n => (iteratePath hf hdec hν hk n).t) ∧
+      Smax hf hdec hν hk =
+        Ico 0 (sSup (Set.range fun n => (iteratePath hf hdec hν hk n).t)) := by
+  set Tstar := sSup (Set.range fun n => (iteratePath hf hdec hν hk n).t)
+  have hpos : 0 < Tstar :=
+    lt_of_lt_of_le (Tfeff_pos hf hdec hν) (le_csSup hbd ⟨0, rfl⟩)
+  refine ⟨hpos, ?_⟩
+  ext t
+  constructor
+  · rintro ⟨ht, n, hn⟩
+    exact ⟨ht, lt_of_le_of_lt hn (iteratePath_t_lt_csSup hf hdec hν hk hbd n)⟩
+  · rintro ⟨ht, htT⟩
+    refine ⟨ht, ?_⟩
+    by_contra h
+    push Not at h
+    have : Tstar ≤ t :=
+      csSup_le ⟨(iteratePath hf hdec hν hk 0).t, ⟨0, rfl⟩⟩
+        fun _ ⟨n, hn⟩ => hn ▸ (h n).le
+    exact htT.not_ge this
+
+/-- The maximal time set is either `[0, ∞)` or a half-open interval
+`[0, T*)` with `T* > 0`. -/
+theorem Smax_eq_Ici_or_Ico {k : ℕ} (hk : 2 ≤ k) :
+    Smax hf hdec hν hk = Ici 0 ∨
+      ∃ Tstar : ℝ, 0 < Tstar ∧ Smax hf hdec hν hk = Ico 0 Tstar := by
+  rcases mild_blowup_alternative hf hdec hν hk with hunb | ⟨hbd, _⟩
+  · exact Or.inl (Smax_eq_Ici_of_unbounded hf hdec hν hk hunb)
+  · obtain ⟨hpos, heq⟩ := Smax_eq_Ico_of_bounded hf hdec hν hk hbd
+    exact Or.inr ⟨_, hpos, heq⟩
+
 end Lift
 
 end KatoMaximal
@@ -662,3 +1075,11 @@ end KatoMaximal
 #print axioms KatoMaximal.IccExtend_iteratePath_mono
 #print axioms KatoMaximal.physicalMaximal_eq_iterate
 #print axioms KatoMaximal.presMaximal_eq_iterate
+#print axioms KatoMaximal.IccExtend_restartPath_incl
+#print axioms KatoMaximal.iteratePath_incl_unique
+#print axioms KatoMaximal.iteratePath_t_unique
+#print axioms KatoMaximal.IccExtend_iteratePath_incl
+#print axioms KatoMaximal.physicalMaximal_eq_iterate_high
+#print axioms KatoMaximal.presMaximal_eq_iterate_high
+#print axioms KatoMaximal.Smax_unique
+#print axioms KatoMaximal.Smax_eq_Ici_or_Ico
