@@ -1722,6 +1722,67 @@ theorem re_inner_mildSDeriv_iteratePath (hdiv : ∀ x, div u₀ x = 0) {n : ℕ}
   have : 0 ≤ 4 * π ^ 2 * ‖ξ‖ ^ 2 * ‖(P : E3 → V) ξ‖ ^ 2 := by positivity
   nlinarith [hν]
 
+/-- The energy inequality on each iterated existence interval. -/
+theorem energyInequality_physicalMaximal_of_le (hdiv : ∀ x, div u₀ x = 0)
+    {n : ℕ} {t : ℝ}
+    (ht : t ∈ Ico (0 : ℝ) (iteratePath hf hdec hν (by norm_num : 2 ≤ 4) n).t) :
+    ∫⁻ x, ‖physicalMaximal hf hdec hν t x‖ₑ ^ 2 ≤ ∫⁻ x, ‖u₀ x‖ₑ ^ 2 := by
+  have hk4 : 2 ≤ 4 := by norm_num
+  have hm2 : 2 + 2 ≤ 4 := le_refl 4
+  have hle : 2 ≤ 4 + 1 := le_succ_of_add_two_le hm2
+  have h0 : 0 ≤ 2 := Nat.zero_le 2
+  set W := iteratePath hf hdec hν hk4 n
+  set Γ := inclExt hle W.ht W.path
+  set g : ℝ → ℝ := fun s =>
+    Complex.reCLM (inner ℂ (incl h0 (Γ s)) (incl h0 (Γ s)))
+  have hreal : ∀ s, IsRealSlice (le_refl 2) (Γ s) := by
+    intro s y i
+    refine fourierInv_im_eq_zero ?_ y i
+    unfold Γ inclExt
+    rw [refl_incl, refl_IccExtend_iteratePath]
+  have hE : ∀ s, s ∈ Icc (0 : ℝ) W.t →
+      ∫⁻ x, ‖physicalMaximal hf hdec hν s x‖ₑ ^ 2 = ENNReal.ofReal (g s) := by
+    intro s hs
+    rw [physicalMaximal_eq_inclExt hf hdec hν hk4 hle hs.1 n hs.2]
+    exact lintegral_physicalOfHm_sq (le_refl 2) (hreal s)
+  set D := fun s => mildSDeriv hk4 hm2 hν W.ht
+    (toHmFeff u₀ hf hdec (4 + 1)) W.path s
+  set g' : ℝ → ℝ := fun s =>
+    Complex.reCLM (inner ℂ (incl h0 (Γ s)) (incl h0 (D s)) +
+      inner ℂ (incl h0 (D s)) (incl h0 (Γ s)))
+  have hder : ∀ s ∈ Ico (0 : ℝ) W.t,
+      HasDerivWithinAt g (g' s) (Ico 0 W.t) s := by
+    intro s hs
+    have hI : HasDerivWithinAt (fun τ => incl h0 (Γ τ)) (incl h0 (D s))
+        (Ico 0 W.t) s :=
+      (inclR h0).hasFDerivAt.comp_hasDerivWithinAt s
+        (hasDerivWithinAt_mildS_incl_Ico hk4 hm2 hν W.ht W.mild hs)
+    have hN := Complex.reCLM.hasFDerivAt.comp_hasDerivWithinAt s (hI.inner ℂ hI)
+    convert hN using 1
+  have hneg : ∀ s ∈ Ico (0 : ℝ) W.t, g' s ≤ 0 := by
+    intro s hs
+    have h := re_inner_mildSDeriv_iteratePath hf hdec hν hdiv hs
+    have hg's : g' s =
+        (inner ℂ (incl h0 (Γ s)) (incl h0 (D s)) +
+          inner ℂ (incl h0 (D s)) (incl h0 (Γ s))).re :=
+      Complex.reCLM_apply _
+    rw [hg's, Complex.add_re,
+      ← inner_conj_symm (incl h0 (D s)) (incl h0 (Γ s)), Complex.conj_re]
+    linarith
+  have hanti : AntitoneOn g (Ico 0 W.t) := by
+    refine antitoneOn_of_hasDerivWithinAt_nonpos (f' := g') (convex_Ico 0 _)
+      (fun s hs => (hder s hs).continuousWithinAt) (fun s hs => ?_)
+      (fun s hs => ?_)
+    · rw [interior_Ico] at hs ⊢
+      exact (hder s (Ioo_subset_Ico_self hs)).mono Ioo_subset_Ico_self
+    · rw [interior_Ico] at hs
+      exact hneg s (Ioo_subset_Ico_self hs)
+  have h0mem : (0 : ℝ) ∈ Ico (0 : ℝ) W.t := ⟨le_rfl, ht.1.trans_lt ht.2⟩
+  have hle0 := hanti h0mem ht ht.1
+  rw [hE t ⟨ht.1, le_of_lt ht.2⟩, ← physicalMaximal_zero hf hdec hν,
+    hE 0 ⟨le_rfl, W.ht⟩]
+  exact ENNReal.ofReal_le_ofReal hle0
+
 end Lift
 
 end KatoMaximal
@@ -1782,3 +1843,4 @@ end KatoMaximal
 #print axioms KatoMaximal.momentum_physicalMaximal_of_le
 #print axioms KatoMaximal.momentum_physicalMaximal
 #print axioms KatoMaximal.re_inner_mildSDeriv_iteratePath
+#print axioms KatoMaximal.energyInequality_physicalMaximal_of_le
