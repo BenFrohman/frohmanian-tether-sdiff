@@ -1183,6 +1183,41 @@ theorem hsSq_physicalMaximal {k : ℕ} (hk : 2 ≤ k)
     (DuhamelDeriv.incl_comp hle (by norm_num : 3 ≤ 5) W7).trans (by congr 1)
   rw [hcomp, IccExtend_iteratePath_incl hf hdec hν hk7 hk n t]
 
+/-- The `H³` energy is continuous on the maximal time set. -/
+theorem continuousOn_hsSq_physicalMaximal {k : ℕ} (hk : 2 ≤ k) :
+    ContinuousOn (fun t => hsSq 3 (physicalMaximal hf hdec hν t))
+      (Smax hf hdec hν hk) := by
+  have hk7 : 2 ≤ 7 := by norm_num
+  rw [Smax_unique hf hdec hν hk hk7]
+  intro t ht
+  obtain ⟨ht0, n, hn⟩ := ht
+  have hTn :
+      (iteratePath hf hdec hν hk7 n).t <
+        (iteratePath hf hdec hν hk7 (n + 1)).t :=
+    iteratePath_t_strict_mono hf hdec hν hk7 n
+  have hn' : t ≤ (iteratePath hf hdec hν hk7 (n + 1)).t := hn.trans hTn.le
+  have htlt : t < (iteratePath hf hdec hν hk7 (n + 1)).t :=
+    lt_of_le_of_lt hn hTn
+  set T := (iteratePath hf hdec hν hk7 (n + 1)).t
+  have hg : Continuous (fun s =>
+      ‖incl (three_le_succ hk7)
+        (ContinuousMap.IccExtend (iteratePath hf hdec hν hk7 (n + 1)).ht
+          (iteratePath hf hdec hν hk7 (n + 1)).path s)‖ ^ 2) :=
+    (continuous_pow 2).comp
+      ((incl (three_le_succ hk7)).continuous.comp
+        (ContinuousMap.IccExtend
+          (iteratePath hf hdec hν hk7 (n + 1)).ht
+          (iteratePath hf hdec hν hk7 (n + 1)).path).continuous).norm
+  have hI : ContinuousOn (fun s => hsSq 3 (physicalMaximal hf hdec hν s))
+      (Icc (0 : ℝ) T) := by
+    refine hg.continuousOn.congr ?_
+    intro s hs
+    exact hsSq_physicalMaximal hf hdec hν hk7 hs.1 (n + 1) hs.2
+  have hnhd : Icc (0 : ℝ) T ∈ 𝓝[Smax hf hdec hν hk7] t :=
+    mem_of_superset (inter_mem_nhdsWithin _ (Iio_mem_nhds htlt))
+      (fun s hs => ⟨hs.1.1, hs.2.le⟩)
+  exact (hI t ⟨ht0, hn'⟩).mono_of_mem_nhdsWithin hnhd
+
 end Lift
 
 end KatoMaximal
@@ -1220,3 +1255,4 @@ end KatoMaximal
 #print axioms KatoMaximal.isRealSlice_IccExtend_iteratePath
 #print axioms KatoMaximal.sobolevEnergy_physicalMaximal_lt_top
 #print axioms KatoMaximal.hsSq_physicalMaximal
+#print axioms KatoMaximal.continuousOn_hsSq_physicalMaximal
