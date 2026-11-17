@@ -2016,6 +2016,48 @@ lemma tame_divTensorIteratePath6 (n : ℕ) (t : ℝ) :
     (by norm_num : 3 + 2 ≤ 7 - 1)
     (divTensorIteratePath6 hf hdec hν n t)
 
+lemma convective_physicalMaximal_divTensor6 (hdiv : ∀ x, div u₀ x = 0)
+    {t : ℝ} (ht : 0 ≤ t) (n : ℕ)
+    (hn : t ≤ (iteratePath hf hdec hν (by norm_num : 2 ≤ 6) n).t) :
+    convective (physicalMaximal hf hdec hν t)
+        (physicalMaximal hf hdec hν t) =
+      physicalOfHm (divTensorIteratePath6 hf hdec hν n t) := by
+  rw [convective_physicalMaximal hf hdec hν hdiv (by norm_num : 2 ≤ 6) ht n hn]
+  simp only [divTensorIteratePath6]
+
+/-- Every time slice of the realized maximal field satisfies
+`H3IBPVanishingFlux` with the Leray pressure. -/
+theorem h3IBPVanishingFlux_physicalMaximal (hdiv : ∀ x, div u₀ x = 0)
+    {t : ℝ} (ht : inMaximal hf hdec hν (by norm_num : 2 ≤ 2) t) :
+    H3IBPVanishingFlux (physicalMaximal hf hdec hν t)
+      (presMaximal hf hdec hν t) := by
+  obtain ⟨ht0, n, hn⟩ := ht
+  have hk2 : 2 ≤ 2 := by norm_num
+  have hk6 : 2 ≤ 6 := by norm_num
+  have hn6 : t ≤ (iteratePath hf hdec hν hk6 n).t :=
+    hn.trans_eq (iteratePath_t_unique hf hdec hν hk2 hk6 n)
+  have hlt : t < (iteratePath hf hdec hν hk2 (n + 1)).t :=
+    lt_of_le_of_lt hn (iteratePath_t_strict_mono hf hdec hν hk2 n)
+  have hS : Ico (0 : ℝ) (iteratePath hf hdec hν hk2 (n + 1)).t ⊆
+      Smax hf hdec hν hk2 := fun τ hτ => ⟨hτ.1, n + 1, le_of_lt hτ.2⟩
+  have hsol := isFeffermanSolutionOn_physicalMaximal hf hdec hν hdiv hS
+  have htI : t ∈ Ico (0 : ℝ) (iteratePath hf hdec hν hk2 (n + 1)).t :=
+    ⟨ht0, hlt⟩
+  set U6 :=
+    ContinuousMap.IccExtend (iteratePath hf hdec hν hk6 n).ht
+      (iteratePath hf hdec hν hk6 n).path t
+  refine MildFlux.h3IBPVanishingFlux_of_tame
+    (contDiff_u_slice hsol htI) (contDiff_p_slice hsol htI)
+    (div_physicalMaximal hf hdec hν hdiv ⟨ht0, n, hn⟩) ?_ ?_ ?_
+  · rw [physicalMaximal_eq_iterate_high hf hdec hν hk6 ht0 n hn6]
+    exact MildFlux.tame_physicalOfHm (N := 5) (m := 7)
+      (by norm_num : 5 + 2 ≤ 7) U6
+  · rw [presMaximal_eq_iterate_high hf hdec hν hk6 ht0 n hn6]
+    exact MildFlux.tame_lerayPressure (N := 4) (s := 7)
+      (three_le_succ hk6) (by norm_num : 4 + 2 ≤ 7) U6
+  · rw [convective_physicalMaximal_divTensor6 hf hdec hν hdiv ht0 n hn6]
+    exact tame_divTensorIteratePath6 hf hdec hν n t
+
 end Lift
 
 end KatoMaximal
@@ -2084,3 +2126,5 @@ end KatoMaximal
 #print axioms KatoMaximal.convective_physicalMaximal
 #print axioms KatoMaximal.divTensorIteratePath6
 #print axioms KatoMaximal.tame_divTensorIteratePath6
+#print axioms KatoMaximal.convective_physicalMaximal_divTensor6
+#print axioms KatoMaximal.h3IBPVanishingFlux_physicalMaximal
