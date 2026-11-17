@@ -39,6 +39,12 @@ require WeightedEnstrophy from git
 @[default_target]
 lean_lib FrohmanianTether where
 
+/-- Scratch work (not a default target). `lake build Scratch` compiles every
+`Scratch/*.lean` module via the submodule glob (no root `Scratch.lean`).
+Individual modules: `lake build Scratch.R3BKMContinuation`. -/
+lean_lib Scratch where
+  globs := #[.submodules `Scratch]
+
 /-- Non-module bridge files that import proved pillar repositories (kept out of the `module`
 library `FrohmanianTether`, which may only import modules). -/
 @[default_target]

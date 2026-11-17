@@ -74,11 +74,31 @@ Reports are written to `truth-gate-report/`.
 
 * Paper: `manuscript/main.tex`
 * sha256: `b1e6a8e942383a99f501062261ae75f57f69986059e0a2f1087ea9503f880de9`
-* Section: Section 2 "Main results of version 0.1.5", Theorem thm:mainA ("Main theorem, kernel-checked")
+* Section: Section 2 "Main results of version 0.1.5", Definition def:ptb ("The Frohmanian tether bound") and Theorem thm:mainA ("Main theorem, kernel-checked")
 * Main theorem(s): `FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound`
 * Lock file: `TRUTH_GATE.lock`; semantics: `FrohmanianTether/Semantics.lean`
+* Approver: **Benjamin Stanley Frohman, 2026-11-17 00:22 CT, replying "OK" to "It needs your OK on three new sentences for the paper and a rewrite of the existing Clay B lock"; confirmed 00:32 CT: "yes fix and proceed!"** (recorded in `TRUTH_GATE.lock` → `approvedBy`).
 
-Verbatim quote:
+Verbatim quotes (the definition of `M(t)` and the classical solution class; Definition `def:ptb`; Theorem `thm:mainA`):
+
+```
+Throughout, $M(t)=\|\omega(t)\|_{L^\infty}$ is \lean{vorticity_sup_norm (vorticity (u t))}, and
+\lean{IsPeriodicSmoothSolutionOn ν T u₀ u p} is the class of classical solutions on $[0,T)$: $(u,p)$ jointly
+$C^\infty$ on $[0,T)\times\R^3$, the equations with one-sided time derivative and zero forcing,
+$\operatorname{div}u=0$, $u(0)=u_0$, and $u(t),p(t)$ $\mathbb{Z}^3$-periodic (exact text in
+Appendix~\ref{app:lean:clay}).
+```
+
+```
+\begin{definition}[The Frohmanian tether bound]\label{def:ptb}
+\emph{Lean:} \leanbrk{TetherImpliesBKM.PeriodicTetherBound}.\par\noindent
+For $\nu\in\R$ and a field $u_0$, \lean{PeriodicTetherBound ν u₀} asserts that there is $Y\in\R$ such that
+$M(t)\le Y$ for every $T$, every classical periodic solution $(u,p)$ from $u_0$ on $[0,T)$ and every
+$t\in[0,T)$. The \emph{closing bound} \lean{PeriodicTetherClosingBound ν} asserts \lean{PeriodicTetherBound ν u₀}
+for every smooth divergence-free $\mathbb{Z}^3$-periodic $u_0$; this is a definitional identity
+(\lean{periodicTetherClosingBound_iff}, proved by \lean{Iff.rfl}).
+\end{definition}
+```
 
 ```
 Assume, for every $\nu>0$,
@@ -99,7 +119,19 @@ def formal_claim : Prop :=
     (∀ ν > (0 : ℝ), PeriodicBKMContinuation ν) → Clay_B_exact
 
 def paper_claim : Prop :=
-  (∀ ν : ℝ, 0 < ν → PeriodicTetherClosingBound ν ∧ PeriodicBKMContinuation ν) →
+  (∀ ν : ℝ, 0 < ν →
+      (∀ u₀ : VelocityField,
+          ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) → IsZ3Periodic u₀ →
+            ∃ Y : ℝ, ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
+              IsPeriodicSmoothSolutionOn ν T u₀ u p →
+                ∀ t ∈ Set.Ico (0 : ℝ) T, vorticity_sup_norm (vorticity (u t)) ≤ Y) ∧
+      (∀ u₀ : VelocityField,
+          ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) → IsZ3Periodic u₀ →
+            (∃ Y : ℝ, ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
+              IsPeriodicSmoothSolutionOn ν T u₀ u p →
+                ∀ t ∈ Set.Ico (0 : ℝ) T, vorticity_sup_norm (vorticity (u t)) ≤ Y) →
+              ∃ (u : TimeDependentVelocity) (p : TimeDependentPressure),
+                IsPeriodicSmoothSolution ν u₀ (fun _ _ => 0) u p)) →
     ∀ (ν : ℝ) (u₀ : VelocityField), 0 < ν →
       ContDiff ℝ (⊤ : ℕ∞) u₀ → (∀ x, div u₀ x = 0) → IsZ3Periodic u₀ →
       ∃ (u : TimeDependentVelocity) (p : TimeDependentPressure),
@@ -112,26 +144,127 @@ def paper_claim : Prop :=
 
 See the doc comment of `FrohmanianTether/Semantics.lean` for the fixed reading of the paper's terms and the scope.
 
-## Re-audit (2026-11-16): this lock is NOT certifying
+## Re-audit (2026-11-16) and independent transcription
 
-Status: **REOPENED. The gate is red on purpose.** `TRUTH_GATE.lock` carries `"certifying": false`, and
-`scripts/truth_gate_check.py` fails while it does. Nothing was deleted: `Semantics.lean`, the quotes,
-the hashes and the history are unchanged.
+The 2026-11-16 re-audit reopened this lock because `paper_claim` named the repository Props
+`PeriodicTetherClosingBound` and `PeriodicBKMContinuation` instead of writing the hypotheses
+out from the paper's English (`def:ptb` and the BKM continuation definition in Theorem
+`thm:mainA`). Those hypotheses carry the whole difficulty.
 
-Rule applied (Benjamin Stanley Frohman, 2026-11-16):
-* There are no partial locks. A lock certifies only a step on the correct path to the full theorem
-  that is kernel-proved as the actual true answer, so that the next step can build on it.
-* Drifted, dummy, placeholder or stand-in types, names or categories are rejected.
-* Cross-ontology connections are not rejected for looking unrelated. The kernel check, and whether
-  the piece genuinely helps reach the full structured proof, decide.
-* `paper_claim` is an independent transcription of the verbatim paper quote, never an alias of
-  `formal_claim`, and the correspondence is never `rfl`/`Iff.rfl`.
+`paper_claim` has since been rewritten so that both hypotheses are independent Lean
+transcriptions of that English, using only Mathlib primitives and the repository's genuine
+Navier–Stokes objects (`IsPeriodicSmoothSolutionOn`, `IsPeriodicSmoothSolution`,
+`vorticity_sup_norm`, `vorticity`, `navier_stokes_eq_Ici`, and the smoothness / divergence-free
+/ periodicity conditions). Hypothesis (i) is written out as Definition `def:ptb` states it: there is `Y` such that
+`M(t) ≤ Y` along every classical periodic solution. The tether kernel does not appear in
+that statement. The correspondence `formal_claim ↔ paper_claim` is a genuine argument (reordering
+the smoothness and divergence-free hypotheses, joining or splitting the two `ν > 0`
+assumptions, and spelling the conclusion out of `IsPeriodicSmoothSolution` / `Clay_B_exact`),
+not `Iff.rfl`.
 
-Locked claim under review: clay_B_exact_of_periodic_tether_bound (Theorem thm:mainA)
+Mechanical status: `TRUTH_GATE.lock` carries the new lock-region hash, `"certifying": true` and
+the author's approval in `approvedBy`.
 
-Why it is reopened:
-* The hypotheses are not independently transcribed. `paper_claim` keeps the repository Props `PeriodicTetherClosingBound` and `PeriodicBKMContinuation` as named Props, although the paper gives a precise English definition (def:ptb). The hypotheses carry the whole difficulty, so the lock leans on repository definitions exactly where it matters.
-* Stand-in naming. By its definition, the "Frohmanian tether bound" is the plain uniform bound `‖ω(t)‖_∞ ≤ Y` over all classical periodic solutions on all `[0,T)`. Nothing tether-specific enters, and the repository's own docstring says "the Frohmanian assembly contributes no step that BKM does not". The name presents an open vorticity bound as a tether result.
-* Non-vacuity is not certified. The bound is open and as strong as Statement (B), and there is no witness. Neither the bound nor its satisfiability is shown.
+Approver: **Benjamin Stanley Frohman, 2026-11-17 00:22 CT, replying "OK" to "It needs your OK on three new sentences for the paper and a rewrite of the existing Clay B lock"; confirmed 00:32 CT: "yes fix and proceed!".**
+Nothing here is a proof of statement (B) or of Navier–Stokes regularity. Hypothesis (i)
+remains OPEN and as strong as statement (B) itself; the lock certifies only the implication.
 
-What would re-certify it: Either re-lock with an independent transcription of both hypotheses from the paper's English, naming the bound honestly as a uniform vorticity bound (as in BenFrohman/Clay-), or retire this lock in favour of the Clay- reduction.
+## Additional locks: the Fefferman (A) paper
+
+* Paper: `papers/fefferman-clay-a-conditional/main.tex`
+* sha256: `14179f79141f4a2b596f6fc08194be737e2f4bec8235d8f14bfc44175fa939dd`
+* Semantics: `Scratch/FeffermanSemantics.lean`; kernel audit: `scripts/TruthGateAuditFefferman.lean`;
+  lock entry: `TRUTH_GATE.lock` → `additional_locks`
+* Locks (each `formal_claim_X ↔ paper_claim_X`, proved by restructuring, not `Iff.rfl`):
+  * `kato`: `KatoMaximal.katoMaximalSolution_of_feffermanDecay` ↔ Theorem `thm:kato-proved`
+  * `bkm`: `KatoContinuation.r3BKMContinuation_of_pos` ↔ Theorem `thm:r3bkm`
+  * `clayA`: `KatoContinuation.clay_A_fefferman_of_rate` ↔ Theorem `thm:clayA-rate`
+* Each `paper_claim_X` is transcribed from the English below with the paper's own symbols
+  (`ν`, `u₀`, `u`, `p`, `ω`, `‖ω‖_∞`). It does not name `KatoMaximalSolution`,
+  `R3BKMContinuation`, `FrohmanianTetherRateSmooth`, `Clay_A_Fefferman`,
+  `FeffermanGlobalSolution`, `IsFeffermanSolutionOn`, `FeffermanDecay`, `Mω`, `sobolevEnergy`,
+  `hsSq`, `gradSup` or any `formal_claim`; `scripts/truth_gate_check.py` enforces this.
+* Non-vacuity witnesses at `u₀ = 0`: `paper_FeffermanDatum_zero`, `paper_RateSmooth_zero`,
+  `paper_ceiling_zero`, `paper_GlobalSolution_zero`, `paper_kato_instance_zero`.
+* Approver: **Benjamin Stanley Frohman, 2026-11-17 00:22 CT, replying "OK" to "It needs your OK on three new sentences for the paper and a rewrite of the existing Clay B lock"; confirmed 00:32 CT: "yes fix and proceed!".**
+
+Scope: `thm:kato-proved` is local Kato theory (a maximal solution with an `H³` blow-up
+alternative), not global regularity. `thm:r3bkm` keeps a uniform vorticity ceiling as a hypothesis.
+`thm:clayA-rate` is conditional on `FrohmanianTetherRateSmooth` for all Fefferman data, which is
+OPEN; it does not establish `Clay_A_Fefferman`. No Millennium Prize problem is claimed solved.
+
+Verbatim quotes:
+
+```
+Write
+\[
+M(t)\;:=\;\|\omega(t)\|_\infty
+\;:=\;
+\sup_{x\in\R^3}\bigl|\omega(x,t)\bigr|,
+\]
+```
+
+```
+Fefferman's official problem description~\cite{Fefferman} poses Problem~(A) as follows. Take $\nu>0$ and $n=3$. Let $u^\circ$ be a smooth divergence-free vector field on $\R^3$ satisfying
+\begin{equation}
+\tag{4}
+\bigl|\partial_x^\alpha u^\circ(x)\bigr|
+\le
+C_{\alpha K}\,(1+|x|)^{-K}
+\quad\text{on }\R^3,\text{ for any }\alpha,K.
+\end{equation}
+Take $f\equiv 0$. Then there exist smooth functions $p(x,t)$ and $u_i(x,t)$ on $\R^3\times[0,\infty)$ that satisfy (1)~(the momentum equation), (2)~($\operatorname{div}u=0$), (3)~($u(x,0)=u^\circ(x)$), (6)~($p,u\in C^\infty(\R^3\times[0,\infty))$) and (7)~($\int_{\R^3}|u(x,t)|^2\,dx<C$ for all $t\ge 0$).
+```
+
+```
+The local solution class on which both rates are posed is \lean{IsFeffermanSolutionOn} (\lean{RepairedTetherRate.lean:56--65}): joint $C^\infty$ regularity of $(u,p)$ on $\R^3\times[0,T)$; the incompressible Navier--Stokes equations with $f\equiv 0$ and a one-sided time derivative at $t=0$; the initial condition $u(\cdot,0)=u_0$; and the energy inequality $\int_{\R^3}|u(t)|^2\le\int_{\R^3}|u_0|^2$, written as a comparison of lower Lebesgue integrals.
+```
+
+```
+Throughout, Sobolev spaces are written $\Hs$, where $s\in\mathbb{N}$ is a nonnegative integer. (The letter $m$ is reserved for miscellaneous integers and is never used as a Sobolev index in the prose.) In the Lean development the same spaces appear as \lean{R3BKM.sobolevEnergy s} (spatial energy)
+```
+
+```
+\begin{definition}[Smooth tether rate]
+\label{def:smooth}
+The proposition \lean{FrohmanianTetherRateSmooth} (\lean{Scratch/RepairedTetherRate.lean:74--81}) states: there exist $C,\kappa>0$, depending only on $u_0$ and $\nu$, such that along every local Fefferman-class solution issuing from $u_0$ on $[0,T)$, $M$ is finite and continuous on $[0,T)$, and at every $s\in[0,T)$ there is a right derivative $d$ of $M$ at $s$ satisfying $d\le C M(s)^2-\kappa M(s)^3$.
+\end{definition}
+```
+
+```
+\begin{definition}[Kato maximal solution]
+\label{def:kato}
+The proposition \lean{KatoMaximalSolution}\ $\nu$ $u_0$ (\lean{Scratch/R3BKMContinuation.lean:76--84}) states that there exist a time set $S$, fields $(u,p)$, and a constant $C_k\ge 0$, such that:
+\begin{enumerate}[label=(\roman*)]
+\item for every $T$ with $[0,T)\subseteq S$, the pair $(u,p)$ is an \lean{IsFeffermanSolutionOn} solution from $u_0$ on $[0,T)$;
+\item $\|u(t)\|_{H^3}^2$ is finite for every $t\in S$, and the map $t\mapsto\|u(t)\|_{H^3}^2$ is continuous on $S$ and right-differentiable, with
+\[
+\frac{d}{dt}\|u\|_{H^3}^2
+\;\le\;
+C_k\,\|\nabla u\|_\infty\,\|u\|_{H^3}^2;
+\]
+\item either $S=[0,\infty)$, or $S=[0,T^*)$ for some $T^*\in(0,\infty)$ and $\|u\|_{H^3}^2$ is unbounded on $S$.
+\end{enumerate}
+\end{definition}
+```
+
+```
+\begin{theorem}[Kato maximal solution for Fefferman data]
+\label{thm:kato-proved}
+Let $\nu>0$, and let $u_0$ be smooth, divergence-free, and satisfy Fefferman decay~(4). Then \lean{KatoMaximalSolution}\ $\nu$ $u_0$ holds in the sense of Definition~\ref{def:kato}: there exist a time set $S$, fields $(u,p)$ and a constant $C_k\ge 0$ satisfying (i)--(iii) of that definition. This is a maximal Fefferman-class solution with an $H^3$ blow-up alternative; it does not assert global regularity.
+\end{theorem}
+```
+
+```
+\begin{theorem}[Classical BKM continuation on $\R^3$]
+\label{thm:r3bkm}
+For every $\nu>0$, \lean{R3BKMContinuation}\ $\nu$ holds: for every smooth, divergence-free $u_0$ satisfying~(4), if one ceiling $Y$ bounds $\|\omega\|_\infty$ along every local Fefferman-class solution from $u_0$, that is, $\|\omega(t)\|_\infty$ is finite and $\|\omega(t)\|_\infty\le Y$ for every local Fefferman-class solution $(u,p)$ from $u_0$ on $[0,T)$ and every $t\in[0,T)$, then $u_0$ has a global Fefferman solution: smooth functions $p$ and $u$ on $\R^3\times[0,\infty)$ that satisfy (1), (2), (3), (6) and (7) of Section~\ref{sec:fefferman}. A uniform vorticity ceiling remains a hypothesis; this is not a regularity theorem.
+\end{theorem}
+```
+
+```
+\begin{theorem}[Conditional reduction to the Smooth rate alone]
+\label{thm:clayA-rate}
+Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ holds. Then \lean{Clay_A_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay_A_Fefferman}.
+\end{theorem}
+```

@@ -6,7 +6,7 @@
   "main_theorems": [
     "FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound"
   ],
-  "lock_region_sha256": "8c67d03605bd189f60453239d0a6597546fcf8ea04dbe49cb16eb9bde169fb25",
+  "lock_region_sha256": "e8f82a16c1d025f79f62488af0b3f45e054b0a5bf0014d39746e953c7f77d6a9",
   "draft_dirs": [
     "FrohmanianTether/Draft"
   ],
@@ -14,7 +14,61 @@
     "FrohmanianTether",
     "FrohmanianTether.lean"
   ],
-  "certifying": false,
-  "reopened_reason": "The hypotheses are not independently transcribed. `paper_claim` keeps the repository Props `PeriodicTetherClosingBound` and `PeriodicBKMContinuation` as named Props, although the paper gives a precise English definition (def:ptb). The hypotheses carry the whole difficulty, so the lock leans on repository definitions exactly where it matters.",
-  "reopened_on": "2026-11-16"
+  "certifying": true,
+  "reopened_reason": "The hypotheses are not independently transcribed. `paper_claim` keeps the repository Props `PeriodicTetherClosingBound` and `PeriodicBKMContinuation` as named Props, although the paper gives a precise English definition (def:ptb). The hypotheses carry the whole difficulty, so the lock leans on repository definitions exactly where it matters. (Addressed on 2026-11-16 by rewriting paper_claim so both hypotheses are written out from def:ptb and the English of Periodic BKM continuation. Mechanical hashes updated. Approved by the author on 2026-11-17, see approvedBy.)",
+  "reopened_on": "2026-11-16",
+  "approvedBy": {
+    "name": "Benjamin Stanley Frohman",
+    "quote": "OK",
+    "replying_to": "It needs your OK on three new sentences for the paper and a rewrite of the existing Clay B lock",
+    "timestamp": "2026-11-17T00:22:00-06:00",
+    "confirmation_quote": "yes fix and proceed!",
+    "confirmation_timestamp": "2026-11-17T00:32:00-06:00",
+    "scope": "(A) rewrite of the Clay B paper_claim as an independent transcription of def:ptb (manuscript/main.tex); (B) the three Fefferman-paper sentences and their locks"
+  },
+  "additional_locks": [
+    {
+      "name": "fefferman-clay-a-conditional",
+      "semantics_file": "Scratch/FeffermanSemantics.lean",
+      "semantics_module": "Scratch.FeffermanSemantics",
+      "audit_file": "scripts/TruthGateAuditFefferman.lean",
+      "paper_path": "papers/fefferman-clay-a-conditional/main.tex",
+      "paper_sha256": "14179f79141f4a2b596f6fc08194be737e2f4bec8235d8f14bfc44175fa939dd",
+      "claims": [
+        "kato",
+        "bkm",
+        "clayA"
+      ],
+      "main_theorems": [
+        "KatoMaximal.katoMaximalSolution_of_feffermanDecay",
+        "KatoContinuation.r3BKMContinuation_of_pos",
+        "KatoContinuation.clay_A_fefferman_of_rate"
+      ],
+      "paper_forbidden_names": [
+        "KatoMaximalSolution",
+        "R3BKMContinuation",
+        "R3BKMContinuationAt",
+        "FrohmanianTetherRateSmooth",
+        "Clay_A_Fefferman",
+        "FeffermanGlobalSolution",
+        "IsFeffermanSolutionOn",
+        "FeffermanDecay",
+        "Mω",
+        "sobolevEnergy",
+        "hsSq",
+        "gradSup"
+      ],
+      "lock_region_sha256": "ec63ecd1dc5e04fdd296965eeee773dd00c5b850628ef1092d817fa5867a8b9e",
+      "certifying": true,
+      "approvedBy": {
+        "name": "Benjamin Stanley Frohman",
+        "quote": "OK",
+        "replying_to": "It needs your OK on three new sentences for the paper and a rewrite of the existing Clay B lock",
+        "timestamp": "2026-11-17T00:22:00-06:00",
+        "confirmation_quote": "yes fix and proceed!",
+        "confirmation_timestamp": "2026-11-17T00:32:00-06:00",
+        "scope": "(A) rewrite of the Clay B paper_claim as an independent transcription of def:ptb (manuscript/main.tex); (B) the three Fefferman-paper sentences and their locks"
+      }
+    }
+  ]
 }
