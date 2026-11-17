@@ -1157,6 +1157,32 @@ lemma sobolevEnergy_physicalMaximal_lt_top {t : ℝ}
         (by norm_num : 2 ≤ 5) hle n t)]
   exact ENNReal.ofReal_lt_top
 
+/-- The `H³` energy of the realized maximal field is the squared included
+`Ĥ³` norm of the corresponding iterated slice, for any Sobolev index. -/
+theorem hsSq_physicalMaximal {k : ℕ} (hk : 2 ≤ k)
+    {t : ℝ} (ht : 0 ≤ t) (n : ℕ)
+    (hn : t ≤ (iteratePath hf hdec hν hk n).t) :
+    hsSq 3 (physicalMaximal hf hdec hν t) =
+      ‖incl (three_le_succ hk)
+        (ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+          (iteratePath hf hdec hν hk n).path t)‖ ^ 2 := by
+  have hk7 : 2 ≤ 7 := by norm_num
+  have hle : 5 ≤ 7 + 1 := by norm_num
+  have hn7 : t ≤ (iteratePath hf hdec hν hk7 n).t :=
+    hn.trans_eq (iteratePath_t_unique hf hdec hν hk hk7 n)
+  set W7 :=
+    ContinuousMap.IccExtend (iteratePath hf hdec hν hk7 n).ht
+      (iteratePath hf hdec hν hk7 n).path t
+  rw [physicalMaximal_eq_iterate_high hf hdec hν hk7 ht n hn7,
+    ← physicalOfHm_incl hle,
+    hsSq_physicalOfHm (le_refl 5)
+      (isRealSlice_IccExtend_iteratePath hf hdec hν hk7
+        (by norm_num : 2 ≤ 5) hle n t)]
+  have hcomp : incl (by norm_num : 3 ≤ 5) (incl hle W7) =
+      incl (three_le_succ hk7) W7 :=
+    (DuhamelDeriv.incl_comp hle (by norm_num : 3 ≤ 5) W7).trans (by congr 1)
+  rw [hcomp, IccExtend_iteratePath_incl hf hdec hν hk7 hk n t]
+
 end Lift
 
 end KatoMaximal
@@ -1193,3 +1219,4 @@ end KatoMaximal
 #print axioms KatoMaximal.refl_iteratePath
 #print axioms KatoMaximal.isRealSlice_IccExtend_iteratePath
 #print axioms KatoMaximal.sobolevEnergy_physicalMaximal_lt_top
+#print axioms KatoMaximal.hsSq_physicalMaximal
