@@ -1850,6 +1850,141 @@ theorem timeSliceDeriv_physicalMaximal_of_le {k : ℕ} (hk : 2 ≤ k) {m : ℕ}
   unfold timeSliceDeriv
   exact hder.derivWithin (uniqueDiffOn_Ici 0 t ht.1)
 
+/-- The `H³` energy right-derivative formula for the realized maximal
+field, on every `[0, T) ⊆ Smax`. -/
+theorem h3EnergyRightDerivativeFormula_physicalMaximal {T : ℝ}
+    (hS : Ico (0 : ℝ) T ⊆ Smax hf hdec hν (by norm_num : 2 ≤ 2)) :
+    H3EnergyRightDerivativeFormula T (physicalMaximal hf hdec hν) := by
+  have hk7 : 2 ≤ 7 := by norm_num
+  have hm2 : 5 + 2 ≤ 7 := le_refl 7
+  have hle : 5 ≤ 7 + 1 := by norm_num
+  refine ⟨?_, ?_, ?_⟩
+  · intro s hs _ k hk α
+    obtain ⟨_, n0, hn0⟩ := hS hs
+    have hn' : s ≤ (iteratePath hf hdec hν hk7 n0).t :=
+      hn0.trans_eq (iteratePath_t_unique hf hdec hν
+        (by norm_num : 2 ≤ 2) hk7 n0)
+    have hlt : s < (iteratePath hf hdec hν hk7 (n0 + 1)).t :=
+      lt_of_le_of_lt hn' (iteratePath_t_strict_mono hf hdec hν hk7 n0)
+    have htW : s ∈ Ico (0 : ℝ) (iteratePath hf hdec hν hk7 (n0 + 1)).t :=
+      ⟨hs.1, hlt⟩
+    have hreal : IsRealSlice (by norm_num : 2 ≤ 5)
+        (inclExt hle (iteratePath hf hdec hν hk7 (n0 + 1)).ht
+          (iteratePath hf hdec hν hk7 (n0 + 1)).path s) := by
+      intro y i
+      refine fourierInv_im_eq_zero ?_ y i
+      unfold inclExt
+      rw [refl_incl, refl_IccExtend_iteratePath]
+    rw [physicalMaximal_eq_inclExt hf hdec hν hk7 hle hs.1 (n0 + 1)
+        (le_of_lt hlt),
+      timeSliceDeriv_physicalMaximal_of_le hf hdec hν hk7
+        (by norm_num : 2 ≤ 5) hm2 htW]
+    exact integrable_inner_wordDeriv (by have := Finset.mem_range.1 hk; omega)
+      hreal _ α
+  · intro s hs
+    obtain ⟨_, n0, hn0⟩ := hS hs
+    have hn' : s ≤ (iteratePath hf hdec hν hk7 n0).t :=
+      hn0.trans_eq (iteratePath_t_unique hf hdec hν
+        (by norm_num : 2 ≤ 2) hk7 n0)
+    have hlt : s < (iteratePath hf hdec hν hk7 (n0 + 1)).t :=
+      lt_of_le_of_lt hn' (iteratePath_t_strict_mono hf hdec hν hk7 n0)
+    refine contDiff_infty.2 fun N => ?_
+    have hkN : 2 ≤ N + 4 := by omega
+    have hmN : 2 ≤ N + 2 := by omega
+    have hm2N : N + 2 + 2 ≤ N + 4 := le_refl (N + 4)
+    have htN : s ∈ Ico (0 : ℝ) (iteratePath hf hdec hν hkN (n0 + 1)).t := by
+      have hltN : s < (iteratePath hf hdec hν hkN (n0 + 1)).t :=
+        hlt.trans_eq (iteratePath_t_unique hf hdec hν hk7 hkN (n0 + 1))
+      exact ⟨hs.1, hltN⟩
+    rw [timeSliceDeriv_physicalMaximal_of_le hf hdec hν hkN hmN hm2N htN]
+    exact contDiff_physicalOfHm (le_refl (N + 2)) _
+  · intro s hs _
+    obtain ⟨_, n0, hn0⟩ := hS hs
+    have hn' : s ≤ (iteratePath hf hdec hν hk7 n0).t :=
+      hn0.trans_eq (iteratePath_t_unique hf hdec hν
+        (by norm_num : 2 ≤ 2) hk7 n0)
+    have hlt : s < (iteratePath hf hdec hν hk7 (n0 + 1)).t :=
+      lt_of_le_of_lt hn' (iteratePath_t_strict_mono hf hdec hν hk7 n0)
+    have htW : s ∈ Ico (0 : ℝ) (iteratePath hf hdec hν hk7 (n0 + 1)).t :=
+      ⟨hs.1, hlt⟩
+    set W := iteratePath hf hdec hν hk7 (n0 + 1)
+    set Γ := inclExt hle W.ht W.path
+    set D := mildSDeriv hk7 hm2 hν W.ht
+      (toHmFeff u₀ hf hdec (7 + 1)) W.path s
+    have hreal : IsRealSlice (by norm_num : 2 ≤ 5) (Γ s) := by
+      intro y i
+      refine fourierInv_im_eq_zero ?_ y i
+      unfold Γ inclExt
+      rw [refl_incl, refl_IccExtend_iteratePath]
+    set g : ℝ → ℝ := fun τ =>
+      Complex.reCLM (inner ℂ (incl (by norm_num : 3 ≤ 5) (Γ τ))
+        (incl (by norm_num : 3 ≤ 5) (Γ τ)))
+    have hfun : ∀ τ, τ ∈ Icc (0 : ℝ) W.t →
+        hsSq 3 (physicalMaximal hf hdec hν τ) = g τ := by
+      intro τ hτ
+      have hsq := hsSq_physicalMaximal hf hdec hν hk7 hτ.1 (n0 + 1) hτ.2
+      have hcomp : incl (by norm_num : 3 ≤ 5) (Γ τ) =
+          incl (three_le_succ hk7)
+            (ContinuousMap.IccExtend W.ht W.path τ) := by
+        unfold Γ inclExt
+        exact (DuhamelDeriv.incl_comp hle (by norm_num : 3 ≤ 5) _).trans
+          (by congr 1)
+      rw [hsq, ← hcomp]
+      change _ = Complex.reCLM _
+      rw [Complex.reCLM_apply, ← inner_self_eq_norm_sq (𝕜 := ℂ),
+        RCLike.re_to_complex]
+    have hI : HasDerivWithinAt (fun τ => incl (by norm_num : 3 ≤ 5) (Γ τ))
+        (incl (by norm_num : 3 ≤ 5) D) (Ico 0 W.t) s :=
+      (inclR (by norm_num : 3 ≤ 5)).hasFDerivAt.comp_hasDerivWithinAt s
+        (hasDerivWithinAt_mildS_incl_Ico hk7 hm2 hν W.ht W.mild htW)
+    have hmem : Ico 0 W.t ∈ 𝓝[Ici s] s := by
+      refine mem_of_superset
+        (inter_mem_nhdsWithin (Ici s) (Iio_mem_nhds htW.2)) ?_
+      intro τ hτ
+      exact ⟨hs.1.trans hτ.1, hτ.2⟩
+    have hN := Complex.reCLM.hasFDerivAt.comp_hasDerivWithinAt s
+      ((hI.inner ℂ hI).mono_of_mem_nhdsWithin hmem)
+    have hNg : HasDerivWithinAt g
+        (Complex.reCLM (inner ℂ (incl (by norm_num : 3 ≤ 5) (Γ s))
+          (incl (by norm_num : 3 ≤ 5) D) +
+          inner ℂ (incl (by norm_num : 3 ≤ 5) D)
+            (incl (by norm_num : 3 ≤ 5) (Γ s))))
+        (Ici s) s := by
+      convert hN
+    have hder : HasDerivWithinAt
+        (fun τ => hsSq 3 (physicalMaximal hf hdec hν τ))
+        (Complex.reCLM (inner ℂ (incl (by norm_num : 3 ≤ 5) (Γ s))
+          (incl (by norm_num : 3 ≤ 5) D) +
+          inner ℂ (incl (by norm_num : 3 ≤ 5) D)
+            (incl (by norm_num : 3 ≤ 5) (Γ s))))
+        (Ici s) s := by
+      refine hNg.congr_of_eventuallyEq ?_ (hfun s ⟨hs.1, le_of_lt hlt⟩)
+      filter_upwards [hmem] with τ hτ
+      exact hfun τ ⟨hτ.1, hτ.2.le⟩
+    convert hder using 1
+    have hp := physical_pairing_eq (le_refl 5) (B := D) hreal
+    rw [h3EnergyPairing,
+      physicalMaximal_eq_inclExt hf hdec hν hk7 hle hs.1 (n0 + 1)
+        (le_of_lt hlt),
+      timeSliceDeriv_physicalMaximal_of_le hf hdec hν hk7
+        (by norm_num : 2 ≤ 5) hm2 htW]
+    refine (congrArg (fun r => 2 * r) hp).trans ?_
+    have hg' : Complex.reCLM
+        (inner ℂ (incl (by norm_num : 3 ≤ 5) (Γ s))
+          (incl (by norm_num : 3 ≤ 5) D) +
+          inner ℂ (incl (by norm_num : 3 ≤ 5) D)
+            (incl (by norm_num : 3 ≤ 5) (Γ s))) =
+        (inner ℂ (incl (by norm_num : 3 ≤ 5) (Γ s))
+          (incl (by norm_num : 3 ≤ 5) D) +
+          inner ℂ (incl (by norm_num : 3 ≤ 5) D)
+            (incl (by norm_num : 3 ≤ 5) (Γ s))).re :=
+      Complex.reCLM_apply _
+    rw [hg', Complex.add_re,
+      ← inner_conj_symm (incl (by norm_num : 3 ≤ 5) D)
+        (incl (by norm_num : 3 ≤ 5) (Γ s)),
+      Complex.conj_re]
+    ring
+
 end Lift
 
 end KatoMaximal
@@ -1914,3 +2049,4 @@ end KatoMaximal
 #print axioms KatoMaximal.energyInequality_physicalMaximal
 #print axioms KatoMaximal.isFeffermanSolutionOn_physicalMaximal
 #print axioms KatoMaximal.timeSliceDeriv_physicalMaximal_of_le
+#print axioms KatoMaximal.h3EnergyRightDerivativeFormula_physicalMaximal
