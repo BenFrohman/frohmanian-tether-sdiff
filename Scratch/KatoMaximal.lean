@@ -34,7 +34,7 @@ namespace KatoMaximal
 open NavierStokes3D KatoPonce KatoPonceHypotheses KatoPonceCommutator
 open FeffermanMild FeffermanSobolev MildEnergy MildPressureSmooth MildFlux MildTimeDeriv
 open MildMomentum SobolevHilbert NonlinearHm PersistenceHm MildExistence ProductH3
-open RepairedTether R3BKM Metric
+open MildReal RepairedTether R3BKM Metric
 
 section Energy
 
@@ -1051,6 +1051,31 @@ theorem Smax_eq_Ici_or_Ico {k : ℕ} (hk : 2 ≤ k) :
   · obtain ⟨hpos, heq⟩ := Smax_eq_Ico_of_bounded hf hdec hν hk hbd
     exact Or.inr ⟨_, hpos, heq⟩
 
+/-- If the initial slice is `refl`-fixed, every slice of its restart path is. -/
+theorem refl_restartPath {k : ℕ} (hk : 2 ≤ k) (w0 : Hm (k + 1))
+    (h0 : refl (k + 1) w0 = w0)
+    (t : Icc (0 : ℝ) (localTime ν (incl (three_le_succ hk) w0))) :
+    refl (k + 1) (restartPath hk hν w0 t) = restartPath hk hν w0 t := by
+  have hτ := localTime_nonneg hν (incl (three_le_succ hk) w0)
+  set P := inclMap hk (restartPath hk hν w0)
+  have hball := restartPath_memBall hν hk w0
+  have hball' : reflPath P ∈
+      closedBall (0 : XT (localTime ν (incl (three_le_succ hk) w0)))
+        (rad (incl (three_le_succ hk) w0)) := by
+    rw [mem_closedBall_zero_iff] at hball ⊢
+    exact (norm_reflPath_le P).trans hball
+  have hdata : refl 3 (incl (three_le_succ hk) w0) = incl (three_le_succ hk) w0 := by
+    rw [refl_incl, h0]
+  have hM := restartPath_mild3 hν hk w0
+  have hM' := isMild_reflPath hτ hν hdata hM
+  have heq := unique_mild_in_ball hν hτ (incl (three_le_succ hk) w0)
+    (localTime_visc hν _) hball' hball hM' hM
+  have h3 : refl 3 (incl (three_le_succ hk) (restartPath hk hν w0 t)) =
+      incl (three_le_succ hk) (restartPath hk hν w0 t) :=
+    congrArg (fun w : XT (localTime ν (incl (three_le_succ hk) w0)) => w t) heq
+  rw [refl_incl] at h3
+  exact incl_injective (three_le_succ hk) h3
+
 end Lift
 
 end KatoMaximal
@@ -1083,3 +1108,4 @@ end KatoMaximal
 #print axioms KatoMaximal.presMaximal_eq_iterate_high
 #print axioms KatoMaximal.Smax_unique
 #print axioms KatoMaximal.Smax_eq_Ici_or_Ico
+#print axioms KatoMaximal.refl_restartPath
