@@ -7,3 +7,4 @@ manuscript/*.out
 manuscript/*.toc
 print_axioms.txt
 print_axioms_gaps_ledger.txt
+truth-gate-report/
