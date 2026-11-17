@@ -111,7 +111,7 @@
  },
  "DMw": {
   "file": "Scratch/RepairedTetherRate.lean",
-  "name": "M\u03c9",
+  "name": "Mω",
   "lines": "78-79"
  },
  "DRate": {
@@ -138,5 +138,10 @@
   "file": "Scratch/KatoPonce.lean",
   "name": "WordIBP",
   "lines": "473-500"
+ },
+ "T2-9": {
+  "file": "Scratch/KatoMaximalProperties.lean",
+  "name": "KatoMaximal.katoMaximalSolution_properties",
+  "lines": "29-49"
  }
 }

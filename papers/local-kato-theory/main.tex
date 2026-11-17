@@ -37,13 +37,13 @@ A Maximal Solution with an $H^3$ Blow-up Alternative for $\nu>0$\\
 \author{Benjamin Stanley Frohman\\
 \small Independent Researcher, Texas, United States\\
 \small ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}}
-\date{17 November 2026 (America/Chicago) --- preprint, not peer-reviewed\\ \small DOI \href{https://doi.org/10.5281/zenodo.24302258}{10.5281/zenodo.24302258}}
+\date{17 November 2026 (America/Chicago) --- Version 1.1, preprint, not peer-reviewed\\ \small Version 1.0: DOI \href{https://doi.org/10.5281/zenodo.24302258}{10.5281/zenodo.24302258}}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-For every viscosity $\nu>0$ and every smooth, divergence-free initial field $u_0$ on $\R^3$ satisfying Fefferman's decay condition~(4), the Lean~4 proposition \lean{KatoMaximalSolution ν u₀} is proved and checked by the Lean kernel: there exist a time set $S$, a velocity $u$, a pressure $p$ and a constant $C_k\ge 0$ such that $(u,p)$ is a smooth Navier--Stokes solution from $u_0$ (in the class \lean{IsFeffermanSolutionOn}) on every $[0,T)\subseteq S$; $\|u(t)\|_{H^3}^2$ is finite on $S$ and continuous on $S$; at every $s\in S$ the map $t\mapsto\|u(t)\|_{H^3}^2$ has a right derivative $d\le C_k\,\|\nabla u(s)\|_\infty\,\|u(s)\|_{H^3}^2$; and either $S=[0,\infty)$, or $S=[0,T^*)$ with $T^*>0$ and $\|u(t)\|_{H^3}^2$ unbounded on $S$. This is local Kato theory. It is not a global regularity theorem, it does not prove Fefferman's Problem~(A), and it does not solve any open problem. Two further kernel-checked statements are conditional: \lean{R3BKMContinuation ν} keeps a uniform vorticity ceiling as a hypothesis, and \lean{clay\_A\_fefferman\_of\_rate} keeps \lean{FrohmanianTetherRateSmooth} as a hypothesis, which is not proved. Every statement is quoted verbatim from \lean{Scratch/KatoMaximal.lean} and \lean{Scratch/KatoContinuation.lean} at commit \commit{}, whose Lean sources are identical to \prcommit{} (the merge of pull request~\#12), and was built by \lean{lake build} and \lean{lake build Scratch} on GitHub Actions run 44047249311 with the repository's own \lean{lake-manifest.json} (sha256 \lean{7d1ab35f…0bc0955}) and elan 4.2.4; \lean{\#print axioms} reports only \lean{propext}, \lean{Classical.choice} and \lean{Quot.sound} for each.
+For every viscosity $\nu>0$ and every smooth, divergence-free initial field $u_0$ on $\R^3$ satisfying Fefferman's decay condition~(4), the Lean~4 proposition \lean{KatoMaximalSolution ν u₀} is proved and checked by the Lean kernel: there exist a time set $S$, a velocity $u$, a pressure $p$ and a constant $C_k\ge 0$ such that $(u,p)$ is a smooth Navier--Stokes solution from $u_0$ (in the class \lean{IsFeffermanSolutionOn}) on every $[0,T)\subseteq S$; $\|u(t)\|_{H^3}^2$ is finite on $S$ and continuous on $S$; at every $s\in S$ the map $t\mapsto\|u(t)\|_{H^3}^2$ has a right derivative $d\le C_k\,\|\nabla u(s)\|_\infty\,\|u(s)\|_{H^3}^2$; and either $S=[0,\infty)$, or $S=[0,T^*)$ with $T^*>0$ and $\|u(t)\|_{H^3}^2$ unbounded on $S$. This is local Kato theory. It is not a global regularity theorem, it does not prove Fefferman's Problem~(A), and it does not solve any open problem. Two further kernel-checked statements are conditional: \lean{R3BKMContinuation ν} keeps a uniform vorticity ceiling as a hypothesis, and \lean{clay\_A\_fefferman\_of\_rate} keeps \lean{FrohmanianTetherRateSmooth} as a hypothesis, which is not proved. Version~1.1 adds Theorem~\ref{thm:T2-9}, which states the properties (T2)--(T9) of the realized maximal solution for one solution, and puts every theorem of the paper under a Truth Gate lock (Section~\ref{sec:gate}). Every other statement is quoted verbatim from \lean{Scratch/KatoMaximal.lean} and \lean{Scratch/KatoContinuation.lean} at commit \commit{}, whose Lean sources are identical to \prcommit{} (the merge of pull request~\#12), and was built by \lean{lake build} and \lean{lake build Scratch} on GitHub Actions run 44047249311 with the repository's own \lean{lake-manifest.json} (sha256 \lean{7d1ab35f…0bc0955}) and elan 4.2.4; \lean{\#print axioms} reports only \lean{propext}, \lean{Classical.choice} and \lean{Quot.sound} for each.
 \end{abstract}
 
 \noindent\textbf{Copyright (c) 2026 Benjamin Stanley Frohman.} Paper: CC BY 4.0. Lean code: Apache-2.0.
@@ -52,7 +52,7 @@ For every viscosity $\nu>0$ and every smooth, divergence-free initial field $u_0
 \label{sec:scope}
 This paper reports exactly the Lean statements listed in Sections~\ref{sec:main}--\ref{sec:cond}, as checked by the Lean kernel in the build described in Section~\ref{sec:repro}. Nothing else is claimed.
 \begin{itemize}[leftmargin=*]
-\item \textbf{Proved (unconditional, for $\nu>0$ and Fefferman data):} Theorem~\ref{thm:T1} (\lean{KatoMaximalSolution}) and Theorems~\ref{thm:T2}--\ref{thm:T9} (properties of the realized maximal solution on its maximal time set).
+\item \textbf{Proved (unconditional, for $\nu>0$ and Fefferman data):} Theorem~\ref{thm:T1} (\lean{KatoMaximalSolution}) and Theorem~\ref{thm:T2-9}, items (T2)--(T9) (properties of one maximal solution on its maximal time set).
 \item \textbf{Proved, conditional in content:} Theorem~\ref{thm:T10}, whose conclusion \lean{R3BKMContinuation ν} is itself an implication with a uniform vorticity ceiling as its premise; Theorem~\ref{thm:T11}, whose hypothesis \lean{FrohmanianTetherRateSmooth} is not proved.
 \item \textbf{Not proved:} global regularity for the Navier--Stokes equations on $\R^3$; Fefferman's Problem~(A) (\lean{Clay\_A\_Fefferman}); a uniform bound on $\|\omega\|_\infty$; \lean{FrohmanianTetherRateSmooth}. No Millennium Prize problem is solved.
 \end{itemize}
@@ -62,18 +62,18 @@ This paper reports exactly the Lean statements listed in Sections~\ref{sec:main}
 Space is $\R^3$, in Lean \lean{T3 := EuclideanSpace ℝ (Fin 3)}; a velocity field is \lean{VelocityField := T3 → EuclideanSpace ℝ (Fin 3)}, a pressure field is \lean{T3 → ℝ}, and time-dependent fields are functions \lean{ℝ → VelocityField}, \lean{ℝ → PressureField}. The operators are defined in \lean{FrohmanianTether/NS\_Equations.lean}: \lean{convective u v x = (fderiv ℝ v x) (u x)}, written $(u\cdot\nabla)v$; \lean{laplacian}, written $\Delta$, is the trace of the Hessian; \lean{div}, written $\operatorname{div}$, is $\sum_i\partial_i u_i$; \lean{pressureGradient p}, written $\nabla p$, is the Hilbert-space gradient. ``Smooth'' is \lean{ContDiff ℝ ∞}. The definitions below are quoted verbatim from the source at commit \commit.
 
 \begin{definition}[Fefferman decay (4)] \lean{Scratch/RepairedTetherRate.lean:33--36}: $|\partial_x^\alpha u_0(x)|\le C_{\alpha K}(1+|x|)^{-K}$ for every multi-index $\alpha$ and every real $K$.
-\VerbatimInput{lean/DFD.lean}
+\VerbatimInput[firstline=15]{lean/DFD.lean}
 \end{definition}
 
 \begin{definition}[Local Fefferman-class solution on $\R^3\times[0,T)$] \lean{Scratch/RepairedTetherRate.lean:66--75}: $u$ and $p$ are jointly $C^\infty$ on $\R^3\times[0,T)$; for $t\in[0,T)$ and $x\in\R^3$, $\partial_t^+u+(u\cdot\nabla)u+\nabla p=\nu\Delta u$ (one-sided time derivative within $[0,\infty)$) and $\operatorname{div}u=0$; $u(\cdot,0)=u_0$; and $\int_{\R^3}|u(x,t)|^2\,dx\le\int_{\R^3}|u_0(x)|^2\,dx$ for $t\in[0,T)$, as lower Lebesgue integrals.
-\VerbatimInput{lean/DIFS.lean}
+\VerbatimInput[firstline=15]{lean/DIFS.lean}
 \end{definition}
 
 \begin{definition}[$H^3$ energy and $\|\nabla u\|_\infty$] \lean{Scratch/R3BKMContinuation.lean:44--55}. Throughout this paper $\|f\|_{H^m}^2$ denotes \lean{hsSq m f}, the real value of
 $\sum_{k\le m}\sum_{\alpha:\{0,\dots,k-1\}\to\{1,2,3\}}\int_{\R^3}|\partial_{\alpha_0}\cdots\partial_{\alpha_{k-1}}f(x)|^2\,dx$ (ordered tuples of directions), and $\|\nabla f\|_\infty$ denotes \lean{gradSup f}$\,=\sup_x\|Df(x)\|$ as a real supremum.
-\VerbatimInput{lean/DsobE.lean}
-\VerbatimInput{lean/DhsSq.lean}
-\VerbatimInput{lean/DgradSup.lean}
+\VerbatimInput[firstline=15]{lean/DsobE.lean}
+\VerbatimInput[firstline=15]{lean/DhsSq.lean}
+\VerbatimInput[firstline=15]{lean/DgradSup.lean}
 \end{definition}
 
 \begin{remark}
@@ -86,13 +86,13 @@ In Mathlib a real supremum of a family that is not bounded above equals $0$, and
 \item $\|u(t)\|_{H^3}^2<\infty$ for every $t\in S$; the map $t\mapsto\|u(t)\|_{H^3}^2$ is continuous on $S$; and at every $s\in S$ it has a right derivative $d$ (derivative within $[s,\infty)$) with $d\le C_k\,\|\nabla u(s)\|_\infty\,\|u(s)\|_{H^3}^2$;
 \item either $S=[0,\infty)$, or $S=[0,T^*)$ for some $T^*>0$ and for every $B\in\R$ there is $t\in S$ with $\|u(t)\|_{H^3}^2>B$.
 \end{enumerate}
-\VerbatimInput{lean/DKMS.lean}
+\VerbatimInput[firstline=15]{lean/DKMS.lean}
 \end{definition}
 
 \section{The main theorem}
 \label{sec:main}
 All theorems in Sections~\ref{sec:main} and~\ref{sec:smax} live in \lean{section Lift} of \lean{Scratch/KatoMaximal.lean}, whose variables are
-\VerbatimInput{lean/Dvar.lean}
+\VerbatimInput[firstline=15]{lean/Dvar.lean}
 so each theorem takes the hypotheses $u_0\in C^\infty$ (\lean{hf}), Fefferman decay (\lean{hdec}) and $\nu>0$ (\lean{hν}), together with the binders shown. Theorem~\ref{thm:T1} is preceded in the source by \lean{include hf hdec hν in}; it is applied as \lean{katoMaximalSolution\_of\_feffermanDecay hs hdec hν hd} in \lean{Scratch/KatoContinuation.lean:44}.
 
 \begin{theorem}[Kato maximal solution for Fefferman data]
@@ -100,91 +100,64 @@ so each theorem takes the hypotheses $u_0\in C^\infty$ (\lean{hf}), Fefferman de
 Let $\nu>0$, and let $u_0$ be smooth, divergence-free, and satisfy Fefferman decay~(4). Then \lean{KatoMaximalSolution}\ $\nu$ $u_0$ holds in the sense of Definition~\ref{def:kato}: there exist a time set $S$, fields $(u,p)$ and a constant $C_k\ge 0$ satisfying (i)--(iii) of that definition. This is a maximal Fefferman-class solution with an $H^3$ blow-up alternative; it does not assert global regularity.
 
 \noindent\lean{KatoMaximal.katoMaximalSolution\_of\_feffermanDecay}, \lean{Scratch/KatoMaximal.lean:2103--2104}:
-\VerbatimInput{lean/T1.lean}
+\VerbatimInput[firstline=15]{lean/T1.lean}
 \end{theorem}
 
-The witness in the proof is $S=$\,\lean{Smax hf hdec hν (by norm\_num : 2 ≤ 2)}, $u=$\,\lean{physicalMaximal hf hdec hν}, $p=$\,\lean{presMaximal hf hdec hν}. Theorems~\ref{thm:T2}--\ref{thm:T9} are stated for these objects. \lean{Smax} is defined at \lean{Scratch/KatoMaximal.lean:561--565}:
-\VerbatimInput{lean/DinMax.lean}
-\VerbatimInput{lean/DSmax.lean}
+The witness in the proof is $S=$\,\lean{Smax hf hdec hν (by norm\_num : 2 ≤ 2)}, $u=$\,\lean{physicalMaximal hf hdec hν}, $p=$\,\lean{presMaximal hf hdec hν}. \lean{Smax} is defined at \lean{Scratch/KatoMaximal.lean:561--565}:
+\VerbatimInput[firstline=15]{lean/DinMax.lean}
+\VerbatimInput[firstline=15]{lean/DSmax.lean}
 
 \section{Properties on the maximal time set}
 \label{sec:smax}
-Write $S_{\max}^{(k)}$ for \lean{Smax hf hdec hν hk}, $u(t)$ for \lean{physicalMaximal hf hdec hν t} and $p(t)$ for \lean{presMaximal hf hdec hν t}.
+Theorem~\ref{thm:T2-9} states the properties (T2)--(T9) together, for one solution. It names no Lean construction; the Lean witness is the one above, with $S_k=$\,\lean{Smax hf hdec hν hk} for $k\ge 2$.
 
-\begin{theorem}[$H^3$ Kato--Ponce bound on $S_{\max}$]
-\label{thm:T2}
-If $\operatorname{div}u_0=0$, there is $C_k\ge 0$ such that at every $s\in S_{\max}^{(2)}$ the map $t\mapsto\|u(t)\|_{H^3}^2$ has a right derivative $d$ at $s$ with $d\le C_k\,\|\nabla u(s)\|_\infty\,\|u(s)\|_{H^3}^2$.
-\lean{Scratch/KatoMaximal.lean:2071--2078}:
-\VerbatimInput{lean/T2.lean}
+\begin{theorem}[Properties of the Kato maximal solution]
+\label{thm:T2-9}
+Let $\nu>0$, and let $u_0$ be smooth, divergence-free, and satisfy Fefferman decay~(4). Then there exist time sets $S_k\subseteq\R$ $(k\in\mathbb{N})$, fields $(u,p)$ and a constant $C_k\ge 0$ such that, with $S:=S_2$, $\|u(t)\|_{H^3}^2<\infty$ for every $t\in S$, and:
+\begin{enumerate}[label=(T\arabic*),start=2,leftmargin=*]
+\item\label{thm:T2} at every $s\in S$ the map $t\mapsto\|u(t)\|_{H^3}^2$ has a right derivative $d$ at $s$ (derivative within $[s,\infty)$) with $d\le C_k\,\|\nabla u(s)\|_\infty\,\|u(s)\|_{H^3}^2$;
+\item\label{thm:T3} for every $t\in S$, every order $n\le 3$ and every $\alpha\in\{1,2,3\}^n$, writing $v=\partial^\alpha u(t)$, $q=\partial^\alpha p(t)$ and $E=\tfrac12|v|^2$: the functions $\langle u(t),\nabla E\rangle$, $(\operatorname{div}u(t))\,E$, $\langle v,\nabla q\rangle$ and $(\operatorname{div}v)\,q$ are integrable on $\R^3$; $\int_{\R^3}\operatorname{div}(E\,u(t))\,dx=0$ and $\int_{\R^3}\operatorname{div}(q\,v)\,dx=0$; $v$ is $C^2$; for all $i,j\in\{1,2,3\}$, with $\varphi=v_j$ and $\psi=\partial_i v_j$, both $\varphi$ and $\psi$ are differentiable at every point, $\varphi\,\partial_i\psi$ and $\psi\,\partial_i\varphi$ are integrable, and $\int_{\R^3}\operatorname{div}(\varphi\psi\,e_i)\,dx=0$; and the functions $\langle v,\Delta v\rangle$, $\langle v,(u(t)\cdot\nabla)v\rangle$, $\langle v,\partial^\alpha((u(t)\cdot\nabla)u(t))-(u(t)\cdot\nabla)v\rangle$, $\langle v,\partial^\alpha((u(t)\cdot\nabla)u(t))\rangle$, $\langle v,\partial^\alpha\nabla p(t)\rangle$ and $\langle v,\partial^\alpha\Delta u(t)\rangle$ are integrable;
+\item\label{thm:T4} for every $T$ with $[0,T)\subseteq S$, $(u,p)$ is a local Fefferman-class solution from $u_0$ on $[0,T)$;
+\item\label{thm:T5} for every $T$ with $[0,T)\subseteq S$, every $t\in[0,T)$ and every $x\in\R^3$, $\partial_t^+u(x,t)+(u(t)\cdot\nabla)u(t)(x)+\nabla p(t)(x)=\nu\,\Delta u(t)(x)$, with the time derivative taken within $[0,\infty)$;
+\item\label{thm:T6} for every $T$ with $[0,T)\subseteq S$ and every $t\in[0,T)$, $\int_{\R^3}|u(x,t)|^2\,dx\le\int_{\R^3}|u_0(x)|^2\,dx$ (lower Lebesgue integrals);
+\item\label{thm:T7} for every $k\ge 2$, $t\mapsto\|u(t)\|_{H^3}^2$ is continuous on $S_k$;
+\item\label{thm:T8} for every $k\ge 2$, either $S_k=[0,\infty)$, or there is $T^*>0$ with $S_k=[0,T^*)$ and, for every $B\in\R$, some $t\in[0,T^*)$ with $\|u(t)\|_{H^3}^2>B$;
+\item\label{thm:T9} for every $k\ge 2$, either $S_k=[0,\infty)$ or $S_k=[0,T^*)$ for some $T^*>0$.
+\end{enumerate}
+Here $\partial^\alpha f(x)$, for $\alpha=(\alpha_0,\dots,\alpha_{n-1})$, is the $n$-th derivative of $f$ at $x$ applied to $e_{\alpha_0},\dots,e_{\alpha_{n-1}}$, and $\partial_i$ is the derivative in direction $e_i$.
+
+\noindent\lean{KatoMaximal.katoMaximalSolution\_properties}, \lean{Scratch/KatoMaximalProperties.lean}:
+\VerbatimInput[firstline=15]{lean/T2-9.lean}
 \end{theorem}
 
-\begin{theorem}[Vanishing-flux package at each time]
-\label{thm:T3}
-If $\operatorname{div}u_0=0$ and $t\in S_{\max}^{(2)}$, then $(u(t),p(t))$ satisfies \lean{H3IBPVanishingFlux}: for every order $k\le 3$ and every $\alpha$, the integrability and zero-flux conditions of \lean{WordIBP} (quoted below) hold.
-\lean{Scratch/KatoMaximal.lean:2036--2039}:
-\VerbatimInput{lean/T3.lean}
-\VerbatimInput{lean/DH3.lean}
-\VerbatimInput{lean/DWord.lean}
-\end{theorem}
-
-\begin{theorem}[Fefferman-class solution on every $[0,T)\subseteq S_{\max}$]
-\label{thm:T4}
-If $\operatorname{div}u_0=0$ and $[0,T)\subseteq S_{\max}^{(2)}$, then $(u,p)$ is a local Fefferman-class solution from $u_0$ on $[0,T)$.
-\lean{Scratch/KatoMaximal.lean:1809--1812}:
-\VerbatimInput{lean/T4.lean}
-\end{theorem}
-
-\begin{theorem}[Momentum equation]
-\label{thm:T5}
-If $\operatorname{div}u_0=0$, $[0,T)\subseteq S_{\max}^{(2)}$, $t\in[0,T)$ and $x\in\R^3$, then $\partial_t^+u(x,t)+(u(t)\cdot\nabla)u(t)(x)+\nabla p(t)(x)=\nu\,\Delta u(t)(x)$, with the time derivative taken within $[0,\infty)$.
-\lean{Scratch/KatoMaximal.lean:1626--1633}:
-\VerbatimInput{lean/T5.lean}
-\end{theorem}
-
-\begin{theorem}[Energy inequality]
-\label{thm:T6}
-If $\operatorname{div}u_0=0$ and $[0,T)\subseteq S_{\max}^{(2)}$, then $\int_{\R^3}|u(x,t)|^2\,dx\le\int_{\R^3}|u_0(x)|^2\,dx$ for every $t\in[0,T)$ (lower Lebesgue integrals).
-\lean{Scratch/KatoMaximal.lean:1793--1796}:
-\VerbatimInput{lean/T6.lean}
-\end{theorem}
-
-\begin{theorem}[Continuity of the $H^3$ energy]
-\label{thm:T7}
-For every $k\ge 2$, $t\mapsto\|u(t)\|_{H^3}^2$ is continuous on $S_{\max}^{(k)}$.
-\lean{Scratch/KatoMaximal.lean:1193--1195}:
-\VerbatimInput{lean/T7.lean}
-\end{theorem}
-
-\begin{theorem}[$H^3$ blow-up alternative]
-\label{thm:T8}
-For every $k\ge 2$, either $S_{\max}^{(k)}=[0,\infty)$, or there is $T^*>0$ with $S_{\max}^{(k)}=[0,T^*)$ and, for every $B\in\R$, some $t\in[0,T^*)$ with $\|u(t)\|_{H^3}^2>B$.
-\lean{Scratch/KatoMaximal.lean:1229--1234}:
-\VerbatimInput{lean/T8.lean}
-\end{theorem}
-
-\begin{theorem}[Shape of the maximal time set]
-\label{thm:T9}
-For every $k\ge 2$, either $S_{\max}^{(k)}=[0,\infty)$ or $S_{\max}^{(k)}=[0,T^*)$ for some $T^*>0$.
-\lean{Scratch/KatoMaximal.lean:1052--1054}:
-\VerbatimInput{lean/T9.lean}
-\end{theorem}
+The Lean proof takes the witness above and applies the following kernel-checked declarations of \lean{Scratch/KatoMaximal.lean}, quoted verbatim. Write $S_{\max}^{(k)}$ for \lean{Smax hf hdec hν hk}, $u(t)$ for \lean{physicalMaximal hf hdec hν t} and $p(t)$ for \lean{presMaximal hf hdec hν t}. Each one is the corresponding item of Theorem~\ref{thm:T2-9} for these objects: \lean{katoPonce\_h3\_energy\_physicalMaximal} (T2), \lean{h3IBPVanishingFlux\_physicalMaximal} (T3), \lean{isFeffermanSolutionOn\_physicalMaximal} (T4), \lean{momentum\_physicalMaximal} (T5), \lean{energyInequality\_physicalMaximal} (T6), \lean{continuousOn\_hsSq\_physicalMaximal} (T7), \lean{hsSq\_blowup\_alternative} (T8) and \lean{Smax\_eq\_Ici\_or\_Ico} (T9).
+\VerbatimInput[firstline=15]{lean/T2.lean}
+\VerbatimInput[firstline=15]{lean/T3.lean}
+\VerbatimInput[firstline=15]{lean/DH3.lean}
+\VerbatimInput[firstline=15]{lean/DWord.lean}
+\VerbatimInput[firstline=15]{lean/T4.lean}
+\VerbatimInput[firstline=15]{lean/T5.lean}
+\VerbatimInput[firstline=15]{lean/T6.lean}
+\VerbatimInput[firstline=15]{lean/T7.lean}
+\VerbatimInput[firstline=15]{lean/T8.lean}
+\VerbatimInput[firstline=15]{lean/T9.lean}
 
 \section{Two conditional statements}
 \label{sec:cond}
 Both theorems below are in \lean{Scratch/KatoContinuation.lean}. They use the following definitions from \lean{Scratch/RepairedTetherRate.lean}, quoted verbatim.
-\VerbatimInput{lean/DMw.lean}
-\VerbatimInput{lean/DContAt.lean}
-\VerbatimInput{lean/DCont.lean}
-\VerbatimInput{lean/DFGS.lean}
-\VerbatimInput{lean/DClay.lean}
-\VerbatimInput{lean/DRate.lean}
+\VerbatimInput[firstline=15]{lean/DMw.lean}
+\VerbatimInput[firstline=15]{lean/DContAt.lean}
+\VerbatimInput[firstline=15]{lean/DCont.lean}
+\VerbatimInput[firstline=15]{lean/DFGS.lean}
+\VerbatimInput[firstline=15]{lean/DClay.lean}
+\VerbatimInput[firstline=15]{lean/DRate.lean}
 
 \begin{theorem}[Classical BKM continuation on $\R^3$]
 \label{thm:T10}
 For every $\nu>0$, \lean{R3BKMContinuation}\ $\nu$ holds: for every smooth, divergence-free $u_0$ satisfying~(4), if one ceiling $Y$ bounds $\|\omega\|_\infty$ along every local Fefferman-class solution from $u_0$, that is, $\|\omega(t)\|_\infty$ is finite and $\|\omega(t)\|_\infty\le Y$ for every local Fefferman-class solution $(u,p)$ from $u_0$ on $[0,T)$ and every $t\in[0,T)$, then $u_0$ has a global Fefferman solution: smooth functions $p$ and $u$ on $\R^3\times[0,\infty)$ that satisfy (1), (2), (3), (6) and (7) of Fefferman's problem description. A uniform vorticity ceiling remains a hypothesis; this is not a regularity theorem.
 
 \noindent\lean{KatoContinuation.r3BKMContinuation\_of\_pos}, \lean{Scratch/KatoContinuation.lean:41}:
-\VerbatimInput{lean/T10.lean}
+\VerbatimInput[firstline=15]{lean/T10.lean}
 \end{theorem}
 
 \begin{theorem}[Conditional reduction to the Smooth rate alone]
@@ -192,7 +165,7 @@ For every $\nu>0$, \lean{R3BKMContinuation}\ $\nu$ holds: for every smooth, dive
 Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ holds. Then \lean{Clay\_A\_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay\_A\_Fefferman}.
 
 \noindent\lean{KatoContinuation.clay\_A\_fefferman\_of\_rate}, \lean{Scratch/KatoContinuation.lean:49--52}:
-\VerbatimInput{lean/T11.lean}
+\VerbatimInput[firstline=15]{lean/T11.lean}
 \end{theorem}
 
 \section{What is not proved}
@@ -206,11 +179,12 @@ Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergenc
 
 \section{Truth Gate status}
 \label{sec:gate}
-Theorems~\ref{thm:T1}, \ref{thm:T10} and~\ref{thm:T11} are covered by the author-approved Truth Gate locks \lean{kato}, \lean{bkm}, \lean{clayA} in \lean{Scratch/FeffermanSemantics.lean} (lock record \lean{fefferman-clay-a-conditional} in \lean{TRUTH\_GATE.lock}). Each lock proves \lean{formal\_claim\_X ↔ paper\_claim\_X}, where \lean{paper\_claim\_X} is transcribed from the corresponding theorem sentence of \lean{papers/fefferman-clay-a-conditional/main.tex} (sha256 \hash{14179f79141f4a2b596f6fc08194be737e2f4bec8235d8f14bfc44175fa939dd}). The English statements of Theorems~\ref{thm:T1}, \ref{thm:T10} and~\ref{thm:T11} above reproduce those three locked sentences, with cross-references renamed. The \lean{truth-gate} workflow run 44047249293 on commit \commit{} reports \lean{TRUTH GATE AUDIT PASS (Fefferman locks)} for these three theorems. Theorems~\ref{thm:T2}--\ref{thm:T9} are not covered by any Truth Gate lock; for them this paper gives the verbatim Lean statement and a reading of it.
+Every theorem of this paper is covered by a Truth Gate lock: Theorem~\ref{thm:T1}, Theorem~\ref{thm:T2-9} (items (T2)--(T9), one lock for the one solution they describe), Theorem~\ref{thm:T10} and Theorem~\ref{thm:T11} are the locks \lean{T1}, \lean{T2to9}, \lean{T10} and \lean{T11} in \lean{Scratch/KatoSemantics.lean} (lock record \lean{local-kato-theory} in \lean{TRUTH\_GATE.lock}). Each lock proves \lean{formal\_claim\_X ↔ paper\_claim\_X}, where \lean{formal\_claim\_X} is the statement of the Lean theorem quoted with the theorem and \lean{paper\_claim\_X} is an independent Lean transcription of the English statement of the theorem in this file (\lean{papers/local-kato-theory/main.tex}). The \lean{paper\_claim\_X} do not name \lean{KatoMaximalSolution}, \lean{R3BKMContinuation}, \lean{FrohmanianTetherRateSmooth}, \lean{Clay\_A\_Fefferman}, \lean{IsFeffermanSolutionOn}, \lean{FeffermanDecay}, \lean{H3IBPVanishingFlux}, \lean{WordIBP}, \lean{Smax}, \lean{physicalMaximal}, \lean{presMaximal}, \lean{sobolevEnergy}, \lean{hsSq} or \lean{gradSup}. Version 1.0 of this paper stated (T2)--(T9) for the Lean objects \lean{Smax}, \lean{physicalMaximal} and \lean{presMaximal}, which the paper defines only by their Lean source, so they had no lock; Version 1.1 states them as Theorem~\ref{thm:T2-9} for one solution, which is what the lock covers. The truth-gate check reads the full build log and fails on any \lean{sorry} anywhere in the repository.
 
 \section{Certificate and reproducibility}
 \label{sec:repro}
 \begin{description}[leftmargin=*,style=nextline]
+\item[Version 1.1] Theorem~\ref{thm:T2-9} (\lean{Scratch/KatoMaximalProperties.lean}), the Truth Gate locks (\lean{Scratch/KatoSemantics.lean}, \lean{scripts/TruthGateAuditKato.lean}) and this file are added by one pull request to \href{https://github.com/BenFrohman/frohmanian-tether-sdiff}{\lean{BenFrohman/frohmanian-tether-sdiff}}. The certificate of Version~1.1 is the official GitHub Actions output (full build log, \lean{lake-manifest.json} with its sha256, toolchain, elan and Lake versions, and \lean{\#print axioms} for every theorem) of the merge commit of that pull request on \lean{main}; its commit and run ids are given in the Zenodo record of Version~1.1. The items below record the Version~1.0 certificate, which covers Theorems~\ref{thm:T1}, \ref{thm:T10}, \ref{thm:T11} and every declaration quoted in Section~\ref{sec:smax} except \lean{katoMaximalSolution\_properties}.
 \item[Repository and commit] \href{https://github.com/BenFrohman/frohmanian-tether-sdiff}{\lean{BenFrohman/frohmanian-tether-sdiff}} at \commit{} (\lean{main} after pull request \#14). Its Lean sources are identical to \prcommit{}, the merge commit of \href{https://github.com/BenFrohman/frohmanian-tether-sdiff/pull/12}{pull request \#12} (merged 17 November 2026, 01:53 CT): \lean{git diff} between the two commits changes only four files under \lean{.github/workflows/} and adds \lean{scripts/collect\_lake\_certificate.sh} and \lean{scripts/finalize\_lake\_certificate.sh}; no \lean{.lean} file, \lean{lakefile.lean}, \lean{lean-toolchain} or \lean{lake-manifest.json} changes.
 \item[CI run (kernel build)] ``Lean certificate'' workflow, run \href{https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/44047249311}{44047249311} (event \lean{push}, conclusion \lean{success}). Steps: install elan; record the lake certificate environment; \lean{lake exe cache get}; \lean{lake build}; \lean{lake build Scratch}; source scan for \lean{sorry}/\lean{admit}/\lean{native\_decide}/\lean{axiom}; strict axiom audit; Scratch axiom audit; \lean{bash scripts/verify.sh}; upload of the lake certificate bundle. All succeeded.
 \item[Companion runs on the same commit] ``Kernel certificate'' run \href{https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/44047249332}{44047249332} (success; 43 of 43 modules replayed through the kernel checker) and ``truth-gate'' run \href{https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/44047249293}{44047249293} (success).

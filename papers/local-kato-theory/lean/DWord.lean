@@ -1,3 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
+-- Scratch/KatoPonce.lean, lines 473-500
+
+/-!
+# papers.local-kato-theory.lean.DWord
+
+Verbatim excerpt (statement only) of the kernel-checked source file named above.
+-/
+
 structure WordIBP (u : VelocityField) (p : PressureField)
     (k : ℕ) (α : Fin k → Fin 3) : Prop where
   integrable_transport_pair : Integrable

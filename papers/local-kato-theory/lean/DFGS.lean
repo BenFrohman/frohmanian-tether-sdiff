@@ -1,3 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
+-- Scratch/RepairedTetherRate.lean, lines 44-50
+
+/-!
+# papers.local-kato-theory.lean.DFGS
+
+Verbatim excerpt (statement only) of the kernel-checked source file named above.
+-/
+
 @[expose] public def FeffermanGlobalSolution (ν : ℝ) (u₀ : VelocityField)
     (u : TimeDependentVelocity) (p : TimeDependentPressure) : Prop :=
   ContDiffOn ℝ ∞ (fun q : T3 × ℝ => u q.2 q.1) (Set.univ ×ˢ Set.Ici (0 : ℝ)) ∧

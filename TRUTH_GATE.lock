@@ -7,13 +7,6 @@
     "FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound"
   ],
   "lock_region_sha256": "e8f82a16c1d025f79f62488af0b3f45e054b0a5bf0014d39746e953c7f77d6a9",
-  "draft_dirs": [
-    "FrohmanianTether/Draft"
-  ],
-  "lean_roots": [
-    "FrohmanianTether",
-    "FrohmanianTether.lean"
-  ],
   "certifying": true,
   "reopened_reason": "The hypotheses are not independently transcribed. `paper_claim` keeps the repository Props `PeriodicTetherClosingBound` and `PeriodicBKMContinuation` as named Props, although the paper gives a precise English definition (def:ptb). The hypotheses carry the whole difficulty, so the lock leans on repository definitions exactly where it matters. (Addressed on 2026-11-16 by rewriting paper_claim so both hypotheses are written out from def:ptb and the English of Periodic BKM continuation. Mechanical hashes updated. Approved by the author on 2026-11-17, see approvedBy.)",
   "reopened_on": "2026-11-16",
@@ -68,6 +61,61 @@
         "confirmation_quote": "yes fix and proceed!",
         "confirmation_timestamp": "2026-11-17T00:32:00-06:00",
         "scope": "(A) rewrite of the Clay B paper_claim as an independent transcription of def:ptb (manuscript/main.tex); (B) the three Fefferman-paper sentences and their locks"
+      }
+    },
+    {
+      "name": "local-kato-theory",
+      "semantics_file": "Scratch/KatoSemantics.lean",
+      "semantics_module": "Scratch.KatoSemantics",
+      "audit_file": "scripts/TruthGateAuditKato.lean",
+      "paper_path": "papers/local-kato-theory/main.tex",
+      "paper_sha256": "491738fd676f4b62b742626b68e9fcbe8253cbca4243a5dab0ba1f803d4e69d0",
+      "claims": [
+        "T1",
+        "T2to9",
+        "T10",
+        "T11"
+      ],
+      "main_theorems": [
+        "KatoMaximal.katoMaximalSolution_of_feffermanDecay",
+        "KatoMaximal.katoMaximalSolution_properties",
+        "KatoContinuation.r3BKMContinuation_of_pos",
+        "KatoContinuation.clay_A_fefferman_of_rate"
+      ],
+      "paper_forbidden_names": [
+        "KatoMaximalSolution",
+        "R3BKMContinuation",
+        "R3BKMContinuationAt",
+        "FrohmanianTetherRateSmooth",
+        "Clay_A_Fefferman",
+        "FeffermanGlobalSolution",
+        "IsFeffermanSolutionOn",
+        "FeffermanDecay",
+        "H3IBPVanishingFlux",
+        "WordIBP",
+        "ViscousDissipationIBP",
+        "PartialIBP",
+        "wordDeriv",
+        "wordDerivScalar",
+        "convectiveCommutator",
+        "directionalCoord",
+        "Mω",
+        "sobolevEnergy",
+        "hsSq",
+        "gradSup",
+        "Smax",
+        "inMaximal",
+        "physicalMaximal",
+        "presMaximal"
+      ],
+      "lock_region_sha256": "f6eaf3dadab9d17aff4e7d7043a36a53d7740f38506a621f7b7f19d96cc12993",
+      "certifying": true,
+      "directive": {
+        "name": "Benjamin Stanley Frohman",
+        "quote": "make the fixes ASAP",
+        "timestamp": "2026-11-17T03:18:00-06:00",
+        "relayed_by": "parent agent",
+        "scope": "lock Theorems T1-T11 of the published local Kato paper (doi:10.5281/zenodo.24302258) under the Truth Gate; the transcription text in Scratch/KatoSemantics.lean has not been reviewed by the author"
       }
     }
   ]

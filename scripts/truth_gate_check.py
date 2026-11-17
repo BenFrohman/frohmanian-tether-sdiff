@@ -7,8 +7,8 @@
 #  3. The paper file hash equals the recorded hash, and the quoted paper text occurs verbatim
 #     (whitespace-normalised) in the paper file.
 #  4. The sha256 of the lock region of Semantics.lean equals the recorded hash (the claim is fixed).
-#  5. No sorry / admit / native_decide / `axiom` declaration in any .lean file outside a draft directory
-#     (comments and string literals excluded).
+#  5. No sorry / admit / native_decide / `axiom` declaration in ANY tracked .lean file
+#     (`git ls-files '*.lean'`, only .lake/ left out; comments and string literals are not code).
 #  6. The same checks for every entry of "additional_locks" (one semantics file, several
 #     formal_claim_X / paper_claim_X / intended_correspondence_X triples).
 import hashlib, json, os, re, sys
@@ -50,8 +50,11 @@ if not os.path.isfile(lock_path):
     fail("TRUTH_GATE.lock missing"); sys.exit(1)
 lock = json.load(open(lock_path))
 for k in ["semantics_file", "semantics_module", "paper_path", "paper_sha256",
-          "main_theorems", "lock_region_sha256", "draft_dirs", "lean_roots"]:
+          "main_theorems", "lock_region_sha256"]:
     if k not in lock: fail(f"TRUTH_GATE.lock lacks key {k}")
+for _k in ["draft" + "_dirs", "lean" + "_roots"]:
+    if _k in lock:
+        fail(f"TRUTH_GATE.lock carries {_k}: no directory may be exempted or left out of the scan")
 if FAIL: sys.exit(1)
 
 # 0. Re-audit status: a lock marked non-certifying keeps the gate red (see TRUTH_GATE.md).
@@ -202,23 +205,20 @@ for ex in lock.get("additional_locks", []):
             fail(f"{tag}: TRUTH_GATE.md does not carry the verbatim paper quote: " + norm(q)[:80])
     print(f"TRUTH GATE STATIC: additional lock {tag}: claims {ex['claims']} checked")
 
-# 5. forbidden tokens outside draft directories
-drafts = [d.strip("/") for d in lock["draft_dirs"]]
-tok = re.compile(r"(?<![\w.'])(sorry|admit|native_decide)(?![\w'])|^\s*(?:@\[[^\]]*\]\s*)?(?:private\s+|protected\s+|public\s+)*axiom\s", re.M)
+# 5. forbidden tokens in every tracked .lean file (no directory is exempt)
+import subprocess
+tok = re.compile(r"(?<![\w.'])(sorry|admit|native_decide)(?![\w'])|^\s*(?:@\[[^\]]*\]\s*)?(?:private\s+|protected\s+|public\s+|noncomputable\s+)*axiom\s", re.M)
+files = [f for f in subprocess.check_output(["git", "ls-files", "*.lean"], cwd=ROOT).decode().splitlines()
+         if f and not f.startswith(".lake/") and "/.lake/" not in f]
+if not files:
+    fail("git ls-files '*.lean' returned no files")
 bad = 0
-for r in list(lock["lean_roots"]) + extra_roots:
-    base = os.path.join(ROOT, r)
-    paths = [base] if os.path.isfile(base) else [
-        os.path.join(dp, f) for dp, dn, fs in os.walk(base) if ".lake" not in dp for f in fs if f.endswith(".lean")]
-    for p in sorted(paths):
-        rel = os.path.relpath(p, ROOT)
-        if any(rel == d or rel.startswith(d + "/") for d in drafts):
-            continue
-        code = strip_comments_strings(open(p, encoding="utf-8").read())
-        for mm in tok.finditer(code):
-            line = code.count("\n", 0, mm.start()) + 1
-            fail(f"forbidden token `{(mm.group(1) or 'axiom')}` at {rel}:{line}"); bad += 1
-print(f"TRUTH GATE STATIC: scanned roots {lock['lean_roots']} (draft dirs exempt: {drafts}); {bad} forbidden tokens")
+for rel in files:
+    code = strip_comments_strings(open(os.path.join(ROOT, rel), encoding="utf-8").read())
+    for mm in tok.finditer(code):
+        line = code.count("\n", 0, mm.start()) + 1
+        fail(f"forbidden token `{(mm.group(1) or 'axiom')}` at {rel}:{line}"); bad += 1
+print(f"TRUTH GATE STATIC: scanned all {len(files)} tracked .lean files (git ls-files); {bad} forbidden tokens")
 
 if FAIL:
     print(f"TRUTH GATE STATIC FAIL ({len(FAIL)} problems)"); sys.exit(1)

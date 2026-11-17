@@ -506,7 +506,7 @@ elab "#strict_scratch_axiom_audit" : command => do
     if ok then nOk := nOk + 1
   IO.println s!"SCRATCH AUDIT SUMMARY: theorems audited: {targets.length}; clean: {nOk}; violations: {bad.size}"
   if bad.isEmpty then
-    IO.println "SCRATCH AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx"
+    IO.println "SCRATCH AUDIT PASS: only propext, Classical.choice, Quot.sound"
   else
     for b in bad do IO.println s!"SCRATCH AUDIT FAIL: {b}"
     throwError m!"scratch axiom audit failed with {bad.size} violation(s)"
