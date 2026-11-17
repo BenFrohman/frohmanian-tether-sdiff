@@ -1615,6 +1615,25 @@ theorem momentum_physicalMaximal_of_le (hdiv : ∀ x, div u₀ x = 0) {n : ℕ}
   rw [hlap, hnsn]
   abel
 
+/-- The momentum equation for the realized maximal field on every
+`[0, T) ⊆ Smax`. -/
+theorem momentum_physicalMaximal (hdiv : ∀ x, div u₀ x = 0) {T : ℝ}
+    (hS : Ico (0 : ℝ) T ⊆ Smax hf hdec hν (by norm_num : 2 ≤ 2))
+    {t : ℝ} (ht : t ∈ Ico (0 : ℝ) T) (x : T3) :
+    derivWithin (fun s => physicalMaximal hf hdec hν s x) (Ici 0) t +
+        convective (physicalMaximal hf hdec hν t)
+          (physicalMaximal hf hdec hν t) x +
+        pressureGradient (presMaximal hf hdec hν t) x =
+      ν • laplacian (physicalMaximal hf hdec hν t) x + 0 := by
+  obtain ⟨_, n, hn⟩ := hS ht
+  have hk4 : 2 ≤ 4 := by norm_num
+  have hn' : t ≤ (iteratePath hf hdec hν hk4 n).t :=
+    hn.trans_eq (iteratePath_t_unique hf hdec hν
+      (by norm_num : 2 ≤ 2) hk4 n)
+  have hlt : t < (iteratePath hf hdec hν hk4 (n + 1)).t :=
+    lt_of_le_of_lt hn' (iteratePath_t_strict_mono hf hdec hν hk4 n)
+  exact momentum_physicalMaximal_of_le hf hdec hν hdiv ⟨ht.1, hlt⟩ x
+
 end Lift
 
 end KatoMaximal
@@ -1673,3 +1692,4 @@ end KatoMaximal
 #print axioms KatoMaximal.physicalMaximal_zero
 #print axioms KatoMaximal.inclExt_three_iteratePath
 #print axioms KatoMaximal.momentum_physicalMaximal_of_le
+#print axioms KatoMaximal.momentum_physicalMaximal
