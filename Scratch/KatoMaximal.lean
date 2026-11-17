@@ -1783,6 +1783,21 @@ theorem energyInequality_physicalMaximal_of_le (hdiv : ∀ x, div u₀ x = 0)
     hE 0 ⟨le_rfl, W.ht⟩]
   exact ENNReal.ofReal_le_ofReal hle0
 
+/-- The energy inequality on every `[0, T) ⊆ Smax`. -/
+theorem energyInequality_physicalMaximal (hdiv : ∀ x, div u₀ x = 0) {T : ℝ}
+    (hS : Ico (0 : ℝ) T ⊆ Smax hf hdec hν (by norm_num : 2 ≤ 2)) :
+    ∀ t ∈ Ico (0 : ℝ) T,
+      ∫⁻ x, ‖physicalMaximal hf hdec hν t x‖ₑ ^ 2 ≤ ∫⁻ x, ‖u₀ x‖ₑ ^ 2 := by
+  intro t ht
+  obtain ⟨_, n, hn⟩ := hS ht
+  have hk4 : 2 ≤ 4 := by norm_num
+  have hn' : t ≤ (iteratePath hf hdec hν hk4 n).t :=
+    hn.trans_eq (iteratePath_t_unique hf hdec hν
+      (by norm_num : 2 ≤ 2) hk4 n)
+  have hlt : t < (iteratePath hf hdec hν hk4 (n + 1)).t :=
+    lt_of_le_of_lt hn' (iteratePath_t_strict_mono hf hdec hν hk4 n)
+  exact energyInequality_physicalMaximal_of_le hf hdec hν hdiv ⟨ht.1, hlt⟩
+
 end Lift
 
 end KatoMaximal
@@ -1844,3 +1859,4 @@ end KatoMaximal
 #print axioms KatoMaximal.momentum_physicalMaximal
 #print axioms KatoMaximal.re_inner_mildSDeriv_iteratePath
 #print axioms KatoMaximal.energyInequality_physicalMaximal_of_le
+#print axioms KatoMaximal.energyInequality_physicalMaximal
