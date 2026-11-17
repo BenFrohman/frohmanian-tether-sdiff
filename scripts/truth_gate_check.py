@@ -9,6 +9,8 @@
 #  4. The sha256 of the lock region of Semantics.lean equals the recorded hash (the claim is fixed).
 #  5. No sorry / admit / native_decide / `axiom` declaration in any .lean file outside a draft directory
 #     (comments and string literals excluded).
+#  6. The same checks for every entry of "additional_locks" (one semantics file, several
+#     formal_claim_X / paper_claim_X / intended_correspondence_X triples).
 import hashlib, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -125,11 +127,86 @@ else:
         if tg and norm(q) not in norm(tg):
             fail("TRUTH_GATE.md does not carry the verbatim paper quote")
 
+# 6. Additional locks (TRUTH_GATE.lock "additional_locks"): the same rules for every
+#    (formal_claim_X, paper_claim_X, intended_correspondence_X) triple of another semantics file.
+TRIVIAL = {"Iff.rfl", "rfl", "by rfl", "by exact Iff.rfl", "by exact rfl", "by apply Iff.rfl",
+           "by constructor <;> exact id", "⟨id, id⟩", "Iff.intro id id", "by exact ⟨id, id⟩",
+           "by simp", "by decide", "by trivial", "by tauto"}
+extra_roots = []
+for ex in lock.get("additional_locks", []):
+    tag = ex.get("name", ex.get("semantics_file", "?"))
+    for k in ["semantics_file", "semantics_module", "paper_path", "paper_sha256", "claims",
+              "main_theorems", "lock_region_sha256", "audit_file"]:
+        if k not in ex: fail(f"additional lock {tag} lacks key {k}")
+    if any(k not in ex for k in ["semantics_file", "paper_path", "paper_sha256", "claims", "lock_region_sha256"]):
+        continue
+    if ex.get("certifying", True) is not True:
+        fail(f"additional lock {tag} is NOT certifying: " + str(ex.get("reopened_reason", "")))
+    xsem = os.path.join(ROOT, ex["semantics_file"])
+    if not os.path.isfile(xsem):
+        fail(f"{ex['semantics_file']} missing"); continue
+    extra_roots.append(ex["semantics_file"])
+    xsrc = open(xsem, encoding="utf-8").read()
+    xm = re.search(r"^-- TRUTH-GATE LOCK BEGIN\n(.*?)^-- TRUTH-GATE LOCK END\n", xsrc, re.S | re.M)
+    if not xm:
+        fail(f"lock region markers missing in {ex['semantics_file']}"); continue
+    xregion = xm.group(1)
+    xcode = strip_comments_strings(xregion)
+    for cid in ex["claims"]:
+        for decl in [rf"def\s+formal_claim_{cid}\s*:\s*Prop", rf"def\s+paper_claim_{cid}\s*:\s*Prop",
+                     rf"theorem\s+intended_correspondence_{cid}\s*:\s*formal_claim_{cid}\s*↔\s*paper_claim_{cid}\s*:="]:
+            if not re.search(decl, xcode):
+                fail(f"{tag}: lock region lacks `{decl}`")
+        cm = re.search(rf"theorem\s+intended_correspondence_{cid}\s*:\s*formal_claim_{cid}\s*↔\s*paper_claim_{cid}\s*:=(.*?)(?=^(?:theorem|def|lemma)\b|\Z)", xcode, re.S | re.M)
+        if cm:
+            body = re.sub(r"\s+", " ", cm.group(1)).strip()
+            if body in TRIVIAL or re.fullmatch(r"(by\s+)?(exact\s+)?(Iff\.)?rfl", body) or \
+               (re.search(r"(?<![\w.'])(Iff\.rfl|rfl)(?![\w'])", body) and len(body) < 40):
+                fail(f"{tag}: intended_correspondence_{cid} is proved trivially (`{body}`)")
+    # every paper-side definition (paper_*) must not mention any formal_claim or a forbidden repository Prop
+    forbidden = ex.get("paper_forbidden_names", [])
+    for pm in re.finditer(r"^def\s+(paper_\w+)\b(.*?)(?=^(?:theorem|def|lemma|abbrev)\b|\Z)", xcode, re.S | re.M):
+        pbody = pm.group(2)
+        if re.search(r"(?<![\w.'])([\w.]*\.)?formal_claim\w*(?![\w'])", pbody):
+            fail(f"{tag}: {pm.group(1)} mentions a formal_claim (vacuous alias)")
+        for fn in forbidden:
+            if re.search(rf"(?<![\w'])([\w]+\.)*{re.escape(fn)}(?![\w'])", pbody):
+                fail(f"{tag}: {pm.group(1)} names the repository Prop {fn} instead of transcribing the paper")
+    got = hashlib.sha256(xregion.encode("utf-8")).hexdigest()
+    if got != ex["lock_region_sha256"]:
+        fail(f"{tag}: lock region sha256 {got} != locked {ex['lock_region_sha256']} "
+             "(the locked claims were edited; a new lock needs the owner's explicit sign-off)")
+    xpp = os.path.join(ROOT, ex["paper_path"])
+    if not os.path.isfile(xpp):
+        fail(f"{tag}: paper file {ex['paper_path']} missing"); continue
+    xh = sha256_file(xpp)
+    if xh != ex["paper_sha256"]:
+        fail(f"{tag}: paper sha256 {xh} != locked {ex['paper_sha256']}")
+    if f"PAPER_SHA256: {ex['paper_sha256']}" not in xsrc:
+        fail(f"{tag}: {ex['semantics_file']} does not record the locked PAPER_SHA256")
+    if f"PAPER_PATH: {ex['paper_path']}" not in xsrc:
+        fail(f"{tag}: {ex['semantics_file']} does not record PAPER_PATH")
+    if not re.search(r"^PAPER_SECTION: \S", xsrc, re.M):
+        fail(f"{tag}: {ex['semantics_file']} lacks a PAPER_SECTION: field")
+    tg = open(os.path.join(ROOT, "TRUTH_GATE.md"), encoding="utf-8").read() if os.path.isfile(os.path.join(ROOT, "TRUTH_GATE.md")) else ""
+    if ex["paper_sha256"] not in tg or ex["paper_path"] not in tg:
+        fail(f"{tag}: TRUTH_GATE.md does not record the locked paper path and sha256")
+    xquotes = re.findall(r"PAPER_QUOTE_BEGIN\n(.*?)\nPAPER_QUOTE_END", xsrc, re.S)
+    if not xquotes:
+        fail(f"{tag}: no PAPER_QUOTE_BEGIN/END block")
+    xpaper = norm(open(xpp, encoding="utf-8", errors="replace").read())
+    for q in xquotes:
+        if norm(q) not in xpaper:
+            fail(f"{tag}: quoted paper text not found verbatim in the paper file: " + norm(q)[:120])
+        if tg and norm(q) not in norm(tg):
+            fail(f"{tag}: TRUTH_GATE.md does not carry the verbatim paper quote: " + norm(q)[:80])
+    print(f"TRUTH GATE STATIC: additional lock {tag}: claims {ex['claims']} checked")
+
 # 5. forbidden tokens outside draft directories
 drafts = [d.strip("/") for d in lock["draft_dirs"]]
 tok = re.compile(r"(?<![\w.'])(sorry|admit|native_decide)(?![\w'])|^\s*(?:@\[[^\]]*\]\s*)?(?:private\s+|protected\s+|public\s+)*axiom\s", re.M)
 bad = 0
-for r in lock["lean_roots"]:
+for r in list(lock["lean_roots"]) + extra_roots:
     base = os.path.join(ROOT, r)
     paths = [base] if os.path.isfile(base) else [
         os.path.join(dp, f) for dp, dn, fs in os.walk(base) if ".lake" not in dp for f in fs if f.endswith(".lean")]
