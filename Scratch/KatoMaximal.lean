@@ -2002,6 +2002,20 @@ lemma convective_physicalMaximal (hdiv : ∀ x, div u₀ x = 0) {k : ℕ}
     (fourierInv_im_eq_zero
       (refl_IccExtend_iteratePath hf hdec hν hk n t)) x).symm
 
+/-- The `divTensor` of a sixth-order iterated slice, as a named `Ĥ⁶` vector. -/
+def divTensorIteratePath6 (n : ℕ) (t : ℝ) : Hm (7 - 1) :=
+  let hk : 2 ≤ 6 := by norm_num
+  let U : Hm 7 := ContinuousMap.IccExtend
+    (iteratePath hf hdec hν hk n).ht
+    (iteratePath hf hdec hν hk n).path t
+  divTensor (s := 7) (by norm_num : 3 ≤ 7) U
+
+lemma tame_divTensorIteratePath6 (n : ℕ) (t : ℝ) :
+    MildFlux.Tame 3 (physicalOfHm (divTensorIteratePath6 hf hdec hν n t)) :=
+  MildFlux.tame_physicalOfHm (N := 3) (m := 7 - 1)
+    (by norm_num : 3 + 2 ≤ 7 - 1)
+    (divTensorIteratePath6 hf hdec hν n t)
+
 end Lift
 
 end KatoMaximal
@@ -2068,3 +2082,5 @@ end KatoMaximal
 #print axioms KatoMaximal.timeSliceDeriv_physicalMaximal_of_le
 #print axioms KatoMaximal.h3EnergyRightDerivativeFormula_physicalMaximal
 #print axioms KatoMaximal.convective_physicalMaximal
+#print axioms KatoMaximal.divTensorIteratePath6
+#print axioms KatoMaximal.tame_divTensorIteratePath6
