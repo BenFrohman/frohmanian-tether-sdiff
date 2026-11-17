@@ -1528,6 +1528,24 @@ theorem contDiffOn_presMaximal {T : ℝ}
       (univ ×ˢ Ico 0 T) :=
   contDiffOn_infty.2 fun N => contDiffOn_presMaximal_nat hf hdec hν N hS
 
+lemma physicalMaximal_zero :
+    physicalMaximal hf hdec hν 0 = u₀ := by
+  rw [physicalMaximal_eq_physicalMild hf hdec hν le_rfl
+    (Tfeff_nonneg hf hdec hν)]
+  exact physicalMild_zero hf hdec hν
+
+lemma inclExt_three_iteratePath {k : ℕ} (hk : 2 ≤ k) (hle : 3 ≤ k + 1)
+    (n : ℕ) (s : ℝ) :
+    inclExt hle (iteratePath hf hdec hν hk n).ht
+        (iteratePath hf hdec hν hk n).path s =
+      ContinuousMap.IccExtend
+        (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).ht
+        (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).path s := by
+  unfold inclExt
+  have h := IccExtend_iteratePath_incl hf hdec hν hk
+    (by norm_num : 2 ≤ 2) n s
+  rw [InclNSN.incl_irrel hle (three_le_succ hk), h, incl_self_Hm]
+
 end Lift
 
 end KatoMaximal
@@ -1583,3 +1601,5 @@ end KatoMaximal
 #print axioms KatoMaximal.contDiffOn_presMaximal_of_le
 #print axioms KatoMaximal.contDiffOn_presMaximal_nat
 #print axioms KatoMaximal.contDiffOn_presMaximal
+#print axioms KatoMaximal.physicalMaximal_zero
+#print axioms KatoMaximal.inclExt_three_iteratePath
