@@ -661,7 +661,8 @@ def cmd_report(args):
         for cc, t in items:
             if cc == c:
                 out.append("  - " + t)
-        if c == "LOCK-FORM":
+        if c == "LOCK-FORM" and any(cc == "LOCK-FORM" and not re.search(r"\((partial lock|vacuous claim)\)", t)
+                                    for cc, t in items):
             out.append("  " + REQUIRED)
         if c == "PAPER-HASH":
             out += ["  " + l for l in pd_lines]
