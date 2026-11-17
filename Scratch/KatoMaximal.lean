@@ -1375,6 +1375,49 @@ theorem div_physicalMaximal (hdiv : ∀ x, div u₀ x = 0) {t : ℝ}
     (lerayH_IccExtend_iteratePath hf hdec hν hdiv
       (by norm_num : 2 ≤ 2) n t) x
 
+lemma physicalMaximal_eq_inclExt {k : ℕ} (hk : 2 ≤ k) {m : ℕ} (hle : m ≤ k + 1)
+    {t : ℝ} (ht : 0 ≤ t) (n : ℕ)
+    (hn : t ≤ (iteratePath hf hdec hν hk n).t) :
+    physicalMaximal hf hdec hν t =
+      physicalOfHm (inclExt hle (iteratePath hf hdec hν hk n).ht
+        (iteratePath hf hdec hν hk n).path t) := by
+  rw [physicalMaximal_eq_iterate_high hf hdec hν hk ht n hn]
+  exact (physicalOfHm_incl hle _).symm
+
+/-- Joint `C^N` of the realized maximal field on every `[0, T)` contained
+in an iterated existence interval. -/
+theorem contDiffOn_physicalMaximal_of_le (N : ℕ) {k : ℕ} (hk : 2 ≤ k)
+    (hnk : N + 3 + 2 * N ≤ k) {T : ℝ} (n : ℕ)
+    (hT : T ≤ (iteratePath hf hdec hν hk n).t) :
+    ContDiffOn ℝ N (fun q : T3 × ℝ => physicalMaximal hf hdec hν q.2 q.1)
+      (univ ×ˢ Ico 0 T) := by
+  have hle : N + 3 ≤ k + 1 := MildPathSmooth.le_succ_of_mul_two_le hnk
+  set W := iteratePath hf hdec hν hk n
+  have hγ : ContDiffOn ℝ N (inclExt hle W.ht W.path) (Ico 0 W.t) :=
+    MildPathSmooth.contDiffOn_inclExt hk (by omega : 2 ≤ N + 3) hnk hν
+      W.ht W.mild
+  have hγT : ContDiffOn ℝ N (inclExt hle W.ht W.path) (Ico 0 T) :=
+    hγ.mono (Ico_subset_Ico_right hT)
+  have hC := FourierInvFDeriv.contDiffOn_uncurry_clm_path (le_refl (N + 3))
+    realifyCLM hγT
+  refine hC.congr ?_
+  intro q hq
+  have ht0 : 0 ≤ q.2 := hq.2.1
+  have hn' : q.2 ≤ W.t := hq.2.2.le.trans hT
+  have hphys := physicalMaximal_eq_inclExt hf hdec hν hk hle ht0 n hn'
+  have hreal := MildJointSmooth.physicalOfHm_eq_realify_BCF
+    (FourierInvFDeriv.two_le_of_add_three (le_refl (N + 3)))
+    (inclExt hle W.ht W.path q.2) q.1
+  calc
+    physicalMaximal hf hdec hν q.2 q.1
+        = physicalOfHm (inclExt hle W.ht W.path q.2) q.1 :=
+          congrArg (fun f => f q.1) hphys
+    _ = realifyCLM
+          (FourierInvFDeriv.uncurryFourierInvBCF
+            (FourierInvFDeriv.two_le_of_add_three (le_refl (N + 3)))
+            (q.1, inclExt hle W.ht W.path q.2)) := by
+          simpa [FourierInvFDeriv.uncurryFourierInvBCF] using hreal.symm
+
 end Lift
 
 end KatoMaximal
@@ -1422,3 +1465,5 @@ end KatoMaximal
 #print axioms KatoMaximal.lerayH_iteratePath
 #print axioms KatoMaximal.lerayH_IccExtend_iteratePath
 #print axioms KatoMaximal.div_physicalMaximal
+#print axioms KatoMaximal.physicalMaximal_eq_inclExt
+#print axioms KatoMaximal.contDiffOn_physicalMaximal_of_le
