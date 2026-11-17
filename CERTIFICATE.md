@@ -1,6 +1,6 @@
 # Verification certificate
 
-**Paper:** *The Frohmanian Tether Bound Implies Global Smoothness on 𝕋³ under Beale–Kato–Majda Continuation, and Implies BKM Integrability: Kernel-checked conditional theorems in Lean 4*, version 0.1.5 (preprint; Zenodo DOI 10.5281/zenodo.24122596). Version 0.1.5 adds the modules `TetherImpliesBKM` (tether bound ⇒ BKM integrability) and `TetherDefinitionAudit` (Lean proofs of two defects of the 0.1.4 local hypotheses), and corrects `LocalTetherBound`, `LocalFiniteTimeVorticityBound` and `LocalTetherRate`; every changed statement is listed under "Changes in 0.1.5".
+**Paper:** *The Frohmanian Tether Bound Implies Global Smoothness on 𝕋³ under Beale–Kato–Majda Continuation, and Implies BKM Integrability: Kernel-checked conditional theorems in Lean 4*, version 0.1.6 (preprint; Zenodo DOI 10.5281/zenodo.24148268). Version 0.1.6 adds the proved BKM continuation pillar (`periodicBKMContinuation_of_classical`), so the Main Theorem needs only the still-open tether closing bound, and includes the repaired rate `FrohmanianTetherRateSmooth` with the conditional reduction `clay_A_fefferman_of_frohmanianTetherRateSmooth` of Fefferman's Problem (A) (both hypotheses remain open for general data). Version 0.1.5 added the modules `TetherImpliesBKM` (tether bound ⇒ BKM integrability) and `TetherDefinitionAudit` (Lean proofs of two defects of the 0.1.4 local hypotheses), and corrected `LocalTetherBound`, `LocalFiniteTimeVorticityBound` and `LocalTetherRate`; every changed statement is listed under "Changes in 0.1.5".
 **Author:** Benjamin Stanley Frohman (Independent Researcher, Texas, United States; frohmanbenjamin@gmail.com, ORCID 0009-0006-7068-3718)
 **PDF:** `manuscript/main.pdf` (source `manuscript/main.tex`)
 
@@ -17,13 +17,146 @@ theorems are implications from hypotheses that are not proved; the complete list
 | Build | `lake build`: 2797 jobs, success (fresh clone of the verified commit, `bash scripts/verify.sh` → `VERIFY OK`) |
 | CI runs for 0.1.4 (branch `real-ns-witnesses`, commit `749ddf8`) | Lean certificate passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42909211506 ; Lean 4 (workflow_dispatch) passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42909284785 |
 | CI runs for 0.1.4 on `main` (merge commit `1890051`) | Lean certificate passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42910656109 ; Lean 4 passed: https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/42910656114 |
-| Zenodo archive | 0.1.5: [`10.5281/zenodo.24122596`](https://doi.org/10.5281/zenodo.24122596) (record https://zenodo.org/records/24122596; new version of 0.1.4). 0.1.4: [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) (record https://zenodo.org/records/24120781; new version of 0.1.3). 0.1.3: [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (record https://zenodo.org/records/24102715; adds only the DOI to the paper). 0.1.2: [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) (record https://zenodo.org/records/24102345, published 2026-11-10 from main at `2c424a8`; concept DOI `10.5281/zenodo.24081999`). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
+| Zenodo archive | 0.1.6: [`10.5281/zenodo.24148268`](https://doi.org/10.5281/zenodo.24148268) (record https://zenodo.org/records/24148268; new version of 0.1.5; concept DOI [`10.5281/zenodo.24081999`](https://doi.org/10.5281/zenodo.24081999); pinned commit `4aba751`). 0.1.5: [`10.5281/zenodo.24122596`](https://doi.org/10.5281/zenodo.24122596) (record https://zenodo.org/records/24122596; new version of 0.1.4). 0.1.4: [`10.5281/zenodo.24120781`](https://doi.org/10.5281/zenodo.24120781) (record https://zenodo.org/records/24120781; new version of 0.1.3). 0.1.3: [`10.5281/zenodo.24102715`](https://doi.org/10.5281/zenodo.24102715) (record https://zenodo.org/records/24102715; adds only the DOI to the paper). 0.1.2: [`10.5281/zenodo.24102345`](https://doi.org/10.5281/zenodo.24102345) (record https://zenodo.org/records/24102345, published 2026-11-10 from main at `2c424a8`; concept DOI `10.5281/zenodo.24081999`). The v0.1.1 archive [`10.5281/zenodo.24082000`](https://doi.org/10.5281/zenodo.24082000) still contains the removed hypothesis. |
 | Modules | 35 (`FrohmanianTether` and 34 submodules) |
 | Declarations audited | 1101 |
 | Theorem constants audited | 782 (690 stated in the sources, 92 auto-generated equation/congruence/injectivity lemmas) |
 | Axioms used | only `propext`, `Classical.choice`, `Quot.sound` (some declarations use a subset) |
 | `sorry` / `admit` / `native_decide` | none (`python3 scripts/check_no_sorry.py`: `OK: no sorry/admit/native_decide, no axiom declarations`) |
 | `axiom` declarations | none |
+
+The table above is the version 0.1.5 baseline (Lean sources at `5d7c9d0`). Version 0.1.6 is pinned
+to `4aba751`; its counts and CI are in the next section and under "Changes in 0.1.6".
+
+## Proved pillars (included in version 0.1.6)
+
+Library `FrohmanianTetherPillars` (default target; modules `FrohmanianTether.Pillars.Uniqueness` and
+`FrohmanianTether.Pillars.BKMContinuation`) and the vendored library `BKMPillar` (default target,
+`vendor/BKMPillar`). These are ordinary (non-`module`) Lean files, because the pillar repositories are not
+written in the module system and a `module` file may only import modules. `scripts/AxiomAudit.lean` and
+`scripts/PrintAxioms.lean` import them, so the strict audit covers them (module prefixes
+`FrohmanianTether` and `BKMPillar`).
+
+| Item (state of `main` with both pillars and the Fefferman (A) reduction of PR #4) | Value |
+|---|---|
+| Verified commit (Lean sources) | `4aba751d2d365faf0cc48c5b46e9aa0113519273` (main, merge of PR #5; Lean certificate CI run 43107567565, `VERIFY OK`) |
+| Lean toolchain / Mathlib | `leanprover/lean4:v4.30.0-rc1`, Mathlib rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` (unchanged) |
+| Lake dependencies added | `TorusFourierNS` @ `e63af4ea9bd3849ee7a0e6d9a7b64a0751d12fbe`, `WeightedEnstrophy` @ `1df4652d1a40430055ba6480904db5ab270497c3` (as pinned upstream by `periodic-ns-classical-continuation` @ `502ff17`) |
+| One-command verification | `bash scripts/verify.sh` (vendored copy: `bash scripts/check_vendor.sh` → `VENDOR OK (52 files ...)`) |
+| Build | `lake build`: 8389 jobs, success |
+| Modules audited | 42 `FrohmanianTether.*` + 52 vendored `BKMPillar.*` |
+| Declarations audited | 2546 |
+| Theorem constants audited | 1886 (1674 stated in the sources, 212 auto-generated equation/congruence/injectivity lemmas) |
+| Axioms used | only `propext`, `Classical.choice`, `Quot.sound`; no `sorry`, no `native_decide`, no `axiom` declarations |
+
+| Pillar | Source (exact commit) | Status in this library |
+|---|---|---|
+| Uniqueness of classical periodic solutions, `NSTorus.IsPeriodicSmoothSolutionOn.eq_of_same_data (hν : 0 ≤ ν)` | `BenFrohman/periodic-navier-stokes-smooth-uniqueness` @ `de92662d45e8a0f47ce0c196f6dbcfe44ddb4b3b` (Lake dependency `NSTorusUniqueness`; same toolchain and Mathlib pins) | **Wired in.** Definitions equal by `rfl`: `velocityField_eq_sdiff`, `convective_eq_sdiff`, `laplacian_eq_sdiff`, `div_eq_sdiff`, `pressureGradient_eq_sdiff`, `latticeVec_eq_sdiff`, `unitCube_eq_sdiff`, `isZ3Periodic_eq_sdiff`, `isPeriodicSmoothSolutionOn_eq_sdiff`. Proved: `periodicSmoothSolutionOn_unique`, `periodicSmoothSolutionOn_pressureGradient_unique`, `periodicSmoothSolutionOn_pressure_sub_const`, `isPeriodicSmoothSolutionOn_of_global`, `periodicSmoothSolution_unique`, `clay_B_exact_unique_iff`, `clay_B_exact_unique_of_periodic_tether_bound`. |
+| Beale–Kato–Majda criterion `PeriodicNSContinuation.periodicBKMCriterion`, Kato local existence `periodicLocalExistence_of_nonneg`, maximal solution `Corrected.periodicMaximalSolution_of_uniqueness`, `continuousOn_vorticity_Ico`, `FeffermanClayNS.periodicGlobalOfTstarTop` | `BenFrohman/periodic-ns-classical-continuation` @ `502ff17` over `BenFrohman/fefferman-clay-navier-stokes` @ `ebcf10921e02350e46b32b3bcded8dd8ca2c87c4`, vendored in `vendor/BKMPillar` (see `vendor/BKMPillar/VENDOR.md`) | **Wired in.** `periodicBKMContinuation_of_classical (hν : 0 < ν) : PeriodicBKMContinuation ν`. |
+
+**How the three blockers were resolved.**
+1. *Name clash.* `FeffermanClayNS/Defs.lean` declares `NavierStokes3D.*` names identical to
+   `FrohmanianTether/NS_Equations.lean`. The upstream sources are vendored with one mechanical rename
+   (`NavierStokes3D` → `FeffermanNavierStokes3D`, module prefix `BKMPillar.`); no proof, statement or
+   definition body is changed, and `scripts/check_vendor.sh` re-derives every vendored file from the upstream
+   commits and compares byte for byte. The operators used are equal to this library's by `rfl`
+   (`fef_convective_eq`, `fef_laplacian_eq`, `fef_div_eq`, `fef_pressureGradient_eq`, `fef_curl_eq`,
+   `fef_vorticity_eq`, `fef_vorticity_sup_norm_eq`, `fef_intVecToT3_eq`); the periodicity predicates are
+   equivalent (`isZ3Periodic_iff`).
+2. *Solution class.* Proved conversions: `isPeriodicSmoothSolutionOn_of_fefferman` (a Fefferman solution on
+   `Icc 0 T`, zero force, is an sdiff solution on `Ico 0 T`; the one-sided derivatives on `Icc 0 T` and
+   `Ici 0` agree at `t < T`, and the equations differ by moving `∇p`) and `isPeriodicSmoothSolution_of_fefferman`
+   (global solutions).
+3. *Form of BKM.* `periodicBKMContinuation_of_classical`: take the maximal solution; if its lifespan `T*` were
+   finite, `t ↦ ‖ω(t)‖_∞` would be continuous on `[0, T*)` and bounded by the uniform `Y` (each restriction to
+   `[0, T']`, `T' < T*`, is an sdiff local solution), hence integrable on `[0, T*]`, contradicting
+   `periodicBKMCriterion`; so `T* = ⊤` and `periodicGlobalOfTstarTop` gives the global solution.
+
+**What Lean now proves here.** Unconditionally: uniqueness of classical ℤ³-periodic solutions (as before),
+and classical BKM continuation `PeriodicBKMContinuation ν` for every `ν > 0`. Conditionally, the Main Theorem
+with **one** hypothesis:
+
+```lean
+theorem FrohmanianTether.Pillars.clay_B_exact_of_periodic_tether_closing_bound
+    (hclose : ∀ ν > (0 : ℝ), PeriodicTetherClosingBound ν) : Clay_B_exact
+theorem FrohmanianTether.Pillars.clay_B_exact_unique_of_periodic_tether_closing_bound
+    (hclose : ∀ ν > (0 : ℝ), PeriodicTetherClosingBound ν) : Clay_B_exact_unique
+```
+
+(`clay_B_exact_unique_of_periodic_tether_bound`, which still takes `hBKM`, is kept unchanged.)
+`hclose`, the Frohmanian tether bound, is **open**: a time-uniform `‖ω‖_∞` bound along every local periodic
+solution for all data, which by Beale–Kato–Majda is as hard as Statement (B). This is a conditional theorem,
+not a proof of Statement (B) or of the Clay Millennium Problem. `SmoothPhysicalUniqueness` and
+`KatoUniquenessOnExistenceTimes` (ℝ³ class with `L²(ℝ³)` clauses, auxiliary lemmas only) are not discharged.
+Prodi–Serrin is not used.
+
+**Axiom output** (`lake env lean scripts/PrintAxioms.lean`, new lines; full per-declaration output is the CI
+artifact `axioms` of `.github/workflows/certify.yml`):
+
+```
+'PeriodicNSContinuation.periodicBKMCriterion' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PeriodicNSContinuation.periodicLocalExistence_of_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.Pillars.periodicBKMContinuation_of_classical' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.Pillars.clay_B_exact_of_periodic_tether_closing_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.Pillars.clay_B_exact_unique_of_periodic_tether_closing_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+AUDIT SUMMARY: theorems audited: 1886 (1674 stated in the sources, 212 auto-generated equation/congruence/injectivity lemmas); declarations audited: 2546; violations: 0
+AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations
+```
+
+## Fefferman Problem (A) reduction (included in version 0.1.6; originally PR #4)
+
+**Status: merged in PR #4 and included on `main` at `4aba751` (version 0.1.6). Conditional only.
+Fefferman's Problem (A) is not proved, and neither is any Clay Millennium Problem.**
+
+| Item | Value |
+|---|---|
+| Verified commit | `4010251510ebe00d866006227c60374efe487453` (Lean sources; parent `95d17ce` = `main` after PR #3) |
+| Lean toolchain | `leanprover/lean4:v4.30.0-rc1` |
+| Mathlib | `v4.30.0-rc1`, rev `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` |
+| Rebuild (one command) | `bash scripts/verify.sh` |
+| Build | `lake build`: 8317 jobs, success |
+| Strict audit | `AUDIT SUMMARY: theorems audited: 895 (791 stated in the sources, 104 auto-generated equation/congruence/injectivity lemmas); declarations audited: 1237; violations: 0` / `AUDIT PASS` |
+| Source scan | `OK: no sorry/admit/native_decide, no axiom declarations` |
+
+New modules (all in the default target `FrohmanianTether`):
+
+* `FrohmanianTether.Takagi`: the Takagi function is continuous and nowhere differentiable.
+* `FrohmanianTether.TetherRateCounterexample`: **`FrohmanianTetherRate` and
+  `FrohmanianTetherBound` are false as written.** `NS_PDE` and `IsPhysicalNSSolution` impose no
+  spatial differentiability, and Mathlib's `fderiv` is `0` at non-differentiable points. So a
+  steady finite-energy field `U` with a nowhere-differentiable (Takagi) component satisfies
+  `NS_PDE` for every `ν`, while `‖ω(U)‖` is unbounded. `U` is not a classical Navier–Stokes
+  solution. This exposes a defect in the solution class (the junk-derivative loophole).
+* `FrohmanianTether.TetherRatePeriodicVacuity`: on nonzero continuous `ℤ³`-periodic data,
+  `FrohmanianTetherRate` holds only vacuously, because such data are not `L²(ℝ³)`.
+* `FrohmanianTether.FeffermanClayA`: `Clay_A_Fefferman` (Fefferman's official Problem (A):
+  smooth, divergence-free data with decay (4) of all derivatives, `ν > 0`, `f = 0`; a joint
+  `C^∞(ℝ³ × [0,∞))` solution `(p, u)` with bounded energy (7)), the repaired rate
+  `FrohmanianTetherRateSmooth`, the classical continuation hypothesis `R3BKMContinuation`, and
+  the **conditional** theorem `clay_A_fefferman_of_frohmanianTetherRateSmooth`. Every hypothesis
+  and the conclusion are shown satisfiable at `u₀ = 0`. **Open:** the smooth rate for all
+  Fefferman data, and `R3BKMContinuation` (the classical BKM continuation theorem on ℝ³; not yet
+  formalized here).
+
+`#print axioms` (`lake env lean scripts/PrintAxioms.lean`, commit `4010251`):
+
+```
+'Takagi.not_differentiableAt_takagi' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateCounterexample.not_forall_frohmanianTetherRate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateCounterexample.not_frohmanianTetherRate_U' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRateCounterexample.not_frohmanianTetherBound_U' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherRatePeriodicVacuity.frohmanianTetherRate_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanClayA.clay_A_fefferman_of_frohmanianTetherRateSmooth' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FeffermanClayA.frohmanianTetherRateSmooth_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanClayA.r3BKMContinuationAt_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanClayA.feffermanDecay_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanClayA.clay_A_fefferman_instance_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FeffermanClayA.frohmanianTetherRateSmoothGlobal_of_no_global_solution' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+```
 
 ## Reproduction
 
@@ -71,6 +204,33 @@ bash scripts/verify.sh        # or: make verify
 'ExplicitFlows.not_integrable_sq_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
 'ExplicitFlows.isEmpty_katoLocalWitness_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
+
+## Changes in 0.1.6 (BKM continuation pillar; Fefferman (A) reduction)
+
+**Pinned commit:** `4aba751d2d365faf0cc48c5b46e9aa0113519273` (main, 11 November 2026, merge of PR #5).
+Zenodo DOI [`10.5281/zenodo.24148268`](https://doi.org/10.5281/zenodo.24148268) (new version of 0.1.5;
+concept DOI [`10.5281/zenodo.24081999`](https://doi.org/10.5281/zenodo.24081999)).
+
+**BKM continuation is now a theorem** (`FrohmanianTether.Pillars.periodicBKMContinuation_of_classical`):
+`0 < ν → PeriodicBKMContinuation ν`. The Main Theorem therefore needs only the still-open tether
+closing bound (as hard as Fefferman's statement (B)):
+
+- `clay_B_exact_of_periodic_tether_closing_bound (hclose : ∀ ν > 0, PeriodicTetherClosingBound ν) : Clay_B_exact`
+- `clay_B_exact_unique_of_periodic_tether_closing_bound` (same hypothesis; unique global velocity)
+
+This is not a proof of statement (B). The two-hypothesis form `clay_B_exact_of_periodic_tether_bound`
+remains, with `hBKM` now supplied by the pillar. Uniqueness of classical periodic solutions was already
+wired in (PR #3) and is included in this version.
+
+**Fefferman Problem (A) reduction (PR #4, same commit):** the repaired rate
+`FeffermanClayA.FrohmanianTetherRateSmooth` and the conditional theorem
+`FeffermanClayA.clay_A_fefferman_of_frohmanianTetherRateSmooth`. Both hypotheses remain open for
+general data and are only shown satisfiable at `u₀ = 0`. This is not a proof of Clay (A). The
+unrestricted `FrohmanianTetherRate` remains refuted (`not_forall_frohmanianTetherRate`).
+
+**Audit at `4aba751`:** 8389 jobs; 1886 theorems (1674 stated, 212 auto-generated) and 2546
+declarations in 42 `FrohmanianTether.*` and 52 vendored `BKMPillar.*` modules; only `propext`,
+`Classical.choice`, `Quot.sound`. Lean certificate CI run 43107567565 (`VERIFY OK`).
 
 ## Changes in 0.1.5 (main theorem framing; tether ⇒ BKM integrability; definition audit)
 
@@ -434,7 +594,8 @@ exactly what the headline theorems take.
     interval). Used only by the uniqueness clause of `conditional_regularity_of_open_hyps` and
     `frohmanian_conditional_regularity_of_closing_bound`.
   - `PeriodicBKMContinuation` (`hBKM` of the Main Theorem `clay_B_exact_of_periodic_tether_bound`, and
-    `clay_B_exact_of_torus_direction_depletion`).
+    `clay_B_exact_of_torus_direction_depletion`). As of version 0.1.6 it is **proved** for every `ν > 0`
+    (`FrohmanianTether.Pillars.periodicBKMContinuation_of_classical`, section "Proved pillars").
   - `KatoUniquenessOnExistenceTimes` (only for `smoothBelowTstar_of_katoUniqueness`).
   - `IsCoadjointMotion` for the Euler flow (`PlanSteps`).
 - **(d) Equivalent in strength to the open problem:**
@@ -487,6 +648,7 @@ exactly what the headline theorems take.
 | Package | Input rev | Rev |
 |---|---|---|
 | mathlib | `v4.30.0-rc1` | `0c154d67103f74be3a0f2c509f72ccbf5be9f2a7` |
+| NSTorusUniqueness (`BenFrohman/periodic-navier-stokes-smooth-uniqueness`, after 0.1.5) | `de92662d45e8a0f47ce0c196f6dbcfe44ddb4b3b` | `de92662d45e8a0f47ce0c196f6dbcfe44ddb4b3b` |
 | plausible | `main` | `f449eabb8f7e3feef0366856c20e28a6d2c97ee3` |
 | LeanSearchClient | `main` | `c5d5b8fe6e5158def25cd28eb94e4141ad97c843` |
 | importGraph | `main` | `86503d416c875fdcf3b6b6c54c22581e96c6bda7` |

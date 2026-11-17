@@ -3,11 +3,13 @@ Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Benjamin Stanley Frohman
 -/
+
 module
 public import Mathlib.LinearAlgebra.CrossProduct
 public import Mathlib.LinearAlgebra.Matrix.DotProduct
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import FrohmanianTether.ArnoldGeometric
+
 /-!
 # Plan steps 2–4 (user's ordered plan)
 

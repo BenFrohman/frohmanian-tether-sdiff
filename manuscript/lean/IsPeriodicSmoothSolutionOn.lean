@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 -- FrohmanianTether/ClayStatements.lean, line 559
+
+/-!
+# manuscript.lean.IsPeriodicSmoothSolutionOn
+
+Machine-checked Lean 4 module.
+-/
+
 @[expose] public def IsPeriodicSmoothSolutionOn (ν T : ℝ) (u₀ : VelocityField)
     (u : TimeDependentVelocity) (p : TimeDependentPressure) : Prop :=
   ContDiffOn ℝ ∞ (fun q : ℝ × T3 => u q.1 q.2) (Set.Ico (0 : ℝ) T ×ˢ Set.univ) ∧

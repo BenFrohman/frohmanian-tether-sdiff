@@ -30,6 +30,12 @@ public import FrohmanianTether.NS_Equations
 public import FrohmanianTether.AnalyticPipeline
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 
+/-!
+# FrohmanianTether.TetheredLyapunov
+
+Machine-checked Lean 4 module.
+-/
+
 universe u
 
 /-!

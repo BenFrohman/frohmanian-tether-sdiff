@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 -- FrohmanianTether/AnalyticPipeline.lean, line 85
+
+/-!
+# manuscript.lean.comparison_ode_stability
+
+Machine-checked Lean 4 module.
+-/
+
 public theorem comparison_ode_stability
     (C κ'' : ℝ) (hC : 0 < C) (hκ : 0 < κ'')
     (y : ℝ → ℝ)

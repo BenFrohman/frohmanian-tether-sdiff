@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 /- Frohmanian Tether on SDiff(T³): root of the standalone library. -/
 import FrohmanianTether.AnalyticPipeline
 import FrohmanianTether.ArnoldGeometric
@@ -10,6 +16,7 @@ import FrohmanianTether.ConcreteSDiff
 import FrohmanianTether.ConditionalRegularity
 import FrohmanianTether.CubicSourceCertificate
 import FrohmanianTether.ExplicitFlows
+import FrohmanianTether.FeffermanClayA
 import FrohmanianTether.ForMathlib.Projection
 import FrohmanianTether.HighSetDepletionAndBKM
 import FrohmanianTether.IndependentMajorant
@@ -22,14 +29,24 @@ import FrohmanianTether.ScalingIdentities
 import FrohmanianTether.StrainBoundRefutation
 import FrohmanianTether.SymplecticConstraint
 import FrohmanianTether.SymplecticTether
+import FrohmanianTether.Takagi
 import FrohmanianTether.TestFieldFamily
 import FrohmanianTether.TetherC1
 import FrohmanianTether.TetherDefinitionAudit
 import FrohmanianTether.TetherEquivariantC1
 import FrohmanianTether.TetherNondegeneracy
+import FrohmanianTether.TetherRateCounterexample
+import FrohmanianTether.TetherRatePeriodicVacuity
 import FrohmanianTether.TetherWeight
 import FrohmanianTether.TetherWeightProof
 import FrohmanianTether.TetheredLyapunov
 import FrohmanianTether.TetherImpliesBKM
 import FrohmanianTether.TorusStrainExclusion
 import FrohmanianTether.Uniqueness
+import FrohmanianTether.Semantics
+
+/-!
+# FrohmanianTether
+
+Machine-checked Lean 4 module.
+-/

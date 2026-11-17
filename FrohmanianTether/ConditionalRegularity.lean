@@ -15,7 +15,8 @@ public import FrohmanianTether.NS_Equations
 public import FrohmanianTether.AnalyticPipeline
 public import Mathlib.Analysis.Calculus.ContDiff.Basic
 
-/-! # Conditional statements: assembly of the tether layer and the analytic layer
+/-!
+ # Conditional statements: assembly of the tether layer and the analytic layer
 
 This module states `frohmanian_tether_theorem` and `conditional_regularity_of_open_hyps`. Both are
 **conditional implications**: every analytic input (Kato local existence, Kato–BKM continuation,

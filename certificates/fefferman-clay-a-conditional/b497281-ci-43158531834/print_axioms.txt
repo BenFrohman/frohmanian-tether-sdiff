@@ -1,0 +1,56 @@
+'ConditionalRegularity.frohmanian_tether_theorem' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetheredLyapunov.conditional_regularity' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.frohmanian_conditional_regularity_of_closing_bound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FrohmanianTether.ClayStatements.conditional_regularity_nonvacuous_at_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FrohmanianTether.tetherKernel_C3' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.pairsToZero_of_C2' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.uniqueness_of_minimal_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.uniqueness_of_minimal_symmetric_tether' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.uniqueness_of_minimal_tether_core' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherNondegeneracy.tetherKernel_nondegenerate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherWeight.not_aeEnstrophyWeightUnrestricted_tetherKernel' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherWeightProof.tetherKernel_aeEnstrophyWeight' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetherWeightProof.tetherKernel_core_inputs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.not_tetherKernel_invariant_concrete' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.not_tetherKernel_invariant_transSubgroup' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.tetherKernel_transported_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.not_transported_invariant_pointEval' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_navier_stokes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.shearFlow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.abcFlow_isPeriodicSmoothSolution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.curl_abcProfile' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.not_integrable_sq_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ExplicitFlows.isEmpty_katoLocalWitness_of_periodic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.localTetherBoundV014_constraint_free_of_unbounded' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.exists_isLocalPhysicalSolution_zero_time' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.isLocalPhysicalSolution_escapePath' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_localTetherRateV014_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FrohmanianTether.TetherDefinitionAudit.not_forall_localTetherRateV014' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TetheredLyapunov.comparison_ode_stability_Icc_right' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TetheredLyapunov.localTetherBound_of_localTetherRate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.localTetherRate_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.ClayStatements.localTetherBound_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherClosingBound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]

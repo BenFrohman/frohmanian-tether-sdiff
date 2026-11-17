@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 -- FrohmanianTether/Uniqueness.lean, line 633
+
+/-!
+# manuscript.lean.uniqueness_of_minimal_tether_core
+
+Machine-checked Lean 4 module.
+-/
+
 public theorem uniqueness_of_minimal_tether_core
     (B : CoadjointOrbit → Functional → Functional → ℝ)
     (h_sym : ∀ ω F G, B ω F G = B ω G F)

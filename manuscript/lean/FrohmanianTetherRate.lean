@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 -- FrohmanianTether/SymplecticTether.lean, line 403
+
+/-!
+# manuscript.lean.FrohmanianTetherRate
+
+Machine-checked Lean 4 module.
+-/
+
 @[expose] public abbrev FrohmanianTetherRate (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∀ u : ℝ → VelocityField, ∀ p : ℝ → PressureField,
     0 < ν → NS_PDE u p ν → u 0 = u₀ → IsPhysicalNSSolution u →

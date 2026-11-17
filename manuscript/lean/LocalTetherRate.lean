@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 -- FrohmanianTether/TetheredLyapunov.lean, line 1559
+
+/-!
+# manuscript.lean.LocalTetherRate
+
+Machine-checked Lean 4 module.
+-/
+
 @[expose] public def LocalTetherRate (u₀ : VelocityField) (ν : ℝ) : Prop :=
   ∃ C κ'' : ℝ, 0 < C ∧ 0 < κ'' ∧
     ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),

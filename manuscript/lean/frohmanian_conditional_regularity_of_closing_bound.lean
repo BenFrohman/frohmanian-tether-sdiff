@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
 -- FrohmanianTether/ClayStatements.lean, line 159
+
+/-!
+# manuscript.lean.frohmanian_conditional_regularity_of_closing_bound
+
+Machine-checked Lean 4 module.
+-/
+
 public theorem frohmanian_conditional_regularity_of_closing_bound
     (ν : ℝ) (hν : 0 < ν)
     (hclose : LocalTetherClosingBound ν)

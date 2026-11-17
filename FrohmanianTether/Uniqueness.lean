@@ -23,7 +23,6 @@ vacuity of the former antisymmetric clause. These are statements about kernels; 
 about regularity of Navier–Stokes solutions.
 -/
 
-
 namespace FrohmanianTether
 
 open FrohmanianTether
