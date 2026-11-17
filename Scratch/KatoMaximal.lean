@@ -1076,6 +1076,51 @@ theorem refl_restartPath {k : ℕ} (hk : 2 ≤ k) (w0 : Hm (k + 1))
   rw [refl_incl] at h3
   exact incl_injective (three_le_succ hk) h3
 
+lemma refl_IccExtend {k : ℕ} {T : ℝ} (hT : 0 ≤ T)
+    (u : XTs k T) (hu : ∀ t : Icc (0 : ℝ) T, refl (k + 1) (u t) = u t)
+    (s : ℝ) :
+    refl (k + 1) (ContinuousMap.IccExtend hT u s) =
+      ContinuousMap.IccExtend hT u s := by
+  rw [ContinuousMap.coe_IccExtend]
+  exact hu (projIcc 0 T hT s)
+
+/-- Every slice of every iterated path is `refl`-fixed. -/
+theorem refl_iteratePath {k : ℕ} (hk : 2 ≤ k) (n : ℕ)
+    (t : Icc (0 : ℝ) (iteratePath hf hdec hν hk n).t) :
+    refl (k + 1) ((iteratePath hf hdec hν hk n).path t) =
+      (iteratePath hf hdec hν hk n).path t := by
+  induction n with
+  | zero =>
+    exact refl_persistPath_high hf hdec hν hk t
+  | succ n ih =>
+    set W := iteratePath hf hdec hν hk n
+    have hend : refl (k + 1) W.endpoint = W.endpoint :=
+      ih ⟨W.t, ⟨W.ht, le_rfl⟩⟩
+    have hτ0 := localTime_nonneg hν (incl (three_le_succ hk) W.endpoint)
+    rcases le_or_gt (t : ℝ) W.t with ht | ht
+    · have hval :
+          (iteratePath hf hdec hν hk (n + 1)).path t =
+            W.path ⟨t.1, ⟨t.2.1, ht⟩⟩ :=
+        glue_eval_le hk W.ht hτ0 W.path
+          (restartPath hk hν W.endpoint) (restartPath_zero hk hν W.endpoint) t ht
+      rw [hval]
+      exact ih ⟨t.1, ⟨t.2.1, ht⟩⟩
+    · have htτ : t.1 - W.t ≤
+          localTime ν (incl (three_le_succ hk) W.endpoint) := by
+        have heq : (iteratePath hf hdec hν hk (n + 1)).t =
+            W.t + localTime ν (incl (three_le_succ hk) W.endpoint) :=
+          rfl
+        linarith [t.2.2, heq]
+      have hval :
+          (iteratePath hf hdec hν hk (n + 1)).path t =
+            restartPath hk hν W.endpoint
+              ⟨t.1 - W.t, ⟨sub_nonneg.2 ht.le, htτ⟩⟩ :=
+        glue_eval_gt hk W.ht hτ0 W.path
+          (restartPath hk hν W.endpoint) (restartPath_zero hk hν W.endpoint) t ht
+      rw [hval]
+      exact refl_restartPath hν hk W.endpoint hend
+        ⟨t.1 - W.t, ⟨sub_nonneg.2 ht.le, htτ⟩⟩
+
 end Lift
 
 end KatoMaximal
@@ -1109,3 +1154,4 @@ end KatoMaximal
 #print axioms KatoMaximal.Smax_unique
 #print axioms KatoMaximal.Smax_eq_Ici_or_Ico
 #print axioms KatoMaximal.refl_restartPath
+#print axioms KatoMaximal.refl_iteratePath
