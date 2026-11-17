@@ -1798,6 +1798,23 @@ theorem energyInequality_physicalMaximal (hdiv : ∀ x, div u₀ x = 0) {T : ℝ
     lt_of_le_of_lt hn' (iteratePath_t_strict_mono hf hdec hν hk4 n)
   exact energyInequality_physicalMaximal_of_le hf hdec hν hdiv ⟨ht.1, hlt⟩
 
+/-- The realized maximal field and pressure form a Fefferman-class
+solution on every `[0, T) ⊆ Smax`. -/
+theorem isFeffermanSolutionOn_physicalMaximal (hdiv : ∀ x, div u₀ x = 0)
+    {T : ℝ} (hS : Ico (0 : ℝ) T ⊆ Smax hf hdec hν (by norm_num : 2 ≤ 2)) :
+    IsFeffermanSolutionOn ν T u₀
+      (physicalMaximal hf hdec hν) (presMaximal hf hdec hν) := by
+  rcases le_or_gt T 0 with hT0 | _
+  · exact isFeffermanSolutionOn_of_empty hT0
+      fun x => congrFun (physicalMaximal_zero hf hdec hν) x
+  · refine ⟨contDiffOn_physicalMaximal hf hdec hν hS,
+      contDiffOn_presMaximal hf hdec hν hS, ?_, ?_, ?_⟩
+    · intro t ht x
+      exact ⟨momentum_physicalMaximal hf hdec hν hdiv hS ht x,
+        div_physicalMaximal hf hdec hν hdiv (hS ht) x⟩
+    · exact fun x => congrFun (physicalMaximal_zero hf hdec hν) x
+    · exact energyInequality_physicalMaximal hf hdec hν hdiv hS
+
 end Lift
 
 end KatoMaximal
@@ -1860,3 +1877,4 @@ end KatoMaximal
 #print axioms KatoMaximal.re_inner_mildSDeriv_iteratePath
 #print axioms KatoMaximal.energyInequality_physicalMaximal_of_le
 #print axioms KatoMaximal.energyInequality_physicalMaximal
+#print axioms KatoMaximal.isFeffermanSolutionOn_physicalMaximal
