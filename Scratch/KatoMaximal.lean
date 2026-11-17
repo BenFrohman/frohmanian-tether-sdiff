@@ -1141,6 +1141,22 @@ theorem isRealSlice_IccExtend_iteratePath {k : ℕ} (hk : 2 ≤ k)
     fourierInv_im_eq_zero (by
       rw [refl_incl, refl_IccExtend_iteratePath hf hdec hν hk n s]) y i
 
+/-- The realized maximal field has finite `H³` energy at every time in `Smax`. -/
+lemma sobolevEnergy_physicalMaximal_lt_top {t : ℝ}
+    (ht : inMaximal hf hdec hν (by norm_num : 2 ≤ 2) t) :
+    sobolevEnergy 3 (physicalMaximal hf hdec hν t) < ⊤ := by
+  have hk7 : 2 ≤ 7 := by norm_num
+  have hle : 5 ≤ 7 + 1 := by norm_num
+  obtain ⟨ht0, n, hn2⟩ := ht
+  have hn7 : t ≤ (iteratePath hf hdec hν hk7 n).t :=
+    hn2.trans_eq (iteratePath_t_unique hf hdec hν (by norm_num : 2 ≤ 2) hk7 n)
+  rw [physicalMaximal_eq_iterate_high hf hdec hν hk7 ht0 n hn7,
+    ← physicalOfHm_incl hle,
+    sobolevEnergy_physicalOfHm (le_refl 5)
+      (isRealSlice_IccExtend_iteratePath hf hdec hν hk7
+        (by norm_num : 2 ≤ 5) hle n t)]
+  exact ENNReal.ofReal_lt_top
+
 end Lift
 
 end KatoMaximal
@@ -1176,3 +1192,4 @@ end KatoMaximal
 #print axioms KatoMaximal.refl_restartPath
 #print axioms KatoMaximal.refl_iteratePath
 #print axioms KatoMaximal.isRealSlice_IccExtend_iteratePath
+#print axioms KatoMaximal.sobolevEnergy_physicalMaximal_lt_top
