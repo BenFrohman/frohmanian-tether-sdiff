@@ -1257,6 +1257,24 @@ theorem hsSq_blowup_alternative {k : ℕ} (hk : 2 ≤ k) :
       rwa [Real.sq_sqrt (le_max_right B 0)] at this
     exact lt_of_le_of_lt (le_max_left B 0) hsq
 
+/-- On the first existence interval the realized maximal field is the
+mild field. -/
+lemma physicalMaximal_eq_physicalMild {t : ℝ} (ht : 0 ≤ t)
+    (hT : t ≤ Tfeff hf hdec hν) :
+    physicalMaximal hf hdec hν t = physicalMild hf hdec hν t := by
+  have hn : t ≤ (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) 0).t := hT
+  rw [physicalMaximal_eq_iterate hf hdec hν ht 0 hn]
+  rfl
+
+/-- On the first existence interval the realized maximal pressure is the
+mild Leray pressure. -/
+lemma presMaximal_eq_presMild {t : ℝ} (ht : 0 ≤ t)
+    (hT : t ≤ Tfeff hf hdec hν) :
+    presMaximal hf hdec hν t = presMild hf hdec hν t := by
+  have hn : t ≤ (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) 0).t := hT
+  rw [presMaximal_eq_iterate hf hdec hν ht 0 hn]
+  rfl
+
 end Lift
 
 end KatoMaximal
@@ -1296,3 +1314,5 @@ end KatoMaximal
 #print axioms KatoMaximal.hsSq_physicalMaximal
 #print axioms KatoMaximal.continuousOn_hsSq_physicalMaximal
 #print axioms KatoMaximal.hsSq_blowup_alternative
+#print axioms KatoMaximal.physicalMaximal_eq_physicalMild
+#print axioms KatoMaximal.presMaximal_eq_presMild
