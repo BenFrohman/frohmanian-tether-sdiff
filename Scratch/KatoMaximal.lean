@@ -9,18 +9,22 @@ import Scratch.KatoPonceCommutator
 import Scratch.KatoPonceHypotheses
 import Scratch.R3BKMContinuation
 
-/-! # Toward `KatoMaximalSolution` along the realized mild path
+/-! # `KatoMaximalSolution` along the realized mild path
 
 On the first existence interval `[0, Tfeff)`, the realized mild field is a
 Fefferman-class solution with finite continuous `H³` energy, and the
 Kato–Ponce `H³` energy inequality holds, because every named hypothesis of
 `katoPonce_h3_energy'` has been discharged along `physicalMild`.
 
-The remaining work for `KatoMaximalSolution` is to restart from the
-terminal `Ĥ^{k+1}` slice, invoke mild uniqueness of the included `Ĥ³`
-shadows, glue past `Tfeff`, and establish the blow-up alternative, so
-that the time set is either `[0, ∞)` or a finite maximal interval on which
-the `H³` energy is unbounded. -/
+The file then restarts from the terminal `Ĥ^{k+1}` slice, uses mild
+uniqueness of the included `Ĥ³` shadows, glues the iterated paths into the
+realized maximal field on `Smax`, lifts the Fefferman-class solution
+properties and the Kato–Ponce bound onto `Smax`, and proves the `H³`
+blow-up alternative. The result is `katoMaximalSolution_of_feffermanDecay`:
+for `ν > 0` and smooth, divergence-free, Fefferman-decaying data,
+`R3BKM.KatoMaximalSolution ν u₀` holds. This is local Kato theory: either
+the solution exists on `[0, ∞)`, or on a finite `[0, T*)` with unbounded
+`H³` energy. It does not assert global regularity. -/
 
 open MeasureTheory Real Filter Topology Set
 open scoped ENNReal ContDiff
@@ -2089,6 +2093,26 @@ theorem katoPonce_h3_energy_physicalMaximal (hdiv : ∀ x, div u₀ x = 0) :
     (fun t ht => h3IBPVanishingFlux_physicalMaximal hf hdec hν hdiv (hS ht))
     s ⟨hs0, hlt⟩
 
+include hf hdec hν in
+/-- **`KatoMaximalSolution` for smooth, divergence-free, Fefferman-decaying
+data with `ν > 0`.** Witnessed by `S = Smax`, the realized maximal field and
+its Leray pressure. This is local Kato theory (a maximal solution with an
+`H³` blow-up alternative); it does not assert global regularity. -/
+theorem katoMaximalSolution_of_feffermanDecay (hdiv : ∀ x, div u₀ x = 0) :
+    KatoMaximalSolution ν u₀ := by
+  have hk2 : 2 ≤ 2 := by norm_num
+  obtain ⟨Ck, hCk, hKP⟩ := katoPonce_h3_energy_physicalMaximal hf hdec hν hdiv
+  refine ⟨Smax hf hdec hν hk2, physicalMaximal hf hdec hν,
+    presMaximal hf hdec hν, Ck, hCk, ?_, ?_, ?_, hKP, ?_⟩
+  · exact fun T hS => isFeffermanSolutionOn_physicalMaximal hf hdec hν hdiv hS
+  · exact fun t ht => sobolevEnergy_physicalMaximal_lt_top hf hdec hν ht
+  · exact continuousOn_hsSq_physicalMaximal hf hdec hν hk2
+  · rcases hsSq_blowup_alternative hf hdec hν hk2 with h | ⟨Tstar, hpos, heq, hB⟩
+    · exact Or.inl h
+    · refine Or.inr ⟨Tstar, hpos, heq, fun B => ?_⟩
+      obtain ⟨t, ht, hBt⟩ := hB B
+      exact ⟨t, heq ▸ ht, hBt⟩
+
 end Lift
 
 end KatoMaximal
@@ -2160,3 +2184,4 @@ end KatoMaximal
 #print axioms KatoMaximal.convective_physicalMaximal_divTensor6
 #print axioms KatoMaximal.h3IBPVanishingFlux_physicalMaximal
 #print axioms KatoMaximal.katoPonce_h3_energy_physicalMaximal
+#print axioms KatoMaximal.katoMaximalSolution_of_feffermanDecay

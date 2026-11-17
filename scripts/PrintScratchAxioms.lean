@@ -474,7 +474,8 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``KatoMaximal.tame_divTensorIteratePath6,
     ``KatoMaximal.convective_physicalMaximal_divTensor6,
     ``KatoMaximal.h3IBPVanishingFlux_physicalMaximal,
-    ``KatoMaximal.katoPonce_h3_energy_physicalMaximal]
+    ``KatoMaximal.katoPonce_h3_energy_physicalMaximal,
+    ``KatoMaximal.katoMaximalSolution_of_feffermanDecay]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
