@@ -1815,6 +1815,41 @@ theorem isFeffermanSolutionOn_physicalMaximal (hdiv : ∀ x, div u₀ x = 0)
     · exact fun x => congrFun (physicalMaximal_zero hf hdec hν) x
     · exact energyInequality_physicalMaximal hf hdec hν hdiv hS
 
+/-- The one-sided time derivative of the realized maximal field at a time
+in an iterated existence interval is the physical field of the Fourier-side
+time derivative. -/
+theorem timeSliceDeriv_physicalMaximal_of_le {k : ℕ} (hk : 2 ≤ k) {m : ℕ}
+    (hm : 2 ≤ m) (hm2 : m + 2 ≤ k) {n : ℕ} {t : ℝ}
+    (ht : t ∈ Ico (0 : ℝ) (iteratePath hf hdec hν hk n).t) :
+    timeSliceDeriv (physicalMaximal hf hdec hν) t =
+      physicalOfHm (mildSDeriv hk hm2 hν (iteratePath hf hdec hν hk n).ht
+        (toHmFeff u₀ hf hdec (k + 1))
+        (iteratePath hf hdec hν hk n).path t) := by
+  funext x
+  set W := iteratePath hf hdec hν hk n
+  set L : Hm m →L[ℝ] T3 := realifyCLM.comp (FourierInvFDeriv.evMap hm x)
+  set γ := inclExt (le_succ_of_add_two_le hm2) W.ht W.path
+  have hfun : ∀ s, s ∈ Icc (0 : ℝ) W.t →
+      physicalMaximal hf hdec hν s x = L (γ s) := by
+    intro s hs
+    rw [physicalMaximal_eq_inclExt hf hdec hν hk
+      (le_succ_of_add_two_le hm2) hs.1 n hs.2]
+    rfl
+  have hmem : Ico 0 W.t ∈ 𝓝[Ici (0 : ℝ)] t := by
+    rw [← Ici_inter_Iio]
+    exact inter_mem_nhdsWithin _ (Iio_mem_nhds ht.2)
+  have hder : HasDerivWithinAt (fun s => physicalMaximal hf hdec hν s x)
+      (L (mildSDeriv hk hm2 hν W.ht (toHmFeff u₀ hf hdec (k + 1)) W.path t))
+      (Ici 0) t := by
+    have hLder := (L.hasFDerivAt.comp_hasDerivWithinAt t
+      (hasDerivWithinAt_mildS_incl_Ico hk hm2 hν W.ht W.mild ht)).mono_of_mem_nhdsWithin
+        hmem
+    refine hLder.congr_of_eventuallyEq ?_ (hfun t ⟨ht.1, le_of_lt ht.2⟩)
+    filter_upwards [hmem] with s hs
+    exact hfun s ⟨hs.1, hs.2.le⟩
+  unfold timeSliceDeriv
+  exact hder.derivWithin (uniqueDiffOn_Ici 0 t ht.1)
+
 end Lift
 
 end KatoMaximal
@@ -1878,3 +1913,4 @@ end KatoMaximal
 #print axioms KatoMaximal.energyInequality_physicalMaximal_of_le
 #print axioms KatoMaximal.energyInequality_physicalMaximal
 #print axioms KatoMaximal.isFeffermanSolutionOn_physicalMaximal
+#print axioms KatoMaximal.timeSliceDeriv_physicalMaximal_of_le
