@@ -51,14 +51,13 @@ jobs:
         run: bash scripts/collect_lake_certificate.sh cert-bundle
       - name: Mathlib cache (Mathlib is never rebuilt here)
         run: lake exe cache get
-      - name: lake build (log kept for the certificate bundle; verify-lock classifies any failure)
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          mkdir -p cert-bundle
-          lake build 2>&1 | tee cert-bundle/lake-build.log
       - name: verify-lock (every phase runs; classified TRUTH GATE VERDICT at the end)
         run: bash scripts/verify-lock.sh
+      - name: Copy the full build log into the certificate bundle
+        if: always()
+        run: |
+          mkdir -p cert-bundle
+          if [ -f truth-gate-report/build.log ]; then cp -a truth-gate-report/build.log cert-bundle/lake-build.log; fi
       - name: Finalize certificate bundle
         if: always()
         run: bash scripts/finalize_lake_certificate.sh cert-bundle

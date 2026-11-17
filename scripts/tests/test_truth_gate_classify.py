@@ -81,8 +81,7 @@ def make_repo(root, body=GOOD_BODY, vocab=None, paper=PAPER):
     put(os.path.join(root, "paper.tex"), paper)
     put(os.path.join(root, "Demo", "Semantics.lean"), semantics(body, sha(paper)))
     lock = dict(semantics_file="Demo/Semantics.lean", semantics_module="Demo.Semantics", paper_path="paper.tex",
-                paper_sha256=sha(paper), main_theorems=["Demo.main"], lock_region_sha256="x",
-                draft_dirs=["Demo/Draft"], lean_roots=["Demo"])
+                paper_sha256=sha(paper), main_theorems=["Demo.main"], lock_region_sha256="x")
     lock["paper_vocabulary"] = vocab if vocab is not None else {"Field": "the paper's 'field': a map ℕ → ℕ"}
     put(os.path.join(root, "TRUTH_GATE.lock"), json.dumps(lock, indent=1))
     os.makedirs(os.path.join(root, "truth-gate-report"), exist_ok=True)
@@ -161,7 +160,7 @@ class Report(unittest.TestCase):
             make_repo(d)
             phases(d, static=1, lint=0, build=0, sorry=1, audit=1)
             write(d, "static.txt", "TRUTH GATE FAIL: forbidden token `sorry` at Demo/Main.lean:9\nTRUTH GATE STATIC FAIL (1 problems)\n")
-            write(d, "sorry.txt", "sorry in build outside draft dirs: warning: Demo/Main.lean:9:0: declaration uses 'sorry'\n")
+            write(d, "sorry.txt", "TRUTH GATE FAIL: sorry / sorryAx / ofReduceBool / error in the log:\nbuild.log:9: warning: Demo/Main.lean:9:0: declaration uses `sorry`\n")
             write(d, "audit.txt", "info: TRUTH GATE FAIL: Demo.main uses nonstandard axioms [Demo.bad]\n")
             out = run(d, "report").stdout
             self.assertIn("KERNEL/PROOF FAILURE", out)

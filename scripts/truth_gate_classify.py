@@ -105,7 +105,7 @@ DECL = re.compile(r"^[ \t]*(?:@\[[^\]]*\][ \t\n]*)?(?:(?:private|protected|nonco
 KEYWORDS = set("""fun λ let have show from by at with match if then else do return Type Sort Prop
                   forall exists in this where deriving open namespace end section variable""".split())
 
-def lean_files(paths, drafts=()):
+def lean_files(paths):
     out = []
     for r in paths:
         base = os.path.join(ROOT, r)
@@ -148,15 +148,16 @@ def author_dependency_dirs(fetch=False):
             if os.path.isdir(dest):
                 out.append((name, dest))
         else:
-            print(f"TRUTH GATE LINT NOTE: dependency {name} is not available locally; its definitions are "
-                  "not checked (run with --fetch-deps or after `lake exe cache get`)")
+            print(f"TRUTH GATE LINT FAIL: dependency {name} is not available, so its definitions cannot be "
+                  "checked; no dependency is passed over (run with --fetch-deps or after `lake exe cache get`)")
+            sys.exit(2)
     return out
 
 FETCH_DEPS = False
 
 def repo_declarations(lock):
     """short name -> list of (full name, file, line, kind, is_prop_valued)."""
-    roots = list(lock.get("lean_roots", []))
+    roots = ["."]   # every .lean file of the repository (only .lake / .git / lake-packages are not source)
     sems = [lock.get("semantics_file")] + [x.get("semantics_file") for x in lock.get("additional_locks", [])]
     decls = {}
     files = [(p, os.path.relpath(p, ROOT)) for p in lean_files(roots + [s for s in sems if s])]
@@ -189,6 +190,14 @@ def repo_declarations(lock):
             short = full.split(".")[-1]
             decls.setdefault(short, []).append((full, rel, line_of(src, off), m.group(1), prop_valued))
     return decls
+
+def decl_signature(code, name):
+    """The binder list of `def name (x y : A) ... : B :=` (text between the name and `:=`)."""
+    m = re.search(rf"^(?:@\[[^\]]*\]\s*)?(?:noncomputable\s+)?(?:def|abbrev)\s+{re.escape(name)}\b", code, re.M)
+    if not m:
+        return ""
+    start = code.find(":=", m.end())
+    return code[m.end():start] if start >= 0 else ""
 
 def decl_body(code, name):
     """(start offset, body) of `def name ... :=` up to the next top-level declaration."""
@@ -319,7 +328,7 @@ def lint_lock_entry(lock, entry, tag, decls, findings):
         queue = [(pname, pstart, pbody)]
         while queue:
             dname, dstart, dbody = queue.pop()
-            bound = bound_names(dbody)
+            bound = bound_names(dbody) | bound_names(decl_signature(code, dname))
             for off, tok in tokens_with_offsets(dbody):
                 if tok in KEYWORDS or tok in bound:
                     continue
@@ -559,7 +568,7 @@ STATIC_RULES = [
     (re.compile(r"NOT certifying"), "LOCK-FORM"),
     (re.compile(r"names the repository Prop|mentions (a )?formal_claim|vacuous alias|proved trivially|"
                 r"essentially\) rfl|lock region lacks|cannot parse|lock region markers|PAPER_QUOTE|quoted paper text|"
-                r"does not record|PAPER_SECTION|TRUTH_GATE\.md|lacks key|missing|lean_roots|draft"), "LOCK-FORM"),
+                r"does not record|PAPER_SECTION|TRUTH_GATE\.md|lacks key|missing|no directory may be exempted"), "LOCK-FORM"),
 ]
 
 def reopened_subclass(reason):
@@ -657,7 +666,7 @@ def cmd_report(args):
     if not kernel_phases:
         out.append("Kernel/proof checks: not run in this invocation.")
     elif kernel_ok:
-        out.append("Kernel/proof checks: PASS (lake build, no sorry outside draft dirs, kernel audit: standard axioms only).")
+        out.append("Kernel/proof checks: PASS (lake build and lake build Scratch, no sorry in any log line, every .lean file covered, kernel audit: standard axioms only).")
     else:
         out.append("Kernel/proof checks: FAIL. This is a proof failure (see KERNEL/PROOF below).")
     labels = {

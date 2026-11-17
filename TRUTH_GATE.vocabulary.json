@@ -33,6 +33,20 @@
         "div": "the divergence ∇·u = Σᵢ ∂ᵢuᵢ, written out with fderiv; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
         "vorticity": "the vorticity ω = ∇×u (curl); used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)"
       }
+    },
+    "local-kato-theory": {
+      "paper_vocabulary": {
+        "VelocityField": "a velocity field u : ℝ³ → ℝ³ (type abbreviation); the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "PressureField": "a pressure field p : ℝ³ → ℝ (type abbreviation); the scalar counterpart of VelocityField in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "TimeDependentVelocity": "a time-dependent velocity u : ℝ → ℝ³ → ℝ³ (type abbreviation); the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "TimeDependentPressure": "a time-dependent pressure p : ℝ → ℝ³ → ℝ (type abbreviation); the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "T3": "the model 3-space ℝ³ (EuclideanSpace ℝ (Fin 3)); a type, not a hypothesis; the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "convective": "the convective term (u·∇)v; the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "pressureGradient": "the pressure gradient ∇p; the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "laplacian": "the Laplacian Δu as the trace of the Hessian; the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "div": "the divergence ∇·u = Σᵢ ∂ᵢuᵢ, written out with fderiv; the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "vorticity": "the vorticity ω = ∇×u (curl); the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)"
+      }
     }
   }
 }

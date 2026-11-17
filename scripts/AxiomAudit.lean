@@ -59,7 +59,7 @@ elab "#strict_axiom_audit" : command => do
   for l in lines.qsort (· < ·) do IO.println l
   IO.println s!"AUDIT SUMMARY: theorems audited: {nThm} ({nThm - nAuto} stated in the sources, {nAuto} auto-generated equation/congruence/injectivity lemmas); declarations audited: {nDecl}; violations: {bad.size}"
   if bad.isEmpty then
-    IO.println "AUDIT PASS: only propext, Classical.choice, Quot.sound; no sorryAx; no axiom declarations"
+    IO.println "AUDIT PASS: only propext, Classical.choice, Quot.sound; no axiom declarations"
   else
     for b in bad do IO.println s!"AUDIT FAIL: {b}"
     throwError m!"strict axiom audit failed with {bad.size} violation(s)"
