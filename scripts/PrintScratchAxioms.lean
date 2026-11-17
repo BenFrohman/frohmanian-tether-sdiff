@@ -444,7 +444,10 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``KatoMaximal.continuousOn_hsSq_physicalMaximal,
     ``KatoMaximal.hsSq_blowup_alternative,
     ``KatoMaximal.physicalMaximal_eq_physicalMild,
-    ``KatoMaximal.presMaximal_eq_presMild]
+    ``KatoMaximal.presMaximal_eq_presMild,
+    ``KatoMaximal.isFeffermanSolutionOn_of_empty,
+    ``KatoMaximal.isFeffermanSolutionOn_congr,
+    ``KatoMaximal.isFeffermanSolutionOn_physicalMaximal_le]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do

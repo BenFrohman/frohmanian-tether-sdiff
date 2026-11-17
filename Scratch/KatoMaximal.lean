@@ -1275,6 +1275,74 @@ lemma presMaximal_eq_presMild {t : ℝ} (ht : 0 ≤ t)
   rw [presMaximal_eq_iterate hf hdec hν ht 0 hn]
   rfl
 
+lemma isFeffermanSolutionOn_of_empty {ν T : ℝ} {u₀ : VelocityField}
+    {u : TimeDependentVelocity} {p : TimeDependentPressure}
+    (hT : T ≤ 0) (hu0 : ∀ x, u 0 x = u₀ x) :
+    IsFeffermanSolutionOn ν T u₀ u p := by
+  have hempty : Ico (0 : ℝ) T = ∅ := Ico_eq_empty_of_le hT
+  have hprod : (univ ×ˢ Ico (0 : ℝ) T : Set (T3 × ℝ)) = ∅ := by
+    rw [hempty, prod_empty]
+  refine ⟨?_, ?_, ?_, hu0, ?_⟩
+  · rw [hprod]; exact contDiffOn_empty
+  · rw [hprod]; exact contDiffOn_empty
+  · intro t ht
+    exact (ht.2.not_ge (hT.trans ht.1)).elim
+  · intro t ht
+    exact (ht.2.not_ge (hT.trans ht.1)).elim
+
+lemma isFeffermanSolutionOn_congr {ν T : ℝ} {u₀ : VelocityField}
+    {u u' : TimeDependentVelocity} {p p' : TimeDependentPressure}
+    (hu : ∀ t, t < T → 0 ≤ t → u t = u' t)
+    (hp : ∀ t, t < T → 0 ≤ t → p t = p' t)
+    (hu0 : u 0 = u' 0)
+    (h : IsFeffermanSolutionOn ν T u₀ u p) :
+    IsFeffermanSolutionOn ν T u₀ u' p' := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · refine h.1.congr ?_
+    intro q hq
+    exact (congrFun (hu q.2 hq.2.2 hq.2.1) q.1).symm
+  · refine h.2.1.congr ?_
+    intro q hq
+    exact (congrFun (hp q.2 hq.2.2 hq.2.1) q.1).symm
+  · intro t ht x
+    have hueq := hu t ht.2 ht.1
+    have hpeq := hp t ht.2 ht.1
+    have hder : derivWithin (fun s => u' s x) (Ici (0 : ℝ)) t =
+        derivWithin (fun s => u s x) (Ici (0 : ℝ)) t := by
+      refine Filter.EventuallyEq.derivWithin_eq ?_ (congrFun hueq x).symm
+      filter_upwards [inter_mem_nhdsWithin (Ici (0 : ℝ)) (Iio_mem_nhds ht.2)] with s hs
+      exact (congrFun (hu s hs.2 hs.1) x).symm
+    have hmom := h.2.2.1 t ht x
+    rw [← hueq, ← hpeq, hder]
+    exact hmom
+  · intro x
+    rw [← hu0]
+    exact h.2.2.2.1 x
+  · intro t ht
+    rw [← hu t ht.2 ht.1]
+    exact h.2.2.2.2 t ht
+
+/-- On every subinterval of the first existence interval, the realized
+maximal field and pressure form a Fefferman-class solution. -/
+theorem isFeffermanSolutionOn_physicalMaximal_le
+    (hdiv : ∀ x, div u₀ x = 0) {T : ℝ}
+    (hT : T ≤ Tfeff hf hdec hν) :
+    IsFeffermanSolutionOn ν T u₀
+      (physicalMaximal hf hdec hν) (presMaximal hf hdec hν) := by
+  rcases le_or_gt T 0 with hT0 | hT0
+  · refine isFeffermanSolutionOn_of_empty hT0 fun x => ?_
+    rw [physicalMaximal_eq_physicalMild hf hdec hν le_rfl
+      (Tfeff_nonneg hf hdec hν)]
+    exact congrFun (physicalMild_zero hf hdec hν) x
+  · refine isFeffermanSolutionOn_congr
+      (fun t ht ht0 =>
+        (physicalMaximal_eq_physicalMild hf hdec hν ht0 (ht.le.trans hT)).symm)
+      (fun t ht ht0 =>
+        (presMaximal_eq_presMild hf hdec hν ht0 (ht.le.trans hT)).symm)
+      (physicalMaximal_eq_physicalMild hf hdec hν le_rfl
+        (Tfeff_nonneg hf hdec hν)).symm
+      (isFeffermanSolutionOn_physicalMild_le hf hdec hν hdiv hT)
+
 end Lift
 
 end KatoMaximal
@@ -1316,3 +1384,6 @@ end KatoMaximal
 #print axioms KatoMaximal.hsSq_blowup_alternative
 #print axioms KatoMaximal.physicalMaximal_eq_physicalMild
 #print axioms KatoMaximal.presMaximal_eq_presMild
+#print axioms KatoMaximal.isFeffermanSolutionOn_of_empty
+#print axioms KatoMaximal.isFeffermanSolutionOn_congr
+#print axioms KatoMaximal.isFeffermanSolutionOn_physicalMaximal_le
