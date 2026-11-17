@@ -1218,6 +1218,45 @@ theorem continuousOn_hsSq_physicalMaximal {k : ℕ} (hk : 2 ≤ k) :
       (fun s hs => ⟨hs.1.1, hs.2.le⟩)
   exact (hI t ⟨ht0, hn'⟩).mono_of_mem_nhdsWithin hnhd
 
+/-- The maximal time set is either `[0, ∞)`, or a half-open interval
+`[0, T*)` on which the `H³` energy is unbounded. -/
+theorem hsSq_blowup_alternative {k : ℕ} (hk : 2 ≤ k) :
+    Smax hf hdec hν hk = Ici (0 : ℝ) ∨
+      ∃ Tstar : ℝ, 0 < Tstar ∧
+        Smax hf hdec hν hk = Ico 0 Tstar ∧
+        ∀ B : ℝ, ∃ t, t ∈ Ico (0 : ℝ) Tstar ∧
+          B < hsSq 3 (physicalMaximal hf hdec hν t) := by
+  have hk7 : 2 ≤ 7 := by norm_num
+  rcases mild_blowup_alternative hf hdec hν hk7 with hunb | ⟨hbd, hnorm⟩
+  · refine Or.inl ?_
+    rw [Smax_unique hf hdec hν hk hk7]
+    exact Smax_eq_Ici_of_unbounded hf hdec hν hk7 hunb
+  · obtain ⟨hpos, heq⟩ := Smax_eq_Ico_of_bounded hf hdec hν hk7 hbd
+    set Tstar := sSup (Set.range fun n => (iteratePath hf hdec hν hk7 n).t)
+    refine Or.inr ⟨Tstar, hpos, (Smax_unique hf hdec hν hk hk7).trans heq, ?_⟩
+    intro B
+    obtain ⟨n, hn⟩ := hnorm (Real.sqrt (max B 0))
+    set t := (iteratePath hf hdec hν hk7 n).t
+    refine ⟨t, ⟨(iteratePath hf hdec hν hk7 n).ht,
+      iteratePath_t_lt_csSup hf hdec hν hk7 hbd n⟩, ?_⟩
+    have henergy :
+        hsSq 3 (physicalMaximal hf hdec hν t) =
+          ‖incl (three_le_succ hk7)
+            (iteratePath hf hdec hν hk7 n).endpoint‖ ^ 2 := by
+      rw [hsSq_physicalMaximal hf hdec hν hk7
+        (iteratePath hf hdec hν hk7 n).ht n le_rfl,
+        IccExtend_endpoint (iteratePath hf hdec hν hk7 n)]
+    rw [henergy]
+    have hsq : max B 0 <
+        ‖incl (three_le_succ hk7)
+          (iteratePath hf hdec hν hk7 n).endpoint‖ ^ 2 := by
+      have hnn : 0 ≤ Real.sqrt (max B 0) := Real.sqrt_nonneg _
+      have := (sq_lt_sq₀ hnn
+        (norm_nonneg (incl (three_le_succ hk7)
+          (iteratePath hf hdec hν hk7 n).endpoint))).mpr hn
+      rwa [Real.sq_sqrt (le_max_right B 0)] at this
+    exact lt_of_le_of_lt (le_max_left B 0) hsq
+
 end Lift
 
 end KatoMaximal
@@ -1256,3 +1295,4 @@ end KatoMaximal
 #print axioms KatoMaximal.sobolevEnergy_physicalMaximal_lt_top
 #print axioms KatoMaximal.hsSq_physicalMaximal
 #print axioms KatoMaximal.continuousOn_hsSq_physicalMaximal
+#print axioms KatoMaximal.hsSq_blowup_alternative

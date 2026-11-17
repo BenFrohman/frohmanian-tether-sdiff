@@ -441,7 +441,8 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``KatoMaximal.isRealSlice_IccExtend_iteratePath,
     ``KatoMaximal.sobolevEnergy_physicalMaximal_lt_top,
     ``KatoMaximal.hsSq_physicalMaximal,
-    ``KatoMaximal.continuousOn_hsSq_physicalMaximal]
+    ``KatoMaximal.continuousOn_hsSq_physicalMaximal,
+    ``KatoMaximal.hsSq_blowup_alternative]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do
