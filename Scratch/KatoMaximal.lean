@@ -1121,6 +1121,26 @@ theorem refl_iteratePath {k : ℕ} (hk : 2 ≤ k) (n : ℕ)
       exact refl_restartPath hν hk W.endpoint hend
         ⟨t.1 - W.t, ⟨sub_nonneg.2 ht.le, htτ⟩⟩
 
+lemma refl_IccExtend_iteratePath {k : ℕ} (hk : 2 ≤ k) (n : ℕ) (s : ℝ) :
+    refl (k + 1)
+        (ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+          (iteratePath hf hdec hν hk n).path s) =
+      ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+        (iteratePath hf hdec hν hk n).path s :=
+  refl_IccExtend (iteratePath hf hdec hν hk n).ht
+    (iteratePath hf hdec hν hk n).path (refl_iteratePath hf hdec hν hk n) s
+
+/-- Every included slice of every iterated path is a real slice. -/
+theorem isRealSlice_IccExtend_iteratePath {k : ℕ} (hk : 2 ≤ k)
+    {m : ℕ} (hm : 2 ≤ m) (hle : m ≤ k + 1) (n : ℕ) (s : ℝ) :
+    IsRealSlice hm
+      (incl hle
+        (ContinuousMap.IccExtend (iteratePath hf hdec hν hk n).ht
+          (iteratePath hf hdec hν hk n).path s)) :=
+  fun y i =>
+    fourierInv_im_eq_zero (by
+      rw [refl_incl, refl_IccExtend_iteratePath hf hdec hν hk n s]) y i
+
 end Lift
 
 end KatoMaximal
@@ -1155,3 +1175,4 @@ end KatoMaximal
 #print axioms KatoMaximal.Smax_eq_Ici_or_Ico
 #print axioms KatoMaximal.refl_restartPath
 #print axioms KatoMaximal.refl_iteratePath
+#print axioms KatoMaximal.isRealSlice_IccExtend_iteratePath
