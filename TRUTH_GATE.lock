@@ -58,7 +58,7 @@
         "hsSq",
         "gradSup"
       ],
-      "lock_region_sha256": "3149fb94bee9ae620137a6a6d5d3b771cc55daf44ded174183c8070e17b9002b",
+      "lock_region_sha256": "ec63ecd1dc5e04fdd296965eeee773dd00c5b850628ef1092d817fa5867a8b9e",
       "certifying": true,
       "approvedBy": {
         "name": "Benjamin Stanley Frohman",

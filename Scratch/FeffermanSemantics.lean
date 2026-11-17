@@ -215,14 +215,14 @@ def paper_claim_bkm : Prop :=
 solution from `u₀` on `[0, T)`, `M = ‖ω‖_∞` is finite and continuous on `[0, T)`, and at every
 `s ∈ [0, T)` there is a right derivative `d` of `M` at `s` with `d ≤ C M(s)² − κ M(s)³`. -/
 def paper_RateSmooth (u₀ : VelocityField) (ν : ℝ) : Prop :=
-  ∃ C κ : ℝ, 0 < C ∧ 0 < κ ∧
+  ∃ C «κ» : ℝ, 0 < C ∧ 0 < «κ» ∧
     ∀ (T : ℝ) (u : TimeDependentVelocity) (p : TimeDependentPressure),
       paper_FeffermanSolutionOn ν T u₀ u p →
         (∀ t ∈ Set.Ico (0 : ℝ) T, BddAbove (Set.range fun x => ‖vorticity (u t) x‖)) ∧
         ContinuousOn (fun t => ⨆ x, ‖vorticity (u t) x‖) (Set.Ico (0 : ℝ) T) ∧
         (∀ s ∈ Set.Ico (0 : ℝ) T, ∃ d : ℝ,
           HasDerivWithinAt (fun t => ⨆ x, ‖vorticity (u t) x‖) d (Set.Ici s) s ∧
-            d ≤ C * (⨆ x, ‖vorticity (u s) x‖) ^ 2 - κ * (⨆ x, ‖vorticity (u s) x‖) ^ 3)
+            d ≤ C * (⨆ x, ‖vorticity (u s) x‖) ^ 2 - «κ» * (⨆ x, ‖vorticity (u s) x‖) ^ 3)
 
 /-- Theorem `thm:clayA-rate`: if `FrohmanianTetherRateSmooth u₀ ν` (Definition `def:smooth`)
 holds for every `ν > 0` and every Fefferman datum `u₀`, then Fefferman's Problem (A) holds: for
@@ -267,12 +267,12 @@ order in `def:smooth` (finiteness, continuity, derivative). -/
 theorem rateSmooth_iff (u₀ : VelocityField) (ν : ℝ) :
     FrohmanianTetherRateSmooth u₀ ν ↔ paper_RateSmooth u₀ ν := by
   constructor
-  · rintro ⟨C, κ, hC, hκ, h⟩
-    refine ⟨C, κ, hC, hκ, fun T u p hu => ?_⟩
+  · rintro ⟨C, «κ», hC, hκ, h⟩
+    refine ⟨C, «κ», hC, hκ, fun T u p hu => ?_⟩
     obtain ⟨hc, hd, hb⟩ := h T u p hu
     exact ⟨hb, hc, hd⟩
-  · rintro ⟨C, κ, hC, hκ, h⟩
-    refine ⟨C, κ, hC, hκ, fun T u p hu => ?_⟩
+  · rintro ⟨C, «κ», hC, hκ, h⟩
+    refine ⟨C, «κ», hC, hκ, fun T u p hu => ?_⟩
     obtain ⟨hb, hc, hd⟩ := h T u p hu
     exact ⟨hc, hd, hb⟩
 
