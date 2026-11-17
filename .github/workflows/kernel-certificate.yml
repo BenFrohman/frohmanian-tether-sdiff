@@ -19,14 +19,18 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Collect lake certificate environment
+        if: always()
+        run: bash scripts/collect_lake_certificate.sh cert-out
       - name: Toolchain and revision
         run: |
           mkdir -p cert-out
           {
             echo "commit: $(git rev-parse HEAD)"
             echo "lean-toolchain: $(cat lean-toolchain)"
-            echo "lean --version: $(lean --version)"
-            echo "lake --version: $(lake --version)"
+            if command -v elan >/dev/null 2>&1; then echo "elan --version: $(elan --version)"; else echo "elan --version: not printed; elan was not on PATH"; fi
+            if command -v lean >/dev/null 2>&1; then echo "lean --version: $(lean --version)"; else echo "lean --version: not printed; lean was not on PATH"; fi
+            if command -v lake >/dev/null 2>&1; then echo "lake --version: $(lake --version)"; else echo "lake --version: not printed; lake was not on PATH"; fi
             echo "date (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           } | tee cert-out/environment.txt
@@ -80,6 +84,11 @@ jobs:
           done < cert-out/modules.txt | tee -a cert-out/leanchecker.txt
           if grep -q ': FAILED$' cert-out/leanchecker.txt; then exit 1; fi
           echo "RESULT: $(grep -c ': OK (' cert-out/leanchecker.txt) of $(grep -c . cert-out/modules.txt) modules replayed through the kernel, 0 failures" | tee -a cert-out/leanchecker.txt
+      - name: Finalize certificate bundle
+        if: always()
+        run: |
+          if [ -f cert-out/build.log ] && [ ! -f cert-out/lake-build.log ]; then cp -a cert-out/build.log cert-out/lake-build.log; fi
+          bash scripts/finalize_lake_certificate.sh cert-out
       - name: Upload certificate files
         if: always()
         uses: actions/upload-artifact@v4
