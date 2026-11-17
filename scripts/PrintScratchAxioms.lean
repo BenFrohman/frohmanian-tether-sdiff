@@ -462,7 +462,8 @@ elab "#strict_scratch_axiom_audit" : command => do
     ``KatoMaximal.physicalMaximal_zero,
     ``KatoMaximal.inclExt_three_iteratePath,
     ``KatoMaximal.momentum_physicalMaximal_of_le,
-    ``KatoMaximal.momentum_physicalMaximal]
+    ``KatoMaximal.momentum_physicalMaximal,
+    ``KatoMaximal.re_inner_mildSDeriv_iteratePath]
   let mut bad : Array String := #[]
   let mut nOk := 0
   for c in targets do

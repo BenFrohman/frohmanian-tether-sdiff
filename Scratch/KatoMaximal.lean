@@ -1634,6 +1634,94 @@ theorem momentum_physicalMaximal (hdiv : ∀ x, div u₀ x = 0) {T : ℝ}
     lt_of_le_of_lt hn' (iteratePath_t_strict_mono hf hdec hν hk4 n)
   exact momentum_physicalMaximal_of_le hf hdec hν hdiv ⟨ht.1, hlt⟩ x
 
+open LerayHeat HeatDeriv MildEnergyIneq
+
+/-- Dissipation along an iterated path: `Re ⟨u, ∂ₜu⟩_{L²} ≤ 0`. -/
+theorem re_inner_mildSDeriv_iteratePath (hdiv : ∀ x, div u₀ x = 0) {n : ℕ}
+    {s : ℝ}
+    (hs : s ∈ Ico (0 : ℝ) (iteratePath hf hdec hν (by norm_num : 2 ≤ 4) n).t) :
+    (inner ℂ (incl (Nat.zero_le 2)
+        (inclExt (le_succ_of_add_two_le (le_refl 4))
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 4) n).ht
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 4) n).path s))
+      (incl (Nat.zero_le 2)
+        (mildSDeriv (by norm_num : 2 ≤ 4) (le_refl (2 + 2)) hν
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 4) n).ht
+          (toHmFeff u₀ hf hdec (4 + 1))
+          (iteratePath hf hdec hν (by norm_num : 2 ≤ 4) n).path s))).re ≤ 0 := by
+  have hk4 : 2 ≤ 4 := by norm_num
+  set W := iteratePath hf hdec hν hk4 n
+  have hT := W.ht
+  have hD := MildPathSmooth.mildSDeriv_eq_NSNsucc hk4 (le_refl 2) (le_refl (2 + 2))
+    hν hT W.mild (Ico_subset_Icc_self hs)
+  rw [hD, inner_incl_zero, ← RCLike.re_to_complex]
+  set P : Hm (4 + 1) := ContinuousMap.IccExtend hT W.path s
+  set Q' : Hm 3 := ContinuousMap.IccExtend
+    (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).ht
+    (iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n).path s
+  set L := inclExt (add_two_le_succ (le_refl (2 + 2))) hT W.path s
+  set Q := inclExt
+    (InclNSN.le_succ_succ (InclNSN.le_of_add_two_le (le_refl (2 + 2))))
+    hT W.path s
+  set Γ := inclExt (le_succ_of_add_two_le (le_refl 4)) hT W.path s
+  set N := NSNsucc (le_refl 2) Q
+  have hQ : Q = Q' := inclExt_three_iteratePath hf hdec hν hk4
+    (InclNSN.le_succ_succ (InclNSN.le_of_add_two_le (le_refl (2 + 2)))) n s
+  have hΓP : (Γ : E3 → V) =ᵐ[MeasureTheory.volume] (P : E3 → V) :=
+    ProductHm.coeFn_incl_vol (le_succ_of_add_two_le (le_refl 4)) P
+  have hLP : (L : E3 → V) =ᵐ[MeasureTheory.volume] (P : E3 → V) :=
+    ProductHm.coeFn_incl_vol (add_two_le_succ (le_refl (2 + 2))) P
+  have hQP : (Q : E3 → V) =ᵐ[MeasureTheory.volume] (P : E3 → V) :=
+    ProductHm.coeFn_incl_vol
+      (InclNSN.le_succ_succ (InclNSN.le_of_add_two_le (le_refl (2 + 2)))) P
+  have hlap := (coeFn_lapH 2 L).filter_mono
+    (Measure.AbsolutelyContinuous.ae_le (ac_vol 2))
+  have hsub := (Lp.coeFn_sub (ν • lapH 2 L) N).filter_mono
+    (Measure.AbsolutelyContinuous.ae_le (ac_vol 2))
+  have hsm := (Lp.coeFn_smul ν (lapH 2 L)).filter_mono
+    (Measure.AbsolutelyContinuous.ae_le (ac_vol 2))
+  set f1 : E3 → ℝ := fun ξ => ν * (inner ℂ ((Γ : E3 → V) ξ) ((lapH 2 L : E3 → V) ξ)).re
+  set f2 : E3 → ℝ := fun ξ => (inner ℂ ((Q : E3 → V) ξ) ((N : E3 → V) ξ)).re
+  have hi1 : Integrable f1 := ((integrable_inner_Hm Γ (lapH 2 L)).re).const_mul ν
+  have hi2 : Integrable f2 := (integrable_inner_Hm Q N).re
+  refine Eq.trans_le (integral_re (integrable_inner_Hm Γ (ν • lapH 2 L - N))).symm ?_
+  have hcongr : (fun ξ => RCLike.re (inner ℂ ((Γ : E3 → V) ξ)
+      ((((ν • lapH 2 L - N : Hm 2)) : E3 → V) ξ)))
+      =ᵐ[MeasureTheory.volume] f1 - f2 := by
+    filter_upwards [hsub, hsm, hΓP, hQP] with ξ h1 h2 h3 h4
+    simp only [Pi.sub_apply, f1, f2]
+    rw [h1, Pi.sub_apply, h2, Pi.smul_apply, inner_sub_right, h3, ← h4,
+      RCLike.re_to_complex, Complex.sub_re]
+    congr 1
+    rw [← Complex.coe_smul, inner_smul_right, Complex.re_ofReal_mul]
+  rw [integral_congr_ae hcongr]
+  refine (integral_sub hi1 hi2).trans_le ?_
+  have key : ∀ U : Hm 3, lerayH 3 U = U →
+      (∀ y : E3, ∀ k : Fin 3, (FourierTransformInv.fourierInv (U : E3 → V) y k).im = 0) →
+      ∫ ξ, (inner ℂ ((U : E3 → V) ξ) ((NSNsucc (le_refl 2) U : Hm 2) ξ)).re = 0 := by
+    intro U h1 h2
+    have h := re_integral_inner_NSN_eq_zero h1 h2
+    rw [← RCLike.re_to_complex] at h
+    refine (integral_re (integrable_inner_Hm U (NSNsucc (le_refl 2) U))).trans ?_
+    rw [coe_NSNsucc]
+    exact h
+  have h2z : ∫ ξ, f2 ξ = 0 := by
+    refine key Q ?_ ?_
+    · rw [hQ]
+      exact lerayH_IccExtend_iteratePath hf hdec hν hdiv
+        (by norm_num : 2 ≤ 2) n s
+    · rw [hQ]
+      exact fourierInv_im_eq_zero
+        (refl_IccExtend_iteratePath hf hdec hν (by norm_num : 2 ≤ 2) n s)
+  rw [h2z, sub_zero]
+  refine integral_nonpos_of_ae ?_
+  filter_upwards [hlap, hΓP, hLP] with ξ h1 h2 h3
+  simp only [f1, Pi.zero_apply]
+  rw [h1, h2, h3, inner_smul_right, ← Complex.ofReal_neg, Complex.re_ofReal_mul,
+    ← RCLike.re_to_complex, inner_self_eq_norm_sq (𝕜 := ℂ)]
+  have : 0 ≤ 4 * π ^ 2 * ‖ξ‖ ^ 2 * ‖(P : E3 → V) ξ‖ ^ 2 := by positivity
+  nlinarith [hν]
+
 end Lift
 
 end KatoMaximal
@@ -1693,3 +1781,4 @@ end KatoMaximal
 #print axioms KatoMaximal.inclExt_three_iteratePath
 #print axioms KatoMaximal.momentum_physicalMaximal_of_le
 #print axioms KatoMaximal.momentum_physicalMaximal
+#print axioms KatoMaximal.re_inner_mildSDeriv_iteratePath
