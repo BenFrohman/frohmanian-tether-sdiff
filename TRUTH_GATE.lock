@@ -13,5 +13,8 @@
   "lean_roots": [
     "FrohmanianTether",
     "FrohmanianTether.lean"
-  ]
+  ],
+  "certifying": false,
+  "reopened_reason": "The hypotheses are not independently transcribed. `paper_claim` keeps the repository Props `PeriodicTetherClosingBound` and `PeriodicBKMContinuation` as named Props, although the paper gives a precise English definition (def:ptb). The hypotheses carry the whole difficulty, so the lock leans on repository definitions exactly where it matters.",
+  "reopened_on": "2026-11-16"
 }
