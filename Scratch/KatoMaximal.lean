@@ -1365,6 +1365,16 @@ lemma lerayH_IccExtend_iteratePath (hdiv : ∀ x, div u₀ x = 0) {k : ℕ} (hk 
     (projIcc 0 (iteratePath hf hdec hν hk n).t
       (iteratePath hf hdec hν hk n).ht s)
 
+/-- The realized maximal field is divergence-free at every time in `Smax`. -/
+theorem div_physicalMaximal (hdiv : ∀ x, div u₀ x = 0) {t : ℝ}
+    (ht : inMaximal hf hdec hν (by norm_num : 2 ≤ 2) t) (x : T3) :
+    div (physicalMaximal hf hdec hν t) x = 0 := by
+  obtain ⟨ht0, n, hn⟩ := ht
+  rw [physicalMaximal_eq_iterate hf hdec hν ht0 n hn]
+  exact MildDivFree.div_physicalOfHm_of_lerayH (le_refl 3)
+    (lerayH_IccExtend_iteratePath hf hdec hν hdiv
+      (by norm_num : 2 ≤ 2) n t) x
+
 end Lift
 
 end KatoMaximal
@@ -1411,3 +1421,4 @@ end KatoMaximal
 #print axioms KatoMaximal.isFeffermanSolutionOn_physicalMaximal_le
 #print axioms KatoMaximal.lerayH_iteratePath
 #print axioms KatoMaximal.lerayH_IccExtend_iteratePath
+#print axioms KatoMaximal.div_physicalMaximal
