@@ -82,7 +82,13 @@ jobs:
           if [ -f "$PREFIX/src/lean/LeanChecker.lean" ]; then
             sed 's/target\.isPrefixOf m/target == m/' "$PREFIX/src/lean/LeanChecker.lean" > /tmp/LeanCheckerExact.lean
             echo "checker: leanchecker source shipped with $VER (src/lean/LeanChecker.lean), prefix match -> exact match, run with lean --run" > cert-out/leanchecker.txt
-            { diff "$PREFIX/src/lean/LeanChecker.lean" /tmp/LeanCheckerExact.lean; test $? -eq 1; } | sed 's/^/  patch: /' >> cert-out/leanchecker.txt
+            # diff exits 1 when the patch changed the file. That status is expected.
+            # Keep it inside `if` so `bash -e` and `pipefail` do not abort the step
+            # before any module is replayed. A no-op patch still fails the job.
+            if diff "$PREFIX/src/lean/LeanChecker.lean" /tmp/LeanCheckerExact.lean | sed 's/^/  patch: /' >> cert-out/leanchecker.txt; then
+              echo "FAIL: exact-match patch did not change LeanChecker.lean" | tee -a cert-out/leanchecker.txt
+              exit 1
+            fi
             check() { lake env lean --run /tmp/LeanCheckerExact.lean -v "$1"; }
           elif git ls-remote --exit-code --tags https://github.com/leanprover/lean4checker "refs/tags/$VER" >/dev/null; then
             git clone -q --depth 1 --branch "$VER" https://github.com/leanprover/lean4checker /tmp/lean4checker
@@ -90,7 +96,10 @@ jobs:
             sed -i 's/target\.isPrefixOf m/target == m/' /tmp/lean4checker/Main.lean
             (cd /tmp/lean4checker && lake build lean4checker)
             echo "checker: lean4checker tag $VER ($(git -C /tmp/lean4checker rev-parse HEAD)), Main.lean prefix match -> exact match" > cert-out/leanchecker.txt
-            { diff /tmp/Main.orig.lean /tmp/lean4checker/Main.lean; test $? -eq 1; } | sed 's/^/  patch: /' >> cert-out/leanchecker.txt
+            if diff /tmp/Main.orig.lean /tmp/lean4checker/Main.lean | sed 's/^/  patch: /' >> cert-out/leanchecker.txt; then
+              echo "FAIL: exact-match patch did not change lean4checker Main.lean" | tee -a cert-out/leanchecker.txt
+              exit 1
+            fi
             check() { lake env /tmp/lean4checker/.lake/build/bin/lean4checker -v "$1"; }
           else
             echo "FAIL: kernel re-check could not run: toolchain $VER ships no leanchecker and lean4checker has no tag $VER" | tee cert-out/leanchecker.txt; exit 1
