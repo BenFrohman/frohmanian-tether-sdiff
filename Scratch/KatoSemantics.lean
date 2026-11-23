@@ -11,7 +11,7 @@ import Scratch.KatoMaximalProperties
 # Truth Gate locks for the local Kato paper (Scratch.KatoSemantics)
 
 PAPER_PATH: papers/local-kato-theory/main.tex
-PAPER_SHA256: 491738fd676f4b62b742626b68e9fcbe8253cbca4243a5dab0ba1f803d4e69d0
+PAPER_SHA256: 176853c29a9b0f21e3d09dbd0f332b0539cdd870cf2a24e3e449cdc81750fa8f
 PAPER_SECTION: Theorem thm:T1 (Section "The main theorem", read through Definition def:kato), Theorem thm:T2-9 with items (T2)-(T9) (Section "Properties on the maximal time set"), Theorems thm:T10 and thm:T11 (Section "Two conditional statements"); terms from Section "Setting and notation"
 
 Four locks, each `formal_claim_X ↔ paper_claim_X` with `X ∈ {T1, T2to9, T10, T11}`:
@@ -32,8 +32,8 @@ definitions `KatoMaximalSolution`, `R3BKMContinuation`, `R3BKMContinuationAt`,
 `physicalMaximal` or `presMaximal`; it uses only Mathlib and the basic Navier–Stokes operators
 (`div`, `convective` = `(u·∇)v`, `pressureGradient` = `∇p`, `laplacian` = `Δ`, `vorticity` = `ω`).
 
-The rate hypothesis of Theorem `thm:T11` is defined in the paper only by its quoted Lean source
-(`lean/DRate.lean`); `paper_RateSmooth` transcribes that quoted definition conjunct by conjunct.
+The rate hypothesis of Theorem `thm:T11` is stated in words in Definition `def:rate` (quoted
+below) and quoted in `lean/DRate.lean`; `paper_RateSmooth` transcribes it conjunct by conjunct.
 
 Verbatim quotes:
 
@@ -83,7 +83,11 @@ For every $\nu>0$, \lean{R3BKMContinuation}\ $\nu$ holds: for every smooth, dive
 PAPER_QUOTE_END
 
 PAPER_QUOTE_BEGIN
-Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ holds. Then \lean{Clay\_A\_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay\_A\_Fefferman}.
+Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), the smooth rate condition of Definition~\ref{def:rate} holds for $u_0$ and $\nu$. Then \lean{Clay\_A\_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay\_A\_Fefferman}.
+PAPER_QUOTE_END
+
+PAPER_QUOTE_BEGIN
+\begin{definition}[Smooth rate condition]\label{def:rate} \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ (\lean{lean/DRate.lean}, quoted above) states: there are constants $C>0$ and $\kappa>0$ such that for every $T$ and every local Fefferman-class solution $(u,p)$ from $u_0$ on $[0,T)$, $\|\omega(t)\|_\infty=\sup_{x\in\R^3}|\omega(x,t)|$ is finite for every $t\in[0,T)$, the function $t\mapsto\|\omega(t)\|_\infty$ is continuous on $[0,T)$, and at every $s\in[0,T)$ it has a right derivative $d$ within $[s,\infty)$ with $d\le C\|\omega(s)\|_\infty^2-\kappa\|\omega(s)\|_\infty^3$.
 PAPER_QUOTE_END
 
 Scope: local Kato theory; no global regularity. Theorem `thm:T10` keeps a uniform vorticity ceiling

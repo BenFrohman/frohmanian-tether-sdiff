@@ -352,7 +352,7 @@ Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergenc
 ## Additional locks: the local Kato paper (doi:10.5281/zenodo.24302258, Version 1.1)
 
 * Paper: `papers/local-kato-theory/main.tex`
-* sha256: `491738fd676f4b62b742626b68e9fcbe8253cbca4243a5dab0ba1f803d4e69d0`
+* sha256: `176853c29a9b0f21e3d09dbd0f332b0539cdd870cf2a24e3e449cdc81750fa8f`
 * Semantics: `Scratch/KatoSemantics.lean`; kernel audit: `scripts/TruthGateAuditKato.lean`;
   lock entry: `TRUTH_GATE.lock` → `additional_locks` → `local-kato-theory`
 * Locks (each `formal_claim_X ↔ paper_claim_X`, proved by restructuring, not `Iff.rfl`):
@@ -428,5 +428,9 @@ For every $\nu>0$, \lean{R3BKMContinuation}\ $\nu$ holds: for every smooth, dive
 ```
 
 ```
-Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ holds. Then \lean{Clay\_A\_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay\_A\_Fefferman}.
+Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), the smooth rate condition of Definition~\ref{def:rate} holds for $u_0$ and $\nu$. Then \lean{Clay\_A\_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay\_A\_Fefferman}.
+```
+
+```
+\begin{definition}[Smooth rate condition]\label{def:rate} \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ (\lean{lean/DRate.lean}, quoted above) states: there are constants $C>0$ and $\kappa>0$ such that for every $T$ and every local Fefferman-class solution $(u,p)$ from $u_0$ on $[0,T)$, $\|\omega(t)\|_\infty=\sup_{x\in\R^3}|\omega(x,t)|$ is finite for every $t\in[0,T)$, the function $t\mapsto\|\omega(t)\|_\infty$ is continuous on $[0,T)$, and at every $s\in[0,T)$ it has a right derivative $d$ within $[s,\infty)$ with $d\le C\|\omega(s)\|_\infty^2-\kappa\|\omega(s)\|_\infty^3$.
 ```
