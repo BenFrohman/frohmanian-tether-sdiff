@@ -579,7 +579,8 @@ holds at `u₀ = 0`—this periodic version states the corresponding closing bou
         IsPeriodicSmoothSolutionOn ν T u₀ u p →
           ∀ t ∈ Set.Ico (0 : ℝ) T, vorticity_sup_norm (vorticity (u t)) ≤ Y
 
-/-- **Classical periodic BKM continuation** (class (i): known, not formalized here).
+/-- **Classical periodic BKM continuation** (class (i): classical; proved in Lean for `ν > 0` as
+`FrohmanianTether.Pillars.periodicBKMContinuation_of_classical`, from the vendored periodic pillar).
 Local existence (Kato 1984; Temam 1995), uniqueness of smooth periodic solutions, and the
 Beale–Kato–Majda criterion (1984) with parabolic smoothing give: if every local smooth
 periodic solution from `u₀` obeys one uniform `‖ω‖_∞ ≤ Y`, the solution is global.
