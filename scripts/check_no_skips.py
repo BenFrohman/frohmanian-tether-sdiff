@@ -14,7 +14,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
 J = "".join
 PATTERNS = [
-    (re.compile(J(["\\bgrep\\b[^\\n|]*\\s-[a-zA-Z]*", "v"]) + r"\b|" + J(["--invert", "-match"])), "inverted grep"),
+    (re.compile(J(["\\bgrep\\b[^\\n|]*\\s-[a-zA-Z]*", "v"]) + r"[a-zA-Z]*\b|" + J(["--invert", "-match"])), "inverted grep"),
     (re.compile(J(["--", "exclude"])), "exclude option"),
     (re.compile(J(["draft", "[_ -]?", "dir"]), re.I), "carve-out for drafts"),
     (re.compile(J(["\\bex", "clude[ds]?\\b\\s*[:=\\[(]|EX", "CLUDED|\\bex", "clude_|\\bex", "cluded_|[\"']ex", "cluded[\"']"])), "exclusion list"),
@@ -61,4 +61,6 @@ if os.path.isfile("lakefile.lean"):
 
 if bad:
     print("NO-SKIP GUARD FAIL:\n" + "\n".join(bad)); sys.exit(1)
+if not fl or nlines == 0:
+    sys.exit("NO-SKIP GUARD FAIL: read no files (vacuous check)")
 print(f"NO-SKIP GUARD PASS: read {nlines} lines in {len(fl)} files; no skip, exclusion or swallowed failure")
