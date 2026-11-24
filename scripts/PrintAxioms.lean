@@ -1,0 +1,86 @@
+/-
+Copyright (c) 2026 Benjamin Stanley Frohman. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Benjamin Stanley Frohman
+-/
+
+import FrohmanianTether
+import FrohmanianTether.Pillars
+
+/-!
+# scripts.PrintAxioms
+
+ `#print axioms` for the headline statements (run by `scripts/verify.sh`). The strict
+repository-wide audit of every declaration is `scripts/AxiomAudit.lean`.
+-/
+
+-- conditional regularity (analytic layer and periodic Clay statement)
+#print axioms ConditionalRegularity.frohmanian_tether_theorem
+#print axioms TetheredLyapunov.conditional_regularity
+#print axioms FrohmanianTether.ClayStatements.frohmanian_conditional_regularity_of_closing_bound
+#print axioms FrohmanianTether.ClayStatements.conditional_regularity_nonvacuous_at_zero
+-- tether, (C1)-(C3), obstruction, canonicity
+#print axioms FrohmanianTether.tetherKernel_C3
+#print axioms FrohmanianTether.pairsToZero_of_C2
+#print axioms FrohmanianTether.uniqueness_of_minimal_tether
+#print axioms FrohmanianTether.uniqueness_of_minimal_symmetric_tether
+#print axioms FrohmanianTether.uniqueness_of_minimal_tether_core
+#print axioms TetherNondegeneracy.tetherKernel_nondegenerate
+-- weight hypothesis
+#print axioms TetherWeight.not_aeEnstrophyWeightUnrestricted_tetherKernel
+#print axioms TetherWeightProof.tetherKernel_aeEnstrophyWeight
+#print axioms TetherWeightProof.tetherKernel_core_inputs
+-- C1: fixed-functional (refuted) and transported (proved for translations)
+#print axioms FrohmanianTether.not_tetherKernel_invariant_concrete
+#print axioms FrohmanianTether.not_tetherKernel_invariant_transSubgroup
+#print axioms FrohmanianTether.tetherKernel_transported_invariant
+#print axioms FrohmanianTether.not_transported_invariant_pointEval
+-- explicit exact NS solutions (shear, ABC) and the periodic/finite-energy obstruction
+#print axioms ExplicitFlows.shearFlow_navier_stokes
+#print axioms ExplicitFlows.abcFlow_navier_stokes
+#print axioms ExplicitFlows.shearFlow_isPeriodicSmoothSolution
+#print axioms ExplicitFlows.abcFlow_isPeriodicSmoothSolution
+#print axioms ExplicitFlows.curl_abcProfile
+#print axioms ExplicitFlows.not_integrable_sq_of_periodic
+#print axioms ExplicitFlows.isEmpty_katoLocalWitness_of_periodic
+-- 0.1.5: main theorem, tether ⇒ BKM integrability, definition audit (0.1.4 defects)
+#print axioms FrohmanianTether.ClayStatements.clay_B_exact_of_periodic_tether_bound
+-- proved pillar: uniqueness of classical periodic solutions (periodic-navier-stokes-smooth-uniqueness @ de92662)
+#print axioms FrohmanianTether.Pillars.isPeriodicSmoothSolutionOn_eq_sdiff
+#print axioms FrohmanianTether.Pillars.periodicSmoothSolutionOn_unique
+#print axioms FrohmanianTether.Pillars.periodicSmoothSolution_unique
+#print axioms FrohmanianTether.Pillars.clay_B_exact_unique_iff
+#print axioms FrohmanianTether.Pillars.clay_B_exact_unique_of_periodic_tether_bound
+#print axioms FrohmanianTether.TetherDefinitionAudit.localTetherBoundV014_constraint_free_of_unbounded
+#print axioms FrohmanianTether.TetherDefinitionAudit.exists_isLocalPhysicalSolution_zero_time
+#print axioms FrohmanianTether.TetherDefinitionAudit.isLocalPhysicalSolution_escapePath
+#print axioms FrohmanianTether.TetherDefinitionAudit.not_localTetherRateV014_zero
+#print axioms FrohmanianTether.TetherDefinitionAudit.not_forall_localTetherRateV014
+#print axioms TetheredLyapunov.comparison_ode_stability_Icc_right
+#print axioms TetheredLyapunov.localTetherBound_of_localTetherRate
+#print axioms FrohmanianTether.ClayStatements.localTetherRate_zero
+#print axioms FrohmanianTether.ClayStatements.localTetherBound_zero
+#print axioms FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherBound
+#print axioms FrohmanianTether.TetherImpliesBKM.periodicBKMIntegrability_of_periodicTetherClosingBound
+-- proved pillar: classical periodic BKM continuation (periodic-ns-classical-continuation @ 502ff17, vendored)
+#print axioms FrohmanianTether.Pillars.isPeriodicSmoothSolutionOn_of_fefferman
+#print axioms FrohmanianTether.Pillars.isPeriodicSmoothSolution_of_fefferman
+#print axioms PeriodicNSContinuation.periodicBKMCriterion
+#print axioms PeriodicNSContinuation.periodicLocalExistence_of_nonneg
+#print axioms FrohmanianTether.Pillars.periodicBKMContinuation_of_classical
+-- headline: conditional only on the OPEN PeriodicTetherClosingBound
+#print axioms FrohmanianTether.Pillars.clay_B_exact_of_periodic_tether_closing_bound
+#print axioms FrohmanianTether.Pillars.clay_B_exact_unique_of_periodic_tether_closing_bound
+-- refutation of FrohmanianTetherRate / FrohmanianTetherBound (junk-derivative loophole)
+#print axioms Takagi.not_differentiableAt_takagi
+#print axioms TetherRateCounterexample.not_forall_frohmanianTetherRate
+#print axioms TetherRateCounterexample.not_frohmanianTetherRate_U
+#print axioms TetherRateCounterexample.not_frohmanianTetherBound_U
+#print axioms TetherRatePeriodicVacuity.frohmanianTetherRate_of_periodic
+-- Fefferman Problem (A): conditional reduction and nonvacuity
+#print axioms FeffermanClayA.clay_A_fefferman_of_frohmanianTetherRateSmooth
+#print axioms FeffermanClayA.frohmanianTetherRateSmooth_zero
+#print axioms FeffermanClayA.r3BKMContinuationAt_zero
+#print axioms FeffermanClayA.feffermanDecay_zero
+#print axioms FeffermanClayA.clay_A_fefferman_instance_zero
+#print axioms FeffermanClayA.frohmanianTetherRateSmoothGlobal_of_no_global_solution

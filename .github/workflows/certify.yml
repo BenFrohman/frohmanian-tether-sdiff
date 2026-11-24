@@ -1,0 +1,104 @@
+name: Lean certificate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# One in-flight certificate per branch, whether triggered by push or pull_request.
+# Prevents a redundant push run and a PR run from racing on the same SHA
+# (and from colliding on artifact names).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan (toolchain pinned by lean-toolchain = leanprover/lean4:v4.30.0-rc1)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Collect lake certificate environment
+        if: always()
+        run: bash scripts/collect_lake_certificate.sh cert-bundle
+      - name: Get Mathlib cache
+        run: lake exe cache get
+      - name: Build
+        run: |
+          set -o pipefail
+          mkdir -p cert-bundle
+          lake build 2>&1 | tee cert-bundle/lake-build.log
+      - name: Build Scratch
+        run: |
+          set -o pipefail
+          lake build Scratch 2>&1 | tee cert-bundle/lake-build-scratch.log
+          echo "Built Scratch (every Scratch/*.lean module)"
+      - name: Read every line of both build logs (any sorry, sorryAx, ofReduceBool or error fails)
+        run: python3 scripts/check_build_log.py cert-bundle/lake-build.log cert-bundle/lake-build-scratch.log
+      - name: Coverage (every tracked .lean file is built, run by CI, or a verified excerpt; names any other)
+        run: python3 scripts/check_lean_coverage.py
+      - name: No-skip guard (CI and scripts)
+        run: python3 scripts/check_no_skips.py
+      - name: No sorry / admit / native_decide / axiom declarations in the sources
+        run: python3 scripts/check_no_sorry.py
+      - name: Strict axiom audit (fails on any axiom beyond propext, Classical.choice, Quot.sound)
+        run: |
+          set -o pipefail
+          lake env lean scripts/AxiomAudit.lean 2>&1 | tee axioms.txt
+      - name: Check audit summary
+        run: |
+          grep -q "^AUDIT PASS" axioms.txt
+          if grep -qE "AUDIT FAIL|sorryAx|ofReduceBool|error" axioms.txt; then cat axioms.txt; exit 1; fi
+          grep "^AUDIT SUMMARY" axioms.txt
+      - name: Scratch axiom audit (headline Scratch theorems)
+        run: |
+          set -o pipefail
+          lake env lean scripts/PrintScratchAxioms.lean 2>&1 | tee scratch_axioms.txt
+      - name: Check Scratch axiom audit
+        run: |
+          grep -q "^SCRATCH AUDIT PASS" scratch_axioms.txt
+          if grep -qE "SCRATCH AUDIT FAIL|sorryAx|ofReduceBool|error" scratch_axioms.txt; then cat scratch_axioms.txt; exit 1; fi
+          grep "^SCRATCH AUDIT SUMMARY" scratch_axioms.txt
+      - name: Full axiom audit of every Scratch declaration
+        run: |
+          set -o pipefail
+          lake env lean scripts/ScratchAxiomAuditAll.lean 2>&1 | tee scratch_axioms_all.txt
+          python3 scripts/check_build_log.py scratch_axioms_all.txt
+          grep -q "^SCRATCH FULL AUDIT PASS" scratch_axioms_all.txt
+          grep "^SCRATCH FULL AUDIT SUMMARY" scratch_axioms_all.txt
+      - name: One-command verification (scripts/verify.sh, as documented in README and paper)
+        run: bash scripts/verify.sh
+      # Upload is bookkeeping only. The Lean/axiom steps above remain required and
+      # fail the job on any kernel or audit failure. A GitHub artifact-API outage
+      # (HTML error page instead of JSON, as in run 43093930648) must not fail a
+      # already-certified build.
+      - name: Copy axiom outputs into the certificate bundle
+        if: always()
+        run: |
+          mkdir -p cert-bundle
+          for f in axioms.txt print_axioms.txt scratch_axioms.txt scratch_axioms_all.txt; do
+            if [ -f "$f" ]; then cp -a "$f" cert-bundle/; fi
+          done
+          bash scripts/finalize_lake_certificate.sh cert-bundle
+      - name: Upload lake certificate bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lake-certificate-certify-${{ github.event_name }}-${{ github.run_id }}
+          path: cert-bundle/
+          if-no-files-found: warn
+      - name: Upload axiom report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axioms-${{ github.event_name }}-${{ github.run_id }}
+          path: |
+            axioms.txt
+            print_axioms.txt
+            scratch_axioms.txt
+            scratch_axioms_all.txt
+          if-no-files-found: warn
+          overwrite: true
