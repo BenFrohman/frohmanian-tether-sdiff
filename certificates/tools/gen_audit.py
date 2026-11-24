@@ -1,23 +1,19 @@
 #!/usr/bin/env python3
-"""Kernel-certificate helper: list this repository's built Lean modules and write a Lean
-file that runs `collectAxioms` (the function behind `#print axioms`) on every theorem
-declared in them.  Usage: python3 certificates/tools/gen_audit.py OUT.lean MODULES.txt"""
-import os, subprocess, sys
+"""Kernel-certificate helper: list this repository's built Lean modules and write Lean files
+that run `collectAxioms` (the function behind `#print axioms`) on every theorem declared in
+them.  Usage: python3 certificates/tools/gen_audit.py OUT.lean MODULES.txt
+
+Module names come from scripts/check_lean_coverage.py (lakefile srcDirs; no tracked file is
+passed over). MODULES.txt lists every built module, Scratch included (external kernel re-check).
+One collectAxioms file is written per top-level module prefix other than Scratch, as
+OUT_<prefix>.lean, and their paths are listed in OUT.files; the Scratch library is audited
+declaration by declaration by scripts/ScratchAxiomAuditAll.lean."""
+import os, sys
 out, modlist = sys.argv[1], sys.argv[2]
-files = subprocess.check_output(['git', 'ls-files', '*.lean']).decode().split()
-roots = ['.lake/build/lib/lean', '.lake/build/lib', 'build/lib']
-mods = []
-for f in files:
-    if f.startswith(('.lake/', 'lake-packages/')) or os.path.basename(f) in ('lakefile.lean',):
-        continue
-    rel = f[:-5]
-    if any(os.path.exists(os.path.join(r, rel + '.olean')) for r in roots):
-        mods.append(rel.replace('/', '.'))
-mods.sort()
-open(modlist, 'w').write('\n'.join(mods) + '\n')
-names = ', '.join('`' + '.'.join('«' + p + '»' for p in m.split('.')) for m in mods)
-imports = '\n'.join('import ' + '.'.join('«' + p + '»' for p in m.split('.')) for m in mods)
-open(out, 'w').write(f"""import Lean
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'scripts'))
+import check_lean_coverage as cov
+
+TEMPLATE = """import Lean
 {imports}
 
 open Lean Elab Command
@@ -41,5 +37,25 @@ elab "#kernel_certificate_audit" : command => do
         | _ => pure ()
 
 #kernel_certificate_audit
-""")
-print(f'{len(mods)} modules')
+"""
+
+def q(m):
+    return '.'.join('«' + p + '»' for p in m.split('.'))
+
+files = cov.tracked()
+allmods = sorted(m for m, _ in (x for x in (cov.module_of(f) for f in files) if x))
+open(modlist, 'w').write('\n'.join(allmods) + '\n')
+groups = {}
+for m in allmods:
+    if not m.startswith('Scratch.'):
+        groups.setdefault(m.split('.')[0], []).append(m)
+outs = []
+for g, mods in sorted(groups.items()):
+    gout = out[:-5] + '_' + g + '.lean'
+    outs.append(gout)
+    open(gout, 'w').write(TEMPLATE.format(imports='\n'.join('import ' + q(m) for m in mods),
+                                          names=', '.join('`' + q(m) for m in mods)))
+open(out[:-5] + '.files', 'w').write('\n'.join(outs) + '\n')
+nscr = sum(1 for m in allmods if m.startswith('Scratch.'))
+print(f'{len(allmods)} built modules: ' + ', '.join(f'{g}: {len(v)}' for g, v in sorted(groups.items()))
+      + f'; Scratch: {nscr} (audited by scripts/ScratchAxiomAuditAll.lean)')

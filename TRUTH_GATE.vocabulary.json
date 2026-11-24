@@ -1,0 +1,52 @@
+{
+  "_comment": "Lint configuration for scripts/truth_gate_classify.py (see TRUTH_GATE.md, 'Lock-form lint'). It does not change any locked claim: the lock region hash in TRUTH_GATE.lock still pins paper_claim. paper_vocabulary lists the basic repository notions the author-approved paper side already uses; paper_forbidden_names lists Props the paper side must never name.",
+  "locks": {
+    "main lock": {
+      "paper_vocabulary": {
+        "VelocityField": "a velocity field u : ℝ³ → ℝ³ (type abbreviation); used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "div": "the divergence ∇·u = Σᵢ ∂ᵢuᵢ, written out with fderiv; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "IsZ3Periodic": "ℤ³-periodicity f(x + k) = f(x), i.e. f descends to 𝕋³ = ℝ³/ℤ³; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "TimeDependentVelocity": "a time-dependent velocity u : ℝ → ℝ³ → ℝ³ (type abbreviation); used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "TimeDependentPressure": "a time-dependent pressure p : ℝ → ℝ³ → ℝ (type abbreviation); used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "IsPeriodicSmoothSolutionOn": "the classical solution class on [0, T): jointly C^∞, NS equations, divergence-free, initial value u₀, periodic; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "vorticity_sup_norm": "the sup norm ‖ω‖_{L^∞} of the vorticity; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "vorticity": "the vorticity ω = ∇×u (curl); used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "IsPeriodicSmoothSolution": "Fefferman's admissible-solution clause for (B): (1), (2), (3), (10), (11) on [0, ∞); used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "T3": "the model 3-space ℝ³ (EuclideanSpace ℝ (Fin 3)) on which ℤ³-periodic fields live; a type, not a hypothesis; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "navier_stokes_eq_Ici": "Fefferman's equations (1)+(2) on ℝ³ × [0, ∞) with force f and the one-sided time derivative; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)"
+      },
+      "paper_forbidden_names": [
+        "PeriodicTetherClosingBound",
+        "PeriodicBKMContinuation",
+        "Clay_B_exact"
+      ]
+    },
+    "fefferman-clay-a-conditional": {
+      "paper_vocabulary": {
+        "VelocityField": "a velocity field u : ℝ³ → ℝ³ (type abbreviation); used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "TimeDependentVelocity": "a time-dependent velocity u : ℝ → ℝ³ → ℝ³ (type abbreviation); used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "TimeDependentPressure": "a time-dependent pressure p : ℝ → ℝ³ → ℝ (type abbreviation); used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "T3": "the model 3-space ℝ³ (EuclideanSpace ℝ (Fin 3)) on which ℤ³-periodic fields live; a type, not a hypothesis; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "convective": "the convective term (u·∇)v; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "pressureGradient": "the pressure gradient ∇p; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "laplacian": "the Laplacian Δu as the trace of the Hessian; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "div": "the divergence ∇·u = Σᵢ ∂ᵢuᵢ, written out with fderiv; used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)",
+        "vorticity": "the vorticity ω = ∇×u (curl); used in the author-approved paper_claim (approved 2026-11-17 00:22 CT, confirmed 00:32 CT)"
+      }
+    },
+    "local-kato-theory": {
+      "paper_vocabulary": {
+        "VelocityField": "a velocity field u : ℝ³ → ℝ³ (type abbreviation); the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "PressureField": "a pressure field p : ℝ³ → ℝ (type abbreviation); the scalar counterpart of VelocityField in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "TimeDependentVelocity": "a time-dependent velocity u : ℝ → ℝ³ → ℝ³ (type abbreviation); the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "TimeDependentPressure": "a time-dependent pressure p : ℝ → ℝ³ → ℝ (type abbreviation); the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "T3": "the model 3-space ℝ³ (EuclideanSpace ℝ (Fin 3)); a type, not a hypothesis; the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "convective": "the convective term (u·∇)v; the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "pressureGradient": "the pressure gradient ∇p; the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "laplacian": "the Laplacian Δu as the trace of the Hessian; the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "div": "the divergence ∇·u = Σᵢ ∂ᵢuᵢ, written out with fderiv; the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)",
+        "vorticity": "the vorticity ω = ∇×u (curl); the same reading as in the author-approved fefferman-clay-a-conditional lock (this lock's transcription is not yet author-reviewed)"
+      }
+    }
+  }
+}

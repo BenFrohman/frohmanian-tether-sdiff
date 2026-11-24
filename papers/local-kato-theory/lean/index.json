@@ -1,0 +1,147 @@
+{
+ "T1": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "KatoMaximal.katoMaximalSolution_of_feffermanDecay",
+  "lines": "2103-2104"
+ },
+ "T2": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "KatoMaximal.katoPonce_h3_energy_physicalMaximal",
+  "lines": "2071-2078"
+ },
+ "T3": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "KatoMaximal.h3IBPVanishingFlux_physicalMaximal",
+  "lines": "2036-2039"
+ },
+ "T4": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "KatoMaximal.isFeffermanSolutionOn_physicalMaximal",
+  "lines": "1809-1812"
+ },
+ "T5": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "KatoMaximal.momentum_physicalMaximal",
+  "lines": "1626-1633"
+ },
+ "T6": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "KatoMaximal.energyInequality_physicalMaximal",
+  "lines": "1793-1796"
+ },
+ "T7": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "KatoMaximal.continuousOn_hsSq_physicalMaximal",
+  "lines": "1193-1195"
+ },
+ "T8": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "KatoMaximal.hsSq_blowup_alternative",
+  "lines": "1229-1234"
+ },
+ "T9": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "KatoMaximal.Smax_eq_Ici_or_Ico",
+  "lines": "1052-1054"
+ },
+ "T10": {
+  "file": "Scratch/KatoContinuation.lean",
+  "name": "KatoContinuation.r3BKMContinuation_of_pos",
+  "lines": "41-41"
+ },
+ "T11": {
+  "file": "Scratch/KatoContinuation.lean",
+  "name": "KatoContinuation.clay_A_fefferman_of_rate",
+  "lines": "49-52"
+ },
+ "Dvar": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": null,
+  "lines": "501-502"
+ },
+ "DinMax": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "inMaximal",
+  "lines": "561-562"
+ },
+ "DSmax": {
+  "file": "Scratch/KatoMaximal.lean",
+  "name": "Smax",
+  "lines": "565-565"
+ },
+ "DKMS": {
+  "file": "Scratch/R3BKMContinuation.lean",
+  "name": "KatoMaximalSolution",
+  "lines": "88-96"
+ },
+ "DsobE": {
+  "file": "Scratch/R3BKMContinuation.lean",
+  "name": "sobolevEnergy",
+  "lines": "44-46"
+ },
+ "DhsSq": {
+  "file": "Scratch/R3BKMContinuation.lean",
+  "name": "hsSq",
+  "lines": "49-49"
+ },
+ "DgradSup": {
+  "file": "Scratch/R3BKMContinuation.lean",
+  "name": "gradSup",
+  "lines": "55-55"
+ },
+ "DFD": {
+  "file": "Scratch/RepairedTetherRate.lean",
+  "name": "FeffermanDecay",
+  "lines": "33-36"
+ },
+ "DFGS": {
+  "file": "Scratch/RepairedTetherRate.lean",
+  "name": "FeffermanGlobalSolution",
+  "lines": "44-50"
+ },
+ "DClay": {
+  "file": "Scratch/RepairedTetherRate.lean",
+  "name": "Clay_A_Fefferman",
+  "lines": "56-60"
+ },
+ "DIFS": {
+  "file": "Scratch/RepairedTetherRate.lean",
+  "name": "IsFeffermanSolutionOn",
+  "lines": "66-75"
+ },
+ "DMw": {
+  "file": "Scratch/RepairedTetherRate.lean",
+  "name": "Mω",
+  "lines": "78-79"
+ },
+ "DRate": {
+  "file": "Scratch/RepairedTetherRate.lean",
+  "name": "FrohmanianTetherRateSmooth",
+  "lines": "84-91"
+ },
+ "DContAt": {
+  "file": "Scratch/RepairedTetherRate.lean",
+  "name": "R3BKMContinuationAt",
+  "lines": "98-102"
+ },
+ "DCont": {
+  "file": "Scratch/RepairedTetherRate.lean",
+  "name": "R3BKMContinuation",
+  "lines": "104-106"
+ },
+ "DH3": {
+  "file": "Scratch/KatoPonce.lean",
+  "name": "H3IBPVanishingFlux",
+  "lines": "508-509"
+ },
+ "DWord": {
+  "file": "Scratch/KatoPonce.lean",
+  "name": "WordIBP",
+  "lines": "473-500"
+ },
+ "T2-9": {
+  "file": "Scratch/KatoMaximalProperties.lean",
+  "name": "KatoMaximal.katoMaximalSolution_properties",
+  "lines": "29-49"
+ }
+}

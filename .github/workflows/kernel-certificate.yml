@@ -19,24 +19,34 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Collect lake certificate environment
+        if: always()
+        run: bash scripts/collect_lake_certificate.sh cert-out
       - name: Toolchain and revision
         run: |
           mkdir -p cert-out
           {
             echo "commit: $(git rev-parse HEAD)"
             echo "lean-toolchain: $(cat lean-toolchain)"
-            echo "lean --version: $(lean --version)"
-            echo "lake --version: $(lake --version)"
+            if command -v elan >/dev/null 2>&1; then echo "elan --version: $(elan --version)"; else echo "elan --version: not printed; elan was not on PATH"; fi
+            if command -v lean >/dev/null 2>&1; then echo "lean --version: $(lean --version)"; else echo "lean --version: not printed; lean was not on PATH"; fi
+            if command -v lake >/dev/null 2>&1; then echo "lake --version: $(lake --version)"; else echo "lake --version: not printed; lake was not on PATH"; fi
             echo "date (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           } | tee cert-out/environment.txt
       - name: Get Mathlib cache (never rebuilds Mathlib from source)
         run: |
           if grep -q '"name": *"mathlib"' lake-manifest.json 2>/dev/null; then lake exe cache get; else echo "no mathlib dependency"; fi
-      - name: lake build
+      - name: lake build, lake build Scratch (every module of every lean_lib)
         run: |
           set -o pipefail
           lake build 2>&1 | tee cert-out/build.log
+          lake build Scratch 2>&1 | tee cert-out/build-scratch.log
+          python3 scripts/check_build_log.py cert-out/build.log cert-out/build-scratch.log
+      - name: Coverage (every tracked .lean file is built, run by CI, or a verified excerpt; names any other)
+        run: |
+          set -o pipefail
+          python3 scripts/check_lean_coverage.py | tee cert-out/coverage.txt
       - name: sorry / admit / native_decide / axiom scan
         run: |
           set -o pipefail
@@ -45,9 +55,20 @@ jobs:
         run: |
           set -o pipefail
           python3 certificates/tools/gen_audit.py cert-out/KernelCertificateAudit.lean cert-out/modules.txt
-          lake env lean cert-out/KernelCertificateAudit.lean > cert-out/axioms.raw.txt 2>&1 || { cat cert-out/axioms.raw.txt; exit 1; }
+          : > cert-out/axioms.raw.txt
+          while read -r F; do
+            [ -n "$F" ] || continue
+            echo "-- $F"
+            lake env lean "$F" >> cert-out/axioms.raw.txt 2>&1 || { cat cert-out/axioms.raw.txt; exit 1; }
+          done < cert-out/KernelCertificateAudit.files
           python3 certificates/tools/check_audit.py cert-out/axioms.raw.txt > cert-out/axioms.txt || { tail -50 cert-out/axioms.txt; exit 1; }
           tail -1 cert-out/axioms.txt
+      - name: '#print axioms (collectAxioms) for every Scratch declaration'
+        run: |
+          set -o pipefail
+          lake env lean scripts/ScratchAxiomAuditAll.lean 2>&1 | tee cert-out/scratch-axioms-all.txt
+          python3 scripts/check_build_log.py cert-out/scratch-axioms-all.txt
+          grep -q "^SCRATCH FULL AUDIT PASS" cert-out/scratch-axioms-all.txt
       - name: External kernel re-check of every module (leanchecker / lean4checker, one module per run)
         # The stock checker treats its argument as a module-name prefix and replays every matching
         # module in parallel, which runs out of memory on a root module that imports the whole
@@ -61,7 +82,13 @@ jobs:
           if [ -f "$PREFIX/src/lean/LeanChecker.lean" ]; then
             sed 's/target\.isPrefixOf m/target == m/' "$PREFIX/src/lean/LeanChecker.lean" > /tmp/LeanCheckerExact.lean
             echo "checker: leanchecker source shipped with $VER (src/lean/LeanChecker.lean), prefix match -> exact match, run with lean --run" > cert-out/leanchecker.txt
-            diff "$PREFIX/src/lean/LeanChecker.lean" /tmp/LeanCheckerExact.lean | sed 's/^/  patch: /' >> cert-out/leanchecker.txt || true
+            # diff exits 1 when the patch changed the file. That status is expected.
+            # Keep it inside `if` so `bash -e` and `pipefail` do not abort the step
+            # before any module is replayed. A no-op patch still fails the job.
+            if diff "$PREFIX/src/lean/LeanChecker.lean" /tmp/LeanCheckerExact.lean | sed 's/^/  patch: /' >> cert-out/leanchecker.txt; then
+              echo "FAIL: exact-match patch did not change LeanChecker.lean" | tee -a cert-out/leanchecker.txt
+              exit 1
+            fi
             check() { lake env lean --run /tmp/LeanCheckerExact.lean -v "$1"; }
           elif git ls-remote --exit-code --tags https://github.com/leanprover/lean4checker "refs/tags/$VER" >/dev/null; then
             git clone -q --depth 1 --branch "$VER" https://github.com/leanprover/lean4checker /tmp/lean4checker
@@ -69,10 +96,13 @@ jobs:
             sed -i 's/target\.isPrefixOf m/target == m/' /tmp/lean4checker/Main.lean
             (cd /tmp/lean4checker && lake build lean4checker)
             echo "checker: lean4checker tag $VER ($(git -C /tmp/lean4checker rev-parse HEAD)), Main.lean prefix match -> exact match" > cert-out/leanchecker.txt
-            diff /tmp/Main.orig.lean /tmp/lean4checker/Main.lean | sed 's/^/  patch: /' >> cert-out/leanchecker.txt || true
+            if diff /tmp/Main.orig.lean /tmp/lean4checker/Main.lean | sed 's/^/  patch: /' >> cert-out/leanchecker.txt; then
+              echo "FAIL: exact-match patch did not change lean4checker Main.lean" | tee -a cert-out/leanchecker.txt
+              exit 1
+            fi
             check() { lake env /tmp/lean4checker/.lake/build/bin/lean4checker -v "$1"; }
           else
-            echo "NOT RUN: toolchain $VER ships no leanchecker and lean4checker has no tag $VER" | tee cert-out/leanchecker.txt; exit 0
+            echo "FAIL: kernel re-check could not run: toolchain $VER ships no leanchecker and lean4checker has no tag $VER" | tee cert-out/leanchecker.txt; exit 1
           fi
           while read -r m; do
             [ -n "$m" ] || continue
@@ -80,6 +110,11 @@ jobs:
           done < cert-out/modules.txt | tee -a cert-out/leanchecker.txt
           if grep -q ': FAILED$' cert-out/leanchecker.txt; then exit 1; fi
           echo "RESULT: $(grep -c ': OK (' cert-out/leanchecker.txt) of $(grep -c . cert-out/modules.txt) modules replayed through the kernel, 0 failures" | tee -a cert-out/leanchecker.txt
+      - name: Finalize certificate bundle
+        if: always()
+        run: |
+          if [ -f cert-out/build.log ] && [ ! -f cert-out/lake-build.log ]; then cp -a cert-out/build.log cert-out/lake-build.log; fi
+          bash scripts/finalize_lake_certificate.sh cert-out
       - name: Upload certificate files
         if: always()
         uses: actions/upload-artifact@v4

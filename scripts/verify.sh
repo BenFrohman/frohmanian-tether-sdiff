@@ -34,7 +34,7 @@ python3 scripts/check_no_sorry.py
 echo "== strict axiom audit"
 lake env lean scripts/AxiomAudit.lean 2>&1 | tee axioms.txt
 grep -q "^AUDIT PASS" axioms.txt
-if grep -v "^AUDIT PASS" axioms.txt | grep -qE "AUDIT FAIL|sorryAx|ofReduceBool|error"; then
+if grep -qE "AUDIT FAIL|sorryAx|ofReduceBool|error" axioms.txt; then
   echo "AXIOM AUDIT FAILED"; exit 1
 fi
 grep "^AUDIT SUMMARY" axioms.txt

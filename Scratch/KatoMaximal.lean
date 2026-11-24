@@ -304,8 +304,9 @@ mild paths on times `T_n` with `T_0 = Tfeff` and `T_{n+1} = T_n` plus the
 `T_n` are unbounded, or they are bounded and the included `Ĥ³` norms of
 the terminal slices are unbounded. This is the blow-up alternative at the
 level of the mild `Ĥ^{k+1}` path; the Fefferman-class field, pressure, and
-Kato–Ponce inequality on the resulting maximal interval are not obtained
-here, so `KatoMaximalSolution` remains open. -/
+Kato–Ponce inequality on the resulting maximal interval are obtained below:
+`KatoMaximal.katoMaximalSolution_of_feffermanDecay` proves `KatoMaximalSolution ν u₀` for
+divergence-free Fefferman-decaying `H³` data with `ν > 0`. -/
 
 section Blowup
 

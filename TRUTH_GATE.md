@@ -30,7 +30,8 @@ makes (drift), whether by accident or by an injected instruction.
 4. `formal_claim` is exactly the statement of the repository's main theorem, and
    `paper_claim_holds` is the main theorem transported across the correspondence.
 5. Only `propext`, `Classical.choice` and `Quot.sound`. No `sorry`, `admit`, `native_decide` or
-   new `axiom` anywhere outside the draft directories in `TRUTH_GATE.lock`.
+   new `axiom` anywhere in the repository: every tracked `.lean` file is scanned and no file or
+   directory is exempt. Every check reads the whole log, every line.
 6. If the paper's English claim cannot be faithfully transcribed, or is not what Lean proves,
    the gate stays **red** and the mismatch is reported. Never patch over it: never weaken
    `paper_claim`, drop a hypothesis, or redefine it to match the formal side. If the
@@ -44,9 +45,21 @@ makes (drift), whether by accident or by an injected instruction.
 
 ## What `scripts/verify-lock.sh` checks mechanically
 
-* `lake build` succeeds, with no `sorry` warning outside the draft directories;
-* no `sorry` / `admit` / `native_decide` / `axiom` token outside the draft directories
-  (comments and strings excluded);
+* no-skip guard (`scripts/check_no_skips.py`): no workflow or script contains an inverted grep,
+  an exclude option or list, a carve-out for drafts, a pass-over list, an ignored step error, a
+  failure swallowed by an always-true alternative, a disabled step, an exit code 0 for a check
+  that did not run, a hand-written root list, or a non-default `lean_lib` that no workflow builds;
+* no `sorry` / `admit` / `native_decide` / `axiom` token in ANY tracked `.lean` file
+  (`git ls-files '*.lean'`; only `.lake/` is not part of the repository; comments and string
+  literals are not code);
+* `lake build` and `lake build Scratch` succeed, and `scripts/check_build_log.py` reads every
+  line of the build log and fails on any `declaration uses 'sorry'` warning, `sorryAx`,
+  `ofReduceBool` or `error:` line, whatever file it names;
+* coverage (`scripts/check_lean_coverage.py`): every tracked `.lean` file is a BUILT module (its
+  `.olean` exists after the builds), a CI-RUN file (`lakefile.lean`, or a `scripts/*.lean` run by
+  path), or an EXCERPT whose code lines occur verbatim and contiguously in a BUILT file; any other
+  file fails by name. `scripts/ScratchAxiomAuditAll.lean` must import every `Scratch/*.lean`
+  module, and audits the axioms of every Scratch declaration;
 * `Semantics.lean` has `PAPER_PATH`, `PAPER_SHA256`, `PAPER_SECTION` and a verbatim
   `PAPER_QUOTE`; the hash matches the paper file and the quote occurs in it; this file carries
   the same path, hash and quote;
@@ -69,6 +82,73 @@ bash scripts/verify-lock.sh
 ```
 
 Reports are written to `truth-gate-report/`.
+
+## Failure classes (what a red Truth Gate means)
+
+A red Truth Gate is not automatically a math failure. Since 2026-11-17, `scripts/verify-lock.sh`
+runs every phase even after one fails. `scripts/truth_gate_classify.py` then sorts each failure
+into exactly one class and prints a `TRUTH GATE VERDICT` block at the end of the log. The block
+also goes to the job summary and to `truth-gate-report/classification.json`.
+
+This exists because of frohmanian-tether-sdiff PR #13 (run 44039231121). That PR changed only CI,
+but its merge ref was built on a main whose lock still had the old `paper_claim` form. The gate
+printed `TRUTH GATE FAIL: this lock is NOT certifying` and `TRUTH GATE STATIC FAIL`, which read like
+a proof failure, though every kernel check was green.
+
+| Class | Raised by | What the verdict prints | What fixes it |
+|---|---|---|---|
+| **KERNEL/PROOF** | `lake build` fails; `sorry`/`admit`/`native_decide`/`axiom` in any tracked `.lean` file or any build-log line; a `.lean` file not covered; nonstandard axioms; a missing or ill-typed locked declaration; `intended_correspondence` fails to check | `KERNEL/PROOF FAILURE (a proof does not check)` and `This is a proof failure`, with the failing lines | Fix the proof. **This is the only class ever described as a proof failure.** |
+| **LOCK-FORM** | `paper_claim` reuses a repository Prop or definition; a vacuous alias of `formal_claim`; an `rfl` correspondence; a partial lock; a lock marked `"certifying": false`; an edited lock region; missing `PAPER_*` fields | `LOCK-FORM: lock wording/form problem, not a math failure`, each offending identifier with `file:line` in the Semantics file and the `file:line` of its repository declaration, then the independent transcription that is required | Rewrite the paper side from the paper's own definition, in the paper's symbols, and prove `intended_correspondence` with real reasoning. A new lock needs the author's sign-off. |
+| **PAPER-HASH** | the paper's sha256 differs from the lock | `PAPER-HASH: the paper changed after the lock (not a math failure)`, the commit whose bytes match the lock, every changed line, whether only copyright/license/attribution lines changed, and whether the locked quote is still verbatim | If the edit is intended, update `paper_sha256` in `TRUTH_GATE.lock`, the `PAPER_SHA256:` line in the Semantics file and the hash in this file, all in one commit. If the quote changed, that is a statement change and needs sign-off. |
+| **STALE-BASE** | a PR's merge ref was built on an older main, and main has since changed the lock, a Semantics file, a paper or a gate script | `STALE-BASE: branch is behind main's lock; update branch (not a math failure)` | The workflow re-merges the PR head onto the current main and judges that merge, which is what would actually land. It goes red only if that merge conflicts, and then it says to update the branch. |
+
+Two more labels can appear in the verdict:
+
+* **`[INHERITED]`** appears when the PR touches no lock, vocabulary, Semantics or paper file but a
+  LOCK-FORM or PAPER-HASH failure remains. The failure comes from main, so it has to be fixed on
+  main.
+* **`UNCLASSIFIED`** appears when a checker crashed or printed a message no rule recognises. It is
+  shown verbatim and is never presumed to be a math failure.
+
+The last line always states the classes, for example
+`VERDICT: FAIL (LOCK-FORM). Kernel checks passed: no math was found false.`
+
+### Lock-form lint (runs on every PR, no Lean needed)
+
+The `lock-form-lint` job in `.github/workflows/truth-gate.yml` runs
+`python3 scripts/truth_gate_classify.py lint --fetch-deps`. It collects every declaration in
+`lean_roots` and in the author's own Lake dependencies (every non-Mathlib package in
+`lake-manifest.json`), then reads `paper_claim` and any paper-side helper defined in the Semantics
+file. It rejects:
+
+1. any Prop that is a whole hypothesis or the conclusion of `formal_claim` (for example the old
+   sdiff form `(∀ ν > 0, PeriodicTetherClosingBound ν) → …`). This is never allowed, with or without
+   a vocabulary entry;
+2. any other repository name that is not listed, with a reason, in `TRUTH_GATE.vocabulary.json`
+   (basic notions such as the velocity-field type);
+3. any name in `paper_forbidden_names`, and any mention of `formal_claim`.
+
+`TRUTH_GATE.vocabulary.json` is lint configuration. It cannot change the locked claim, because the
+lock region hash still pins `paper_claim`. For an existing author-approved lock, it records only the
+basic names that the approved claim already uses. Any new name on the paper side goes into the
+new-lock PR together with the author's sign-off.
+
+### Tests
+
+`scripts/tests/test_truth_gate_classify.py` has one throw-away fixture repository per class:
+
+* KERNEL/PROOF: build error, sorry, nonstandard axioms;
+* LOCK-FORM: named hypothesis Prop, unlisted repository name, alias, non-certifying,
+  partial lock, vacuous lock;
+* PAPER-HASH: copyright-only change, and a change to the quote;
+* STALE-BASE: re-merge onto the current main, and a merge conflict;
+* `[INHERITED]` label.
+
+The `lock-form-lint` job runs them on every PR:
+
+```
+python3 -m unittest discover -s scripts/tests -p 'test_truth_gate_classify.py' -v
+```
 
 ## The locked claim of this repository
 
@@ -267,4 +347,90 @@ For every $\nu>0$, \lean{R3BKMContinuation}\ $\nu$ holds: for every smooth, dive
 \label{thm:clayA-rate}
 Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ holds. Then \lean{Clay_A_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay_A_Fefferman}.
 \end{theorem}
+```
+
+## Additional locks: the local Kato paper (doi:10.5281/zenodo.24302258, Version 1.1)
+
+* Paper: `papers/local-kato-theory/main.tex`
+* sha256: `176853c29a9b0f21e3d09dbd0f332b0539cdd870cf2a24e3e449cdc81750fa8f`
+* Semantics: `Scratch/KatoSemantics.lean`; kernel audit: `scripts/TruthGateAuditKato.lean`;
+  lock entry: `TRUTH_GATE.lock` → `additional_locks` → `local-kato-theory`
+* Locks (each `formal_claim_X ↔ paper_claim_X`, proved by restructuring, not `Iff.rfl`):
+  * `T1`: `KatoMaximal.katoMaximalSolution_of_feffermanDecay` ↔ Theorem `thm:T1`
+  * `T2to9`: `KatoMaximal.katoMaximalSolution_properties` ↔ Theorem `thm:T2-9`, items (T2)–(T9)
+  * `T10`: `KatoContinuation.r3BKMContinuation_of_pos` ↔ Theorem `thm:T10`
+  * `T11`: `KatoContinuation.clay_A_fefferman_of_rate` ↔ Theorem `thm:T11`
+* Version 1.0 of the paper (published from commit `1ea649e`) stated (T2)–(T9) as eight separate
+  theorems about the Lean objects `Smax`, `physicalMaximal`, `presMaximal`, which the paper
+  defines only by their Lean source; they had no lock, and a separate existential lock per item
+  would be vacuous (for example (T6) alone holds for `u = 0`). Version 1.1 states them as one
+  theorem about one solution, `KatoMaximal.katoMaximalSolution_properties`
+  (`Scratch/KatoMaximalProperties.lean`), and writes out the (T3) integrability package in full.
+* Each `paper_claim_X` is transcribed from the English below with the paper's own symbols. It does
+  not name any repository Prop or construction listed in `paper_forbidden_names`;
+  `scripts/truth_gate_check.py` enforces this.
+* Non-vacuity witnesses at `u₀ = 0`: `paper_FeffermanDatum_zero`, `paper_RateSmooth_zero`,
+  `paper_ceiling_zero`, `paper_GlobalSolution_zero`, `paper_T2to9_instance_zero`.
+* Directive: Benjamin Stanley Frohman, 2026-11-17 03:18 CT, "make the fixes ASAP" (lock T1–T11
+  of the published Kato paper), relayed by the parent agent. The transcription text has not yet
+  been reviewed by the author.
+
+Scope: local Kato theory, not global regularity. `thm:T10` keeps a uniform sup-norm vorticity
+ceiling as a hypothesis (this is not the Beale–Kato–Majda integral criterion, and BKM is not
+formalized here). `thm:T11` is conditional on `FrohmanianTetherRateSmooth` for all Fefferman data,
+which is OPEN. No Millennium Prize problem is claimed solved.
+
+Verbatim quotes:
+
+```
+\begin{definition}[Fefferman decay (4)] \lean{Scratch/RepairedTetherRate.lean:33--36}: $|\partial_x^\alpha u_0(x)|\le C_{\alpha K}(1+|x|)^{-K}$ for every multi-index $\alpha$ and every real $K$.
+```
+
+```
+\begin{definition}[Local Fefferman-class solution on $\R^3\times[0,T)$] \lean{Scratch/RepairedTetherRate.lean:66--75}: $u$ and $p$ are jointly $C^\infty$ on $\R^3\times[0,T)$; for $t\in[0,T)$ and $x\in\R^3$, $\partial_t^+u+(u\cdot\nabla)u+\nabla p=\nu\Delta u$ (one-sided time derivative within $[0,\infty)$) and $\operatorname{div}u=0$; $u(\cdot,0)=u_0$; and $\int_{\R^3}|u(x,t)|^2\,dx\le\int_{\R^3}|u_0(x)|^2\,dx$ for $t\in[0,T)$, as lower Lebesgue integrals.
+```
+
+```
+\begin{definition}[$H^3$ energy and $\|\nabla u\|_\infty$] \lean{Scratch/R3BKMContinuation.lean:44--55}. Throughout this paper $\|f\|_{H^m}^2$ denotes \lean{hsSq m f}, the real value of
+$\sum_{k\le m}\sum_{\alpha:\{0,\dots,k-1\}\to\{1,2,3\}}\int_{\R^3}|\partial_{\alpha_0}\cdots\partial_{\alpha_{k-1}}f(x)|^2\,dx$ (ordered tuples of directions), and $\|\nabla f\|_\infty$ denotes \lean{gradSup f}$\,=\sup_x\|Df(x)\|$ as a real supremum.
+```
+
+```
+\begin{definition}[Kato maximal solution]\label{def:kato} \lean{Scratch/R3BKMContinuation.lean:88--96}. \lean{KatoMaximalSolution ν u₀} states that there exist a time set $S$, fields $(u,p)$ and a constant $C_k\ge 0$ such that:
+\begin{enumerate}[label=(\roman*)]
+\item for every $T$ with $[0,T)\subseteq S$, $(u,p)$ is a local Fefferman-class solution from $u_0$ on $[0,T)$;
+\item $\|u(t)\|_{H^3}^2<\infty$ for every $t\in S$; the map $t\mapsto\|u(t)\|_{H^3}^2$ is continuous on $S$; and at every $s\in S$ it has a right derivative $d$ (derivative within $[s,\infty)$) with $d\le C_k\,\|\nabla u(s)\|_\infty\,\|u(s)\|_{H^3}^2$;
+\item either $S=[0,\infty)$, or $S=[0,T^*)$ for some $T^*>0$ and for every $B\in\R$ there is $t\in S$ with $\|u(t)\|_{H^3}^2>B$.
+\end{enumerate}
+```
+
+```
+Let $\nu>0$, and let $u_0$ be smooth, divergence-free, and satisfy Fefferman decay~(4). Then \lean{KatoMaximalSolution}\ $\nu$ $u_0$ holds in the sense of Definition~\ref{def:kato}: there exist a time set $S$, fields $(u,p)$ and a constant $C_k\ge 0$ satisfying (i)--(iii) of that definition. This is a maximal Fefferman-class solution with an $H^3$ blow-up alternative; it does not assert global regularity.
+```
+
+```
+Let $\nu>0$, and let $u_0$ be smooth, divergence-free, and satisfy Fefferman decay~(4). Then there exist time sets $S_k\subseteq\R$ $(k\in\mathbb{N})$, fields $(u,p)$ and a constant $C_k\ge 0$ such that, with $S:=S_2$, $\|u(t)\|_{H^3}^2<\infty$ for every $t\in S$, and:
+\begin{enumerate}[label=(T\arabic*),start=2,leftmargin=*]
+\item\label{thm:T2} at every $s\in S$ the map $t\mapsto\|u(t)\|_{H^3}^2$ has a right derivative $d$ at $s$ (derivative within $[s,\infty)$) with $d\le C_k\,\|\nabla u(s)\|_\infty\,\|u(s)\|_{H^3}^2$;
+\item\label{thm:T3} for every $t\in S$, every order $n\le 3$ and every $\alpha\in\{1,2,3\}^n$, writing $v=\partial^\alpha u(t)$, $q=\partial^\alpha p(t)$ and $E=\tfrac12|v|^2$: the functions $\langle u(t),\nabla E\rangle$, $(\operatorname{div}u(t))\,E$, $\langle v,\nabla q\rangle$ and $(\operatorname{div}v)\,q$ are integrable on $\R^3$; $\int_{\R^3}\operatorname{div}(E\,u(t))\,dx=0$ and $\int_{\R^3}\operatorname{div}(q\,v)\,dx=0$; $v$ is $C^2$; for all $i,j\in\{1,2,3\}$, with $\varphi=v_j$ and $\psi=\partial_i v_j$, both $\varphi$ and $\psi$ are differentiable at every point, $\varphi\,\partial_i\psi$ and $\psi\,\partial_i\varphi$ are integrable, and $\int_{\R^3}\operatorname{div}(\varphi\psi\,e_i)\,dx=0$; and the functions $\langle v,\Delta v\rangle$, $\langle v,(u(t)\cdot\nabla)v\rangle$, $\langle v,\partial^\alpha((u(t)\cdot\nabla)u(t))-(u(t)\cdot\nabla)v\rangle$, $\langle v,\partial^\alpha((u(t)\cdot\nabla)u(t))\rangle$, $\langle v,\partial^\alpha\nabla p(t)\rangle$ and $\langle v,\partial^\alpha\Delta u(t)\rangle$ are integrable;
+\item\label{thm:T4} for every $T$ with $[0,T)\subseteq S$, $(u,p)$ is a local Fefferman-class solution from $u_0$ on $[0,T)$;
+\item\label{thm:T5} for every $T$ with $[0,T)\subseteq S$, every $t\in[0,T)$ and every $x\in\R^3$, $\partial_t^+u(x,t)+(u(t)\cdot\nabla)u(t)(x)+\nabla p(t)(x)=\nu\,\Delta u(t)(x)$, with the time derivative taken within $[0,\infty)$;
+\item\label{thm:T6} for every $T$ with $[0,T)\subseteq S$ and every $t\in[0,T)$, $\int_{\R^3}|u(x,t)|^2\,dx\le\int_{\R^3}|u_0(x)|^2\,dx$ (lower Lebesgue integrals);
+\item\label{thm:T7} for every $k\ge 2$, $t\mapsto\|u(t)\|_{H^3}^2$ is continuous on $S_k$;
+\item\label{thm:T8} for every $k\ge 2$, either $S_k=[0,\infty)$, or there is $T^*>0$ with $S_k=[0,T^*)$ and, for every $B\in\R$, some $t\in[0,T^*)$ with $\|u(t)\|_{H^3}^2>B$;
+\item\label{thm:T9} for every $k\ge 2$, either $S_k=[0,\infty)$ or $S_k=[0,T^*)$ for some $T^*>0$.
+\end{enumerate}
+Here $\partial^\alpha f(x)$, for $\alpha=(\alpha_0,\dots,\alpha_{n-1})$, is the $n$-th derivative of $f$ at $x$ applied to $e_{\alpha_0},\dots,e_{\alpha_{n-1}}$, and $\partial_i$ is the derivative in direction $e_i$.
+```
+
+```
+For every $\nu>0$, \lean{R3BKMContinuation}\ $\nu$ holds: for every smooth, divergence-free $u_0$ satisfying~(4), if one ceiling $Y$ bounds $\|\omega\|_\infty$ along every local Fefferman-class solution from $u_0$, that is, $\|\omega(t)\|_\infty$ is finite and $\|\omega(t)\|_\infty\le Y$ for every local Fefferman-class solution $(u,p)$ from $u_0$ on $[0,T)$ and every $t\in[0,T)$, then $u_0$ has a global Fefferman solution: smooth functions $p$ and $u$ on $\R^3\times[0,\infty)$ that satisfy (1), (2), (3), (6) and (7) of Fefferman's problem description. A uniform vorticity ceiling remains a hypothesis; this is not a regularity theorem.
+```
+
+```
+Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), the smooth rate condition of Definition~\ref{def:rate} holds for $u_0$ and $\nu$. Then \lean{Clay\_A\_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay\_A\_Fefferman}.
+```
+
+```
+\begin{definition}[Smooth rate condition]\label{def:rate} \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ (\lean{lean/DRate.lean}, quoted above) states: there are constants $C>0$ and $\kappa>0$ such that for every $T$ and every local Fefferman-class solution $(u,p)$ from $u_0$ on $[0,T)$, $\|\omega(t)\|_\infty=\sup_{x\in\R^3}|\omega(x,t)|$ is finite for every $t\in[0,T)$, the function $t\mapsto\|\omega(t)\|_\infty$ is continuous on $[0,T)$, and at every $s\in[0,T)$ it has a right derivative $d$ within $[s,\infty)$ with $d\le C\|\omega(s)\|_\infty^2-\kappa\|\omega(s)\|_\infty^3$.
 ```
