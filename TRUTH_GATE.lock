@@ -69,7 +69,7 @@
       "semantics_module": "Scratch.KatoSemantics",
       "audit_file": "scripts/TruthGateAuditKato.lean",
       "paper_path": "papers/local-kato-theory/main.tex",
-      "paper_sha256": "491738fd676f4b62b742626b68e9fcbe8253cbca4243a5dab0ba1f803d4e69d0",
+      "paper_sha256": "176853c29a9b0f21e3d09dbd0f332b0539cdd870cf2a24e3e449cdc81750fa8f",
       "claims": [
         "T1",
         "T2to9",

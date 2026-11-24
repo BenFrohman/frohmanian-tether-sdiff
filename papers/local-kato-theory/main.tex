@@ -37,7 +37,7 @@ A Maximal Solution with an $H^3$ Blow-up Alternative for $\nu>0$\\
 \author{Benjamin Stanley Frohman\\
 \small Independent Researcher, Texas, United States\\
 \small ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}}
-\date{17 November 2026 (America/Chicago) --- Version 1.1, preprint, not peer-reviewed\\ \small Version 1.0: DOI \href{https://doi.org/10.5281/zenodo.24302258}{10.5281/zenodo.24302258}}
+\date{23 November 2026 (America/Chicago) --- Version 1.2, preprint, not peer-reviewed\\ \small Version 1.0: DOI \href{https://doi.org/10.5281/zenodo.24302258}{10.5281/zenodo.24302258}}
 
 \begin{document}
 \maketitle
@@ -152,7 +152,7 @@ Both theorems below are in \lean{Scratch/KatoContinuation.lean}. They use the fo
 \VerbatimInput[firstline=15]{lean/DClay.lean}
 \VerbatimInput[firstline=15]{lean/DRate.lean}
 
-\begin{theorem}[Classical BKM continuation on $\R^3$]
+\begin{theorem}[Global continuation under a uniform vorticity ceiling on $\R^3$]
 \label{thm:T10}
 For every $\nu>0$, \lean{R3BKMContinuation}\ $\nu$ holds: for every smooth, divergence-free $u_0$ satisfying~(4), if one ceiling $Y$ bounds $\|\omega\|_\infty$ along every local Fefferman-class solution from $u_0$, that is, $\|\omega(t)\|_\infty$ is finite and $\|\omega(t)\|_\infty\le Y$ for every local Fefferman-class solution $(u,p)$ from $u_0$ on $[0,T)$ and every $t\in[0,T)$, then $u_0$ has a global Fefferman solution: smooth functions $p$ and $u$ on $\R^3\times[0,\infty)$ that satisfy (1), (2), (3), (6) and (7) of Fefferman's problem description. A uniform vorticity ceiling remains a hypothesis; this is not a regularity theorem.
 
@@ -160,9 +160,12 @@ For every $\nu>0$, \lean{R3BKMContinuation}\ $\nu$ holds: for every smooth, dive
 \VerbatimInput[firstline=15]{lean/T10.lean}
 \end{theorem}
 
-\begin{theorem}[Conditional reduction to the Smooth rate alone]
+\begin{definition}[Smooth rate condition]\label{def:rate} \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ (\lean{lean/DRate.lean}, quoted above) states: there are constants $C>0$ and $\kappa>0$ such that for every $T$ and every local Fefferman-class solution $(u,p)$ from $u_0$ on $[0,T)$, $\|\omega(t)\|_\infty=\sup_{x\in\R^3}|\omega(x,t)|$ is finite for every $t\in[0,T)$, the function $t\mapsto\|\omega(t)\|_\infty$ is continuous on $[0,T)$, and at every $s\in[0,T)$ it has a right derivative $d$ within $[s,\infty)$ with $d\le C\|\omega(s)\|_\infty^2-\kappa\|\omega(s)\|_\infty^3$.
+\end{definition}
+
+\begin{theorem}[Global existence from the smooth rate condition]
 \label{thm:T11}
-Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), \lean{FrohmanianTetherRateSmooth}\ $u_0$ $\nu$ holds. Then \lean{Clay\_A\_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay\_A\_Fefferman}.
+Assume that for every $\nu>0$ and every Fefferman datum $u_0$ (smooth, divergence-free, satisfying~(4)), the smooth rate condition of Definition~\ref{def:rate} holds for $u_0$ and $\nu$. Then \lean{Clay\_A\_Fefferman} holds. The rate hypothesis is not proved in this repository, so this does not establish \lean{Clay\_A\_Fefferman}.
 
 \noindent\lean{KatoContinuation.clay\_A\_fefferman\_of\_rate}, \lean{Scratch/KatoContinuation.lean:49--52}:
 \VerbatimInput[firstline=15]{lean/T11.lean}
@@ -184,6 +187,7 @@ Every theorem of this paper is covered by a Truth Gate lock: Theorem~\ref{thm:T1
 \section{Certificate and reproducibility}
 \label{sec:repro}
 \begin{description}[leftmargin=*,style=nextline]
+\item[Version 1.2] Theorem~\ref{thm:T10} is retitled to name its hypothesis, a uniform ceiling on $\|\omega\|_\infty$; Definition~\ref{def:rate} states the rate condition of Theorem~\ref{thm:T11} in words, conjunct by conjunct as in the quoted Lean definition. No statement and no Lean source changes.
 \item[Version 1.1] Theorem~\ref{thm:T2-9} (\lean{Scratch/KatoMaximalProperties.lean}), the Truth Gate locks (\lean{Scratch/KatoSemantics.lean}, \lean{scripts/TruthGateAuditKato.lean}) and this file are added by one pull request to \href{https://github.com/BenFrohman/frohmanian-tether-sdiff}{\lean{BenFrohman/frohmanian-tether-sdiff}}. The certificate of Version~1.1 is the official GitHub Actions output (full build log, \lean{lake-manifest.json} with its sha256, toolchain, elan and Lake versions, and \lean{\#print axioms} for every theorem) of the merge commit of that pull request on \lean{main}; its commit and run ids are given in the Zenodo record of Version~1.1. The items below record the Version~1.0 certificate, which covers Theorems~\ref{thm:T1}, \ref{thm:T10}, \ref{thm:T11} and every declaration quoted in Section~\ref{sec:smax} except \lean{katoMaximalSolution\_properties}.
 \item[Repository and commit] \href{https://github.com/BenFrohman/frohmanian-tether-sdiff}{\lean{BenFrohman/frohmanian-tether-sdiff}} at \commit{} (\lean{main} after pull request \#14). Its Lean sources are identical to \prcommit{}, the merge commit of \href{https://github.com/BenFrohman/frohmanian-tether-sdiff/pull/12}{pull request \#12} (merged 17 November 2026, 01:53 CT): \lean{git diff} between the two commits changes only four files under \lean{.github/workflows/} and adds \lean{scripts/collect\_lake\_certificate.sh} and \lean{scripts/finalize\_lake\_certificate.sh}; no \lean{.lean} file, \lean{lakefile.lean}, \lean{lean-toolchain} or \lean{lake-manifest.json} changes.
 \item[CI run (kernel build)] ``Lean certificate'' workflow, run \href{https://github.com/BenFrohman/frohmanian-tether-sdiff/actions/runs/44047249311}{44047249311} (event \lean{push}, conclusion \lean{success}). Steps: install elan; record the lake certificate environment; \lean{lake exe cache get}; \lean{lake build}; \lean{lake build Scratch}; source scan for \lean{sorry}/\lean{admit}/\lean{native\_decide}/\lean{axiom}; strict axiom audit; Scratch axiom audit; \lean{bash scripts/verify.sh}; upload of the lake certificate bundle. All succeeded.
